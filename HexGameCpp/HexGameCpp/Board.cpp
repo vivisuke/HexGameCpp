@@ -23,12 +23,12 @@ void Board::init() {
 	}
 }
 void Board::print() const {
-	cout << "    ";
+	cout << "   ";
 	for(int x = 0; x < m_bd_width; ++x)
 		printf("%c ", 'a'+x);
 	cout << endl;
 	for(int y = 0; y < m_bd_height; ++y) {
-		cout << string(y+1, ' ');
+		cout << string(y, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
 			switch(m_board[xyToIndex(x, y)]) {
