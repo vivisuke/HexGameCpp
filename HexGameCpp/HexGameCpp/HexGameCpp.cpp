@@ -8,11 +8,11 @@ int main()
 {
 	Board bd(4);
 	bd.set_color(1, 1, BLACK);
-	assert( bd.get_color(1, 1) ==  BLACK );
-	bd.set_color(0, 2, BLACK);
-	bd.set_color(1, 2, WHITE);
-	assert( bd.get_color(1, 2) ==  WHITE );
-	bd.set_color(0, 3, WHITE);
+	//assert( bd.get_color(1, 1) ==  BLACK );
+	//bd.set_color(0, 2, BLACK);
+	bd.set_color(2, 2, WHITE);
+	//assert( bd.get_color(1, 2) ==  WHITE );
+	//bd.set_color(0, 3, WHITE);
 	bd.print();
 	auto dv = bd.calc_vert_dist();
 	cout << "vertical dist = " << dv << endl;

@@ -68,6 +68,17 @@ void Board::calc_dist_sub(int ix, int dix, ushort dist, byte col) {
 		m_list2.push_back(dix);
 	}
 }
+void Board::calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col) {
+	if( m_cell[ix2] == EMPTY && m_cell[ix3] == EMPTY ) {
+		if( m_cell[dix] == EMPTY && dist + 1 < m_dist[dix] ) {
+			m_dist[dix] = dist + 1;
+			m_list2.push_back(dix);
+		} else if( m_cell[dix] == col && dist < m_dist[dix] ) {
+			m_dist[dix] = dist;
+			m_list2.push_back(dix);
+		}
+	}
+}
 int Board::calc_vert_dist() {
 	fill(m_dist.begin(), m_dist.end(), USHORT_MAX);
 	m_front.clear();
@@ -78,6 +89,19 @@ int Board::calc_vert_dist() {
 		case EMPTY:
 			m_dist[ix] = 1;
 			m_list1.push_back(ix);
+			if( x+1 < m_bd_width && m_cell[ix+1] == EMPTY ) {
+				int ix2 = ix + m_ary_width;
+				switch( m_cell[ix2] ) {
+				case EMPTY:
+					m_dist[ix2] = 1;
+					m_list1.push_back(ix2);
+					break;
+				case BLACK:
+					m_dist[ix2] = 0;
+					m_front.push_back(ix2);
+					break;
+				}
+			}
 			break;
 		case BLACK:
 			m_dist[ix] = 0;
@@ -100,6 +124,14 @@ int Board::calc_vert_dist() {
 			calc_dist_sub(ix, ix + 1, dist, BLACK);
 			calc_dist_sub(ix, ix + m_ary_width - 1, dist, BLACK);
 			calc_dist_sub(ix, ix + m_ary_width, dist, BLACK);
+			//
+			calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, BLACK);
+			calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, BLACK);
+			calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, BLACK);
+			calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, BLACK);
+			calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, BLACK);
+			calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, BLACK);
+
 		}
 		m_front.swap(m_list2);
 		if( !m_list1.is_empty() ) {
@@ -108,6 +140,14 @@ int Board::calc_vert_dist() {
 		}
 		//print_dist();
 	}
+	for(int x = 0; x < m_bd_width - 1; ++x) {
+		int ix = xyToIndex(x, m_bd_height-1);
+		if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
+			m_dist[ix] = min(m_dist[ix], m_dist[ix-m_ary_width+1]);
+			m_dist[ix+1] = min(m_dist[ix+1], m_dist[ix-m_ary_width+1]);
+		}
+	}
+	//print_dist();
 	ushort mind = USHORT_MAX;
 	for(int x = 0; x < m_bd_width; ++x) {
 		int ix = xyToIndex(x, m_bd_height-1);
@@ -127,6 +167,19 @@ int Board::calc_horz_dist() {
 		case EMPTY:
 			m_dist[ix] = 1;
 			m_list1.push_back(ix);
+			if( y+1 < m_bd_height && m_cell[ix+m_ary_width] == EMPTY ) {
+				int ix2 = ix + 1;
+				switch( m_cell[ix2] ) {
+				case EMPTY:
+					m_dist[ix2] = 1;
+					m_list1.push_back(ix2);
+					break;
+				case BLACK:
+					m_dist[ix2] = 0;
+					m_front.push_back(ix2);
+					break;
+				}
+			}
 			break;
 		case WHITE:
 			m_dist[ix] = 0;
@@ -149,6 +202,13 @@ int Board::calc_horz_dist() {
 			calc_dist_sub(ix, ix + 1, dist, WHITE);
 			calc_dist_sub(ix, ix + m_ary_width - 1, dist, WHITE);
 			calc_dist_sub(ix, ix + m_ary_width, dist, WHITE);
+			//
+			calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, BLACK);
+			calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, BLACK);
+			calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, BLACK);
+			calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, BLACK);
+			calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, BLACK);
+			calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, BLACK);
 		}
 		m_front.swap(m_list2);
 		if( !m_list1.is_empty() ) {
@@ -156,6 +216,13 @@ int Board::calc_horz_dist() {
 			m_list1.clear();
 		}
 		//print_dist();
+	}
+	for(int y = 0; y < m_bd_height - 1; ++y) {
+		int ix = xyToIndex(m_bd_width-1, y);
+		if( m_cell[ix] == EMPTY && m_cell[ix+m_ary_width] == EMPTY ) {
+			m_dist[ix] = min(m_dist[ix], m_dist[ix+1]);
+			m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix+1]);
+		}
 	}
 	ushort mind = USHORT_MAX;
 	for(int y = 0; y < m_bd_width; ++y) {

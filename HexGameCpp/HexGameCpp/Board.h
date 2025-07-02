@@ -26,6 +26,7 @@ public:
 	int		calc_vert_dist();	//	（黒）上下辺間距離計算
 	int		calc_horz_dist();	//	（白）左右辺間距離計算
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
+	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
 
 public:
 	int		m_bd_width;
