@@ -191,7 +191,7 @@ int Board::calc_horz_dist() {
 		m_front.swap(m_list1);
 		m_list1.clear();
 	}
-	print_dist();
+	//print_dist();
 	while( !m_front.is_empty() ) {
 		m_list2.clear();
 		for(auto ix: m_front) {
@@ -215,7 +215,7 @@ int Board::calc_horz_dist() {
 			m_front.insert(m_front.end(), m_list1.begin(), m_list1.end());		//	front += list1
 			m_list1.clear();
 		}
-		print_dist();
+		//print_dist();
 	}
 	for(int y = 0; y < m_bd_height - 1; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
@@ -224,7 +224,7 @@ int Board::calc_horz_dist() {
 			m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix+m_ary_width-1]);
 		}
 	}
-	print_dist();
+	//print_dist();
 	ushort mind = USHORT_MAX;
 	for(int y = 0; y < m_bd_height; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
@@ -232,7 +232,7 @@ int Board::calc_horz_dist() {
 	}
 	return mind;
 }
-int Board::eval(byte next) {
+int Board::eval() {
 	return calc_horz_dist() - calc_vert_dist();
 	//if( next == BLACK )
 	//	return calc_horz_dist() - calc_vert_dist() + 1;
@@ -241,9 +241,41 @@ int Board::eval(byte next) {
 }
 int Board::alpha_beta_black(int alpha, int beta, int depth) {
 	if( depth == 0 )
-		return eval(BLACK);
+		return eval();
 	for(int y = 0; y < m_bd_height; ++y) {
 		for(int x = 0; x < m_bd_width; ++x) {
 		}
 	}
+}
+int Board::black_turn(int depth) {
+	if( depth != 0 ) {
+		int max_ev = INT_MIN;
+		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+			if( m_cell[ix] == EMPTY ) {
+				m_cell[ix] = BLACK;
+				auto ev = white_turn(depth-1);
+				max_ev = max(max_ev, ev);
+				m_cell[ix] = EMPTY;
+			}
+		}
+		if( max_ev != INT_MIN )
+			return max_ev;
+	}
+	return eval();
+}
+int Board::white_turn(int depth) {
+	if( depth != 0 ) {
+		int min_ev = INT_MAX;
+		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+			if( m_cell[ix] == EMPTY ) {
+				m_cell[ix] = WHITE;
+				auto ev = black_turn(depth-1);
+				min_ev = min(min_ev, ev);
+				m_cell[ix] = EMPTY;
+			}
+		}
+		if( min_ev != INT_MAX )
+			return min_ev;
+	}
+	return eval();
 }
