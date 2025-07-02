@@ -174,7 +174,7 @@ int Board::calc_horz_dist() {
 					m_dist[ix2] = 1;
 					m_list1.push_back(ix2);
 					break;
-				case BLACK:
+				case WHITE:
 					m_dist[ix2] = 0;
 					m_front.push_back(ix2);
 					break;
@@ -191,7 +191,7 @@ int Board::calc_horz_dist() {
 		m_front.swap(m_list1);
 		m_list1.clear();
 	}
-	//print_dist();
+	print_dist();
 	while( !m_front.is_empty() ) {
 		m_list2.clear();
 		for(auto ix: m_front) {
@@ -203,19 +203,19 @@ int Board::calc_horz_dist() {
 			calc_dist_sub(ix, ix + m_ary_width - 1, dist, WHITE);
 			calc_dist_sub(ix, ix + m_ary_width, dist, WHITE);
 			//
-			calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, BLACK);
-			calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, BLACK);
-			calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, BLACK);
-			calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, BLACK);
-			calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, BLACK);
-			calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, BLACK);
+			calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, WHITE);
+			calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, WHITE);
+			calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, WHITE);
+			calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, WHITE);
+			calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, WHITE);
+			calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, WHITE);
 		}
 		m_front.swap(m_list2);
 		if( !m_list1.is_empty() ) {
 			m_front.insert(m_front.end(), m_list1.begin(), m_list1.end());		//	front += list1
 			m_list1.clear();
 		}
-		//print_dist();
+		print_dist();
 	}
 	for(int y = 0; y < m_bd_height - 1; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
@@ -232,9 +232,17 @@ int Board::calc_horz_dist() {
 	return mind;
 }
 int Board::eval(byte next) {
-	int ev = calc_horz_dist() - calc_vert_dist();
-	if( next == BLACK )
-		return ev + 1;
-	else
-		return ev - 1;
+	return calc_horz_dist() - calc_vert_dist();
+	//if( next == BLACK )
+	//	return calc_horz_dist() - calc_vert_dist() + 1;
+	//else
+	//	return calc_vert_dist() - calc_horz_dist() - 1;
+}
+int Board::alpha_beta_black(int alpha, int beta, int depth) {
+	if( depth == 0 )
+		return eval(BLACK);
+	for(int y = 0; y < m_bd_height; ++y) {
+		for(int x = 0; x < m_bd_width; ++x) {
+		}
+	}
 }

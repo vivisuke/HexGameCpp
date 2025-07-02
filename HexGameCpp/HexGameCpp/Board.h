@@ -29,6 +29,8 @@ public:
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
 
 	int		eval(byte next);	//	•‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
+	int		alpha_beta_black(int alpha, int beta, int depth);
+	int		alpha_beta_white(int alpha, int beta, int depth);
 
 public:
 	int		m_bd_width;
