@@ -6,7 +6,7 @@
 0004 ◎ C 07/02 07/02 0.001│ToDo│盤面表示
 0005 ◎ C 07/02 07/02 0.001│ToDo│set_color(x, y, col)
 0006 ◎ C 07/02 07/02 0.001│ToDo│get_color(x, y, col)
-0007 ● C 07/02            │ToDo│
+0007 ◎ C 07/02 07/02 0.001│ToDo│上下・左右距離計算 calc_vert_dist()
 0008 ● C 07/02            │ToDo│
 0009 ● C 07/02            │ToDo│
 0010 ● C 07/02            │ToDo│
