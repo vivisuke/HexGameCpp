@@ -220,12 +220,13 @@ int Board::calc_horz_dist() {
 	for(int y = 0; y < m_bd_height - 1; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
 		if( m_cell[ix] == EMPTY && m_cell[ix+m_ary_width] == EMPTY ) {
-			m_dist[ix] = min(m_dist[ix], m_dist[ix-1]);
-			m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix-1]);
+			m_dist[ix] = min(m_dist[ix], m_dist[ix+m_ary_width-1]);
+			m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix+m_ary_width-1]);
 		}
 	}
+	print_dist();
 	ushort mind = USHORT_MAX;
-	for(int y = 0; y < m_bd_width; ++y) {
+	for(int y = 0; y < m_bd_height; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
 		mind = min(mind, m_dist[ix]);
 	}

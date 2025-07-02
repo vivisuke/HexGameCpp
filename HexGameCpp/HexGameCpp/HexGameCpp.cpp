@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const int BD_WIDTH = 4;
+const int BD_WIDTH = 3;
 
 int main()
 {
@@ -12,7 +12,8 @@ int main()
 	if( true ) {
 		bd.init();
 		//bd.set_color(3, 1, BLACK);
-		bd.set_color(0, 2, BLACK);
+		//bd.set_color(0, 2, BLACK);
+		bd.set_color(1, 1, BLACK);
 		//assert( bd.get_color(1, 1) ==  BLACK );
 		//bd.set_color(0, 2, BLACK);
 		//bd.set_color(2, 2, WHITE);
