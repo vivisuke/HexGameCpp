@@ -28,6 +28,8 @@ public:
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
 
+	int		eval(byte next);	//	•‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
+
 public:
 	int		m_bd_width;
 	int		m_bd_height;

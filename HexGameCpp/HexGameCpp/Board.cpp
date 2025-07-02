@@ -231,3 +231,10 @@ int Board::calc_horz_dist() {
 	}
 	return mind;
 }
+int Board::eval(byte next) {
+	int ev = calc_horz_dist() - calc_vert_dist();
+	if( next == BLACK )
+		return ev + 1;
+	else
+		return ev - 1;
+}
