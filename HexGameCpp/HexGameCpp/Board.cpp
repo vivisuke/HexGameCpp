@@ -85,7 +85,7 @@ void Board::calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte 
 		}
 	}
 }
-int Board::calc_vert_dist() {
+int Board::calc_vert_dist(bool ex) {
 	fill(m_dist.begin(), m_dist.end(), DIST_MAX);
 	m_front.clear();
 	m_list1.clear();
@@ -95,7 +95,7 @@ int Board::calc_vert_dist() {
 		case EMPTY:
 			m_dist[ix] = 1;
 			m_list1.push_back(ix);
-			if( x+1 < m_bd_width && m_cell[ix+1] == EMPTY ) {
+			if( ex && x+1 < m_bd_width && m_cell[ix+1] == EMPTY ) {
 				int ix2 = ix + m_ary_width;
 				switch( m_cell[ix2] ) {
 				case EMPTY:
@@ -131,13 +131,14 @@ int Board::calc_vert_dist() {
 			calc_dist_sub(ix, ix + m_ary_width - 1, dist, BLACK);
 			calc_dist_sub(ix, ix + m_ary_width, dist, BLACK);
 			//
-			calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, BLACK);
-			calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, BLACK);
-			calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, BLACK);
-			calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, BLACK);
-			calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, BLACK);
-			calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, BLACK);
-
+			if( ex ) {
+				calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, BLACK);
+				calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, BLACK);
+				calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, BLACK);
+				calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, BLACK);
+				calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, BLACK);
+				calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, BLACK);
+			}
 		}
 		m_front.swap(m_list2);
 		if( !m_list1.is_empty() ) {
@@ -146,11 +147,13 @@ int Board::calc_vert_dist() {
 		}
 		//print_dist();
 	}
-	for(int x = 0; x < m_bd_width - 1; ++x) {
-		int ix = xyToIndex(x, m_bd_height-1);
-		if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
-			m_dist[ix] = min(m_dist[ix], m_dist[ix-m_ary_width+1]);
-			m_dist[ix+1] = min(m_dist[ix+1], m_dist[ix-m_ary_width+1]);
+	if( ex ) {
+		for(int x = 0; x < m_bd_width - 1; ++x) {
+			int ix = xyToIndex(x, m_bd_height-1);
+			if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
+				m_dist[ix] = min(m_dist[ix], m_dist[ix-m_ary_width+1]);
+				m_dist[ix+1] = min(m_dist[ix+1], m_dist[ix-m_ary_width+1]);
+			}
 		}
 	}
 	//print_dist();
@@ -163,7 +166,7 @@ int Board::calc_vert_dist() {
 	//auto itr = min_element(&m_cell[xyToIndex(0, m_bd_height-1)], &m_cell[xyToIndex(m_bd_width-1, m_bd_height-1)]);
 	//return *itr;
 }
-int Board::calc_horz_dist() {
+int Board::calc_horz_dist(bool ex) {
 	fill(m_dist.begin(), m_dist.end(), DIST_MAX);
 	m_front.clear();
 	m_list1.clear();
@@ -173,7 +176,7 @@ int Board::calc_horz_dist() {
 		case EMPTY:
 			m_dist[ix] = 1;
 			m_list1.push_back(ix);
-			if( y+1 < m_bd_height && m_cell[ix+m_ary_width] == EMPTY ) {
+			if( ex && y+1 < m_bd_height && m_cell[ix+m_ary_width] == EMPTY ) {
 				int ix2 = ix + 1;
 				switch( m_cell[ix2] ) {
 				case EMPTY:
@@ -209,12 +212,14 @@ int Board::calc_horz_dist() {
 			calc_dist_sub(ix, ix + m_ary_width - 1, dist, WHITE);
 			calc_dist_sub(ix, ix + m_ary_width, dist, WHITE);
 			//
-			calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, WHITE);
-			calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, WHITE);
-			calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, WHITE);
-			calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, WHITE);
-			calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, WHITE);
-			calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, WHITE);
+			if( ex ) {
+				calc_dist_sub2(ix, ix - 1, ix - m_ary_width, ix - m_ary_width - 1, dist, WHITE);
+				calc_dist_sub2(ix, ix - m_ary_width, ix - m_ary_width + 1, ix - m_ary_width - m_ary_width + 1, dist, WHITE);
+				calc_dist_sub2(ix, ix + 1, ix - m_ary_width + 1, ix - m_ary_width + 2, dist, WHITE);
+				calc_dist_sub2(ix, ix - 1, ix + m_ary_width - 1, ix + m_ary_width - 2, dist, WHITE);
+				calc_dist_sub2(ix, ix + 1, ix + m_ary_width, ix + m_ary_width + 1, dist, WHITE);
+				calc_dist_sub2(ix, ix + m_ary_width - 1, ix + m_ary_width, ix + m_ary_width + m_ary_width - 1, dist, WHITE);
+			}
 		}
 		m_front.swap(m_list2);
 		if( !m_list1.is_empty() ) {
@@ -223,11 +228,13 @@ int Board::calc_horz_dist() {
 		}
 		//print_dist();
 	}
-	for(int y = 0; y < m_bd_height - 1; ++y) {
-		int ix = xyToIndex(m_bd_width-1, y);
-		if( m_cell[ix] == EMPTY && m_cell[ix+m_ary_width] == EMPTY ) {
-			m_dist[ix] = min(m_dist[ix], m_dist[ix+m_ary_width-1]);
-			m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix+m_ary_width-1]);
+	if( ex ) {
+		for(int y = 0; y < m_bd_height - 1; ++y) {
+			int ix = xyToIndex(m_bd_width-1, y);
+			if( m_cell[ix] == EMPTY && m_cell[ix+m_ary_width] == EMPTY ) {
+				m_dist[ix] = min(m_dist[ix], m_dist[ix+m_ary_width-1]);
+				m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix+m_ary_width-1]);
+			}
 		}
 	}
 	//print_dist();

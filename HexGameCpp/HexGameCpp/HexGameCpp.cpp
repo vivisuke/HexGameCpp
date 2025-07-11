@@ -15,9 +15,9 @@ int main()
 		byte next = BLACK;
 		for(;;) {
 			bd.print();
-			auto dv = bd.calc_vert_dist();
+			auto dv = bd.calc_vert_dist(false);
 			cout << "vertical dist = " << dv << endl;
-			auto dh = bd.calc_horz_dist();
+			auto dh = bd.calc_horz_dist(false);
 			cout << "horizontal dist = " << dh << endl;
 			int ix = bd.sel_move_random();
 			if( ix < 0 ) break;

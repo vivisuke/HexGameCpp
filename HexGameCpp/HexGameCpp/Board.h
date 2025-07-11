@@ -26,8 +26,10 @@ public:
 	void	set_color(int x, int y, byte col) { m_cell[xyToIndex(x, y)] = col; }
 	void	set_color(int ix, byte col) { m_cell[ix] = col; }
 
-	int		calc_vert_dist();	//	（黒）上下辺間距離計算
-	int		calc_horz_dist();	//	（白）左右辺間距離計算
+	int		calc_vert_dist(bool ex=true);	//	（黒）上下辺間距離計算（６連結＋間接連結(ex)）
+	int		calc_horz_dist(bool ex=true);	//	（白）左右辺間距離計算（６連結＋間接連結(ex)）
+	//int		calc_vert_dist_ex();	//	（黒）上下辺間距離計算（６連結＋間接連結）
+	//int		calc_horz_dist_ex();	//	（白）左右辺間距離計算（６連結＋間接連結）
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
 
