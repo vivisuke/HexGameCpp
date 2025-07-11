@@ -1,11 +1,17 @@
 ﻿#include <iostream>
 #include <string>
 #include <algorithm>
+#include <random>
 #include "Board.h"
 
 using namespace std;
 
+std::random_device rd;
+std::mt19937 rgen(rd()); 
+
 #define		is_empty()	empty()
+
+vector<int> g_lst;
 
 Board::Board(int bd_width)
 	: m_bd_width(bd_width), m_bd_height(bd_width)
@@ -52,7 +58,7 @@ void Board::print_dist() const {
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
 			auto d = m_dist[xyToIndex(x, y)];
-			if( d == USHORT_MAX ) cout << "  -1";
+			if( d == DIST_MAX ) cout << "  -1";
 			else printf("%4d", d);
 		}
 		cout << endl;
@@ -80,7 +86,7 @@ void Board::calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte 
 	}
 }
 int Board::calc_vert_dist() {
-	fill(m_dist.begin(), m_dist.end(), USHORT_MAX);
+	fill(m_dist.begin(), m_dist.end(), DIST_MAX);
 	m_front.clear();
 	m_list1.clear();
 	for(int x = 0; x < m_bd_width; ++x) {
@@ -148,7 +154,7 @@ int Board::calc_vert_dist() {
 		}
 	}
 	//print_dist();
-	ushort mind = USHORT_MAX;
+	ushort mind = DIST_MAX;
 	for(int x = 0; x < m_bd_width; ++x) {
 		int ix = xyToIndex(x, m_bd_height-1);
 		mind = min(mind, m_dist[ix]);
@@ -158,7 +164,7 @@ int Board::calc_vert_dist() {
 	//return *itr;
 }
 int Board::calc_horz_dist() {
-	fill(m_dist.begin(), m_dist.end(), USHORT_MAX);
+	fill(m_dist.begin(), m_dist.end(), DIST_MAX);
 	m_front.clear();
 	m_list1.clear();
 	for(int y = 0; y < m_bd_width; ++y) {
@@ -225,12 +231,23 @@ int Board::calc_horz_dist() {
 		}
 	}
 	//print_dist();
-	ushort mind = USHORT_MAX;
+	ushort mind = DIST_MAX;
 	for(int y = 0; y < m_bd_height; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
 		mind = min(mind, m_dist[ix]);
 	}
 	return mind;
+}
+int Board::sel_move_random() {
+	g_lst.reserve(m_bd_width*m_bd_height);
+	g_lst.clear();
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			g_lst.push_back(ix);
+	}
+	if( g_lst.is_empty() ) return -1;
+	int r = rgen() % g_lst.size();
+	return g_lst[r];
 }
 int Board::eval() {
 	return calc_horz_dist() - calc_vert_dist();
@@ -246,6 +263,9 @@ int Board::alpha_beta_black(int alpha, int beta, int depth) {
 		for(int x = 0; x < m_bd_width; ++x) {
 		}
 	}
+}
+int Board::alpha_beta_white(int alpha, int beta, int depth) {
+	return 0;
 }
 int Board::black_turn(int depth) {
 	if( depth != 0 ) {
@@ -265,7 +285,7 @@ int Board::black_turn(int depth) {
 }
 int Board::white_turn(int depth) {
 	if( depth != 0 ) {
-		int min_ev = INT_MAX;
+		int min_ev = SHRT_MAX;
 		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				m_cell[ix] = WHITE;
@@ -274,7 +294,7 @@ int Board::white_turn(int depth) {
 				m_cell[ix] = EMPTY;
 			}
 		}
-		if( min_ev != INT_MAX )
+		if( min_ev != SHRT_MAX )
 			return min_ev;
 	}
 	return eval();

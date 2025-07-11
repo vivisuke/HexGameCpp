@@ -9,6 +9,7 @@ enum {
 	EMPTY = 0, BLACK, WHITE, BWALL, WWALL,
 	BYTE_MAX = 0xff,
 	USHORT_MAX = 0xffff,
+	DIST_MAX = 9999,
 };
 
 class Board
@@ -21,7 +22,9 @@ public:
 	void	print_dist() const;
 	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
 	byte	get_color(int x, int y) const { return m_cell[xyToIndex(x, y)]; }
+	byte	get_color(int ix) const { return m_cell[ix]; }
 	void	set_color(int x, int y, byte col) { m_cell[xyToIndex(x, y)] = col; }
+	void	set_color(int ix, byte col) { m_cell[ix] = col; }
 
 	int		calc_vert_dist();	//	（黒）上下辺間距離計算
 	int		calc_horz_dist();	//	（白）左右辺間距離計算
@@ -33,6 +36,9 @@ public:
 	int		alpha_beta_white(int alpha, int beta, int depth);
 	int		black_turn(int depth);
 	int		white_turn(int depth);
+
+	bool	playout() const;		//	完全ランダムプレイアウト、return: 黒勝ち
+	int		sel_move_random();		//	完全ランダムに着手を選択、return: 着手箇所
 
 public:
 	int		m_bd_width;
