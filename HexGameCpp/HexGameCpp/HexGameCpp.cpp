@@ -4,26 +4,99 @@
 
 using namespace std;
 
-const int BD_WIDTH = 3;
+const int BD_WIDTH = 5;
 
 int main()
 {
 	cout << endl;
 	Board bd(BD_WIDTH);
+	if( false ) {
+		bd.init();
+		bd.set_color(1, 1, BLACK);
+		Board bd2(bd);
+		bd2.print();
+	}
 	if( true ) {
 		bd.init();
-		byte next = BLACK;
-		for(;;) {
-			bd.print();
-			auto dv = bd.calc_vert_dist(false);
-			cout << "vertical dist = " << dv << endl;
-			auto dh = bd.calc_horz_dist(false);
-			cout << "horizontal dist = " << dh << endl;
-			int ix = bd.sel_move_random();
-			if( ix < 0 ) break;
-			bd.set_color(ix, next);
-			next = (BLACK + WHITE) - next;
+		//byte next = BLACK;
+		bd.set_color(1, 1, BLACK);
+		byte next = WHITE;
+		byte n2 = (BLACK+WHITE) - next;
+		bd.print();
+		const int N_PLAYOUT = 1000;
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*2, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, next);
+					auto rate = bd.estimate_win_rate_PMC(n2, N_PLAYOUT);
+					bd.set_color(x, y, EMPTY);
+					printf(" %.2f", 1 - rate);
+				} else
+					printf("    -");
+			}
+			cout << endl;
 		}
+		cout << endl;
+	}
+	if( false ) {
+		int N_LOOP = 1000;
+		int n_black_won = 0;
+		for(int c = 0; c < N_LOOP; ++c) {
+			bd.init();
+			//bd.set_color(1, 2, BLACK);
+			byte next = BLACK;
+			//byte next = WHITE;
+			auto b = bd.playout(next);
+			if( b ) {
+				cout << "BLACK win." << endl;
+				++n_black_won;
+			} else {
+				cout << "WHITE win." << endl;
+			}
+		}
+		cout << "n_black_won = " << n_black_won << " / " << N_LOOP << endl;
+	}
+	if( false ) {
+		int N_LOOP = 1000;
+		int n_black_won = 0;
+		for(int c = 0; c < N_LOOP; ++c) {
+			bd.init();
+			//bd.set_color(1, 2, BLACK);
+			byte next = BLACK;
+			//byte next = WHITE;
+			for(;;) {
+				if (0) {
+					bd.print();
+					auto dv = bd.calc_vert_dist(false);
+					cout << "vertical dist = " << dv << endl;
+					auto dh = bd.calc_horz_dist(false);
+					cout << "horizontal dist = " << dh << endl;
+				}
+				int ix = bd.sel_move_random();
+				if( ix < 0 ) break;
+				bd.set_color(ix, next);
+				if( next == BLACK ) {
+					auto dv = bd.calc_vert_dist(true);
+					if( dv == 0 ) {
+						bd.print();
+						cout << "BLACK win." << endl;
+						++n_black_won;
+						break;
+					}
+				} else {
+					auto dh = bd.calc_horz_dist(true);
+					if( dh == 0 ) {
+						bd.print();
+						cout << "WHITE win." << endl;
+						break;
+					}
+				}
+				next = (BLACK + WHITE) - next;
+			}
+			cout << endl;
+		}
+		cout << "n_black_won = " << n_black_won << " / " << N_LOOP << endl;
 	}
 	if( false ) {
 		bd.init();

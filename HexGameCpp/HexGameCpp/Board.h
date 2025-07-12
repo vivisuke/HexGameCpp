@@ -16,6 +16,7 @@ class Board
 {
 public:
 	Board(int bd_width);
+	Board(const Board &);
 public:
 	void	init();
 	void	print() const;
@@ -39,8 +40,9 @@ public:
 	int		black_turn(int depth);
 	int		white_turn(int depth);
 
-	bool	playout() const;		//	完全ランダムプレイアウト、return: 黒勝ち
-	int		sel_move_random();		//	完全ランダムに着手を選択、return: 着手箇所
+	bool	playout(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
+	double	estimate_win_rate_PMC(byte next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
+	int		sel_move_random();			//	完全ランダムに着手を選択、return: 着手箇所
 
 public:
 	int		m_bd_width;

@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <random>
+#include <assert.h>
 #include "Board.h"
 
 using namespace std;
@@ -22,6 +23,16 @@ Board::Board(int bd_width)
 	m_cell.resize(m_ary_size);
 	m_dist.resize(m_ary_size);
 	init();
+}
+Board::Board(const Board &x)
+	: m_bd_width(x.m_bd_width), m_bd_height(x.m_bd_width)
+{
+	m_ary_width = x.m_ary_width;
+	m_ary_height = x.m_ary_width;
+	m_ary_size = x.m_ary_size;
+	//m_cell.resize(m_ary_size);
+	m_cell = x.m_cell;
+	m_dist.resize(m_ary_size);
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), BWALL);	//	for 上下壁
@@ -255,6 +266,40 @@ int Board::sel_move_random() {
 	if( g_lst.is_empty() ) return -1;
 	int r = rgen() % g_lst.size();
 	return g_lst[r];
+}
+bool Board::playout(byte next) const {		//	return: true for 黒勝ち
+	Board bd(*this);
+	for(;;) {
+		int ix = bd.sel_move_random();
+		if( ix < 0 ) break;
+		bd.set_color(ix, next);
+		if( next == BLACK ) {
+			auto dv = bd.calc_vert_dist(true);
+			if( dv == 0 ) {
+				return true;		//	黒勝ち
+			}
+		} else {
+			auto dh = bd.calc_horz_dist(true);
+			if( dh == 0 ) {
+				return false;		//	白勝ち
+			}
+		}
+		next = (BLACK + WHITE) - next;
+	}
+	//	ここには来ないはず
+	assert( 0 );
+	return true;
+}
+double Board::estimate_win_rate_PMC(byte next, int N) const {	//	return: 次の手番勝率
+	int black_won = 0;
+	for(int i = 0;i < N; ++i) {
+		if( playout(next) )
+			++black_won;
+	}
+	if( next == BLACK )
+		return (double)black_won / N;
+	else
+		return (double)(N - black_won) / N;
 }
 int Board::eval() {
 	return calc_horz_dist() - calc_vert_dist();
