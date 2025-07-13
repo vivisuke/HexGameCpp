@@ -269,24 +269,97 @@ int Board::sel_move_random() {
 }
 bool Board::playout(byte next) const {		//	return: true for 黒勝ち
 	Board bd(*this);
+	vector<int> lst;		//	空欄位置リスト
+	lst.reserve(m_bd_width*m_bd_height);
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			lst.push_back(ix);
+	}
+	shuffle(lst.begin(), lst.end(), rgen);
+	for(auto ix: lst) {
+		bd.set_color(ix, next);
+		next = (BLACK+WHITE) - next;
+	}
+	return bd.is_vert_connected();
+}
+bool Board::is_vert_connected() {
+	int ix0 = xyToIndex(0, 0);
+	int ix = xyToIndex(m_bd_width, 0);
+	while( --ix >= ix0 ) {
+		if( m_cell[ix] == BLACK ) break;
+	}
+	if( ix < ix0 ) return false;
+	m_list1.resize(m_cell.size());
+	fill(m_list1.begin(), m_list1.end(), 0);
+	m_list1[ix] = 1;
+	return is_vert_connected_sub(ix);
+}
+bool Board::is_vert_connected_sub(int ix) {
+	const int ixd = xyToIndex(0, m_bd_height-1);
+	int ix2 = ix + m_ary_width;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		m_list1[ix2] = 1;
+		if( is_vert_connected_sub(ix2) )
+			return true;
+	}
+	ix2 = ix + m_ary_width - 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		m_list1[ix2] = 1;
+		if( is_vert_connected_sub(ix2) )
+			return true;
+	}
+	ix2 = ix + 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		m_list1[ix2] = 1;
+		if( is_vert_connected_sub(ix2) )
+			return true;
+	}
+	ix2 = ix - 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		m_list1[ix2] = 1;
+		if( is_vert_connected_sub(ix2) )
+			return true;
+	}
+	ix2 = ix - m_ary_width + 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		m_list1[ix2] = 1;
+		if( is_vert_connected_sub(ix2) )
+			return true;
+	}
+	ix2 = ix - m_ary_width;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		m_list1[ix2] = 1;
+		if( is_vert_connected_sub(ix2) )
+			return true;
+	}
+	return false;
+}
+bool Board::playout_old(byte next) const {		//	return: true for 黒勝ち
+	Board bd(*this);
+	int dv, dh;
 	for(;;) {
 		int ix = bd.sel_move_random();
 		if( ix < 0 ) break;
 		bd.set_color(ix, next);
 		if( next == BLACK ) {
-			auto dv = bd.calc_vert_dist(true);
+			dv = bd.calc_vert_dist(true);
 			if( dv == 0 ) {
 				return true;		//	黒勝ち
 			}
 		} else {
-			auto dh = bd.calc_horz_dist(true);
+			dh = bd.calc_horz_dist(true);
 			if( dh == 0 ) {
 				return false;		//	白勝ち
 			}
 		}
 		next = (BLACK + WHITE) - next;
 	}
-	//	ここには来ないはず
+	//print();
+	dv = bd.calc_vert_dist(true);
+	return dv == 0;
+	//	ここには来ないはず？
 	assert( 0 );
 	return true;
 }
@@ -300,6 +373,24 @@ double Board::estimate_win_rate_PMC(byte next, int N) const {	//	return: 次の�
 		return (double)black_won / N;
 	else
 		return (double)(N - black_won) / N;
+}
+int Board::sel_move_PMC(byte next) {
+	const int N_PLAYOUT = 1000;
+	byte n2 = (BLACK+WHITE) - next;
+	int best_ix = -1;
+	double best_ev = -1;
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY ) {
+			m_cell[ix] = next;
+			auto ev = 1.0 - estimate_win_rate_PMC(n2, N_PLAYOUT);
+			if( ev > best_ev ) {
+				best_ev = ev;
+				best_ix = ix;
+			}
+			m_cell[ix] = EMPTY;
+		}
+	}
+	return best_ix;
 }
 int Board::eval() {
 	return calc_horz_dist() - calc_vert_dist();

@@ -1,8 +1,12 @@
 ﻿#include <iostream>
+#include <random>
+#include <chrono>
 #include <assert.h>
 #include "Board.h"
 
 using namespace std;
+
+extern std::mt19937 rgen(); 
 
 const int BD_WIDTH = 5;
 
@@ -10,13 +14,58 @@ int main()
 {
 	cout << endl;
 	Board bd(BD_WIDTH);
+	if( 0 ) {
+		bd.init();
+		auto start = std::chrono::high_resolution_clock::now();
+
+		//bd.playout_old(BLACK);
+		auto b = bd.playout(BLACK);
+
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
+	}
+	if( 1 ) {
+		bd.init();
+		//bd.set_color(2, 3, BLACK);
+		//bd.set_color(1, 5, WHITE);
+		//bd.set_color(3, 4, BLACK);
+		//bd.set_color(3, 1, WHITE);
+		byte next = BLACK;
+		//byte next = WHITE;
+		bd.print();
+		for(;;) {
+			int ix = bd.sel_move_PMC(next);
+			if( ix < 0 ) break;
+			bd.set_color(ix, next);
+			bd.print();
+			if( next == BLACK ) {
+				auto dv = bd.calc_vert_dist(false);
+				if( dv == 0 ) {
+					//bd.print();
+					cout << "BLACK win." << endl;
+					break;
+				}
+			} else {
+				auto dh = bd.calc_horz_dist(false);
+				if( dh == 0 ) {
+					//bd.print();
+					cout << "WHITE win." << endl;
+					break;
+				}
+			}
+			next = (BLACK + WHITE) - next;
+		}
+		cout << endl;
+	}
 	if( false ) {
 		bd.init();
 		bd.set_color(1, 1, BLACK);
 		Board bd2(bd);
 		bd2.print();
 	}
-	if( true ) {
+	if( false ) {
 		bd.init();
 		//byte next = BLACK;
 		bd.set_color(1, 1, BLACK);
