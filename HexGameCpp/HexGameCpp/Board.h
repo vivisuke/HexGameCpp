@@ -44,6 +44,7 @@ public:
 
 	bool	playout(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	bool	playout_old(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
+	bool	playout_rave(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	double	estimate_win_rate_PMC(byte next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
 	int		sel_move_random();			//	完全ランダムに着手を選択、return: 着手箇所
 	int		sel_move_PMC(byte next);			//	純粋モンテカルロ法で着手を選択、return: 着手箇所
@@ -54,10 +55,11 @@ public:
 	int		m_ary_width;
 	int		m_ary_height;
 	int		m_ary_size;
-	std::vector<byte>	m_cell;
+	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
 	std::vector<ushort>	m_dist;
 	std::vector<byte>	m_front;
 	std::vector<byte>	m_list1;
 	std::vector<byte>	m_list2;
+	mutable std::vector<short>	m_rave;			//	統計的な各位置に打つ価値（黒白共有）
 };
 

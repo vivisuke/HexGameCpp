@@ -8,12 +8,36 @@ using namespace std;
 
 extern std::mt19937 rgen(); 
 
-const int BD_WIDTH = 5;
+const int BD_WIDTH = 7;
 
 int main()
 {
 	cout << endl;
 	Board bd(BD_WIDTH);
+	if( 1 ) {	//	playout_rave() テスト
+		bd.init();
+		//bd.set_color(1, 2, BLACK);
+		//bd.set_color(2, 0, WHITE);
+		//bd.set_color(2, 1, BLACK);
+		//bd.set_color(3, 0, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(1, 0, WHITE);
+		bd.print();
+		for(int i = 0; i <= 1000; ++i)
+			bd.playout_rave(BLACK);
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*2, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					auto rave = bd.m_rave[bd.xyToIndex(x, y)];
+					printf("%4d", rave);
+				} else
+					printf("   #");
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
 	if( 0 ) {
 		bd.init();
 		auto start = std::chrono::high_resolution_clock::now();
@@ -26,7 +50,7 @@ int main()
 		double seconds = std::chrono::duration<double>(duration).count();
 		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
 	}
-	if( 1 ) {
+	if( 0 ) {
 		bd.init();
 		//bd.set_color(2, 3, BLACK);
 		//bd.set_color(1, 5, WHITE);

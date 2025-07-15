@@ -41,6 +41,8 @@ void Board::init() {
 		for(int x = 0; x < m_bd_width; ++x)
 			m_cell[xyToIndex(x, y)] = EMPTY;
 	}
+	m_rave.resize(m_ary_size);
+	fill(m_rave.begin(), m_rave.end(), 0);	//	m_rave[] を 0 に初期化
 }
 void Board::print() const {
 	cout << "   ";
@@ -281,6 +283,38 @@ bool Board::playout(byte next) const {		//	return: true for 黒勝ち
 		next = (BLACK+WHITE) - next;
 	}
 	return bd.is_vert_connected();
+}
+bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
+	Board bd(*this);
+	vector<int> lst;		//	空欄位置リスト
+	lst.reserve(m_bd_width*m_bd_height);
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			lst.push_back(ix);
+	}
+	shuffle(lst.begin(), lst.end(), rgen);
+	for(auto ix: lst) {
+		bd.set_color(ix, next);
+		next = (BLACK+WHITE) - next;
+	}
+	auto b = bd.is_vert_connected();
+	//	m_rave[] 更新
+	byte win, loss;
+	if( b ) {
+		win = BLACK;
+		loss = WHITE;
+	} else {
+		win = WHITE;
+		loss = BLACK;
+	}
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( bd.m_cell[ix] == win )
+			m_rave[ix] += 1;
+		else if( bd.m_cell[ix] == loss )
+			m_rave[ix] -= 1;
+	}
+	//bd.print();
+	return b;
 }
 bool Board::is_vert_connected() {
 	int ix0 = xyToIndex(0, 0);

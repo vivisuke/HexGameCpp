@@ -21,12 +21,12 @@
 0019 ● C 07/03            │ToDo│純粋モンテカルロAI
 0020 ◎ C 07/12 07/12 0.001│ToDo│sel_move_random()
 0021 ◎ C 07/12 07/12 0.001│ToDo│calc_vert_dist(bool ex)：6連結＋間接連結
-0022 ● C 07/12            │ToDo│sel_move_PMC()
+0022 ◎ C 07/12 07/14 0.001│ToDo│sel_move_PMC()
 0023 ◎ C 07/12 07/12 0.001│ToDo│Board(const Board&) コピーコンストラクタ
 0024 ◎ C 07/12 07/12 0.001│ToDo│playout()
 0025 ◎ C 07/13 07/14 0.001│ToDo│playout()：最後まで着手し、勝敗判定
-0026 ● C 07/13            │ToDo│
-0027 ● C 07/13            │ToDo│
-0028 ● C 07/13            │ToDo│
-0029 ● C 07/13            │ToDo│
-0030 ● C 07/13            │ToDo│
+0026 ● C 07/14            │ToDo│sel_move_MCTS()
+0027 ● C 07/14            │ToDo│sel_move_alpha_beta(int depth)
+0028 ◎ C 07/16 07/16 0.001│ToDo│playout_rave()：プレイアウト＋rave配列更新
+0029 ● C 07/16            │ToDo│
+0030 ● C 07/16            │ToDo│
