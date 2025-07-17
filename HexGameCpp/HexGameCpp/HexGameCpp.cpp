@@ -8,7 +8,7 @@ using namespace std;
 
 extern std::mt19937 rgen(); 
 
-const int BD_WIDTH = 7;
+const int BD_WIDTH = 4;
 
 int main()
 {
@@ -16,14 +16,14 @@ int main()
 	Board bd(BD_WIDTH);
 	if( 1 ) {	//	playout_rave() テスト
 		bd.init();
-		//bd.set_color(1, 2, BLACK);
-		//bd.set_color(2, 0, WHITE);
+		bd.set_color(1, 2, BLACK);
+		bd.set_color(2, 0, WHITE);
 		//bd.set_color(2, 1, BLACK);
 		//bd.set_color(3, 0, WHITE);
 		//bd.set_color(0, 1, BLACK);
 		//bd.set_color(1, 0, WHITE);
 		bd.print();
-		for(int i = 0; i <= 1000; ++i)
+		for(int i = 0; i <= 100; ++i)
 			bd.playout_rave(BLACK);
 		for(int y = 0; y < BD_WIDTH; ++y) {
 			cout << string(y*2, ' ');

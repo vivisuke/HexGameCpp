@@ -28,5 +28,15 @@
 0026 ● C 07/14            │ToDo│sel_move_MCTS()
 0027 ● C 07/14            │ToDo│sel_move_alpha_beta(int depth)
 0028 ◎ C 07/16 07/16 0.001│ToDo│playout_rave()：プレイアウト＋rave配列更新
-0029 ● C 07/16            │ToDo│
-0030 ● C 07/16            │ToDo│
+0029 ● C 07/16            │ToDo│rave[] を参照する playout()
+0030 ◎ C 07/16 07/18 0.001│ToDo│空欄位置取得処理を関数化
+0031 ● C 07/16            │ToDo│
+0032 ● C 07/16            │ToDo│
+0033 ● C 07/16            │ToDo│
+0034 ● C 07/16            │ToDo│
+0035 ● C 07/16            │ToDo│
+0036 ● C 07/16            │ToDo│
+0037 ● C 07/16            │ToDo│
+0038 ● C 07/16            │ToDo│
+0039 ● C 07/16            │ToDo│
+0040 ● C 07/16            │ToDo│

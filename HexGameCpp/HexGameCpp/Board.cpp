@@ -284,19 +284,40 @@ bool Board::playout(byte next) const {		//	return: true for 黒勝ち
 	}
 	return bd.is_vert_connected();
 }
-bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
-	Board bd(*this);
-	vector<int> lst;		//	空欄位置リスト
+void Board::get_empty_list(std::vector<int>& lst) const {
 	lst.reserve(m_bd_width*m_bd_height);
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
+}
+bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
+	Board bd(*this);
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
 	shuffle(lst.begin(), lst.end(), rgen);
+#if 1
+	for(int i = 0; i < lst.size(); ++i) {
+		//	m_rave[] 最大値の位置を探す
+		int max_rave = -9999;
+		int max_k = -1;
+		for(int k = i; k < lst.size(); ++k) {
+			int ix = lst[k];
+			if( m_rave[ix] > max_rave ) {
+				max_rave = m_rave[ix];
+				max_k = k;
+			}
+		}
+		swap(lst[i], lst[max_k]);
+		bd.set_color(lst[i], next);
+		next = (BLACK+WHITE) - next;
+	}
+#else
 	for(auto ix: lst) {
 		bd.set_color(ix, next);
 		next = (BLACK+WHITE) - next;
 	}
+#endif
 	auto b = bd.is_vert_connected();
 	//	m_rave[] 更新
 	byte win, loss;

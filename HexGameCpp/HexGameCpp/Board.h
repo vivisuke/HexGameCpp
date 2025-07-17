@@ -35,6 +35,7 @@ public:
 	//int		calc_horz_dist_ex();	//	（白）左右辺間距離計算（６連結＋間接連結）
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
+	void	get_empty_list(std::vector<int>&) const;
 
 	int		eval();				//	黒から見た評価値を計算
 	int		alpha_beta_black(int alpha, int beta, int depth);
