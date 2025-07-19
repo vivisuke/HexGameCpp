@@ -14,16 +14,46 @@ int main()
 {
 	cout << endl;
 	Board bd(BD_WIDTH);
+	if( 0 ) {	//	dfs_black_win() テスト
+		bd.init();
+		//bd.set_color(2, 0, BLACK);
+		//bd.set_color(1, 2, WHITE);
+		//bd.set_color(0, 2, BLACK);
+		//bd.set_color(1, 1, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(1, 0, WHITE);
+		bd.print();
+		byte next = BLACK;
+		//byte next = WHITE;
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, next);
+					auto b = dfs_black_win(bd, (BLACK+WHITE)-next);
+					if( b ) {
+						printf(" B");
+					} else {
+						printf(" W");
+					}
+					bd.set_color(x, y, EMPTY);
+				} else
+					printf(" #");
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
 	if( 1 ) {	//	playout_rave() テスト
 		bd.init();
-		bd.set_color(1, 2, BLACK);
-		bd.set_color(2, 0, WHITE);
+		//bd.set_color(1, 2, BLACK);
+		//bd.set_color(2, 0, WHITE);
 		//bd.set_color(2, 1, BLACK);
 		//bd.set_color(3, 0, WHITE);
 		//bd.set_color(0, 1, BLACK);
 		//bd.set_color(1, 0, WHITE);
 		bd.print();
-		for(int i = 0; i <= 100; ++i)
+		for(int i = 0; i <= 1000; ++i)
 			bd.playout_rave(BLACK);
 		for(int y = 0; y < BD_WIDTH; ++y) {
 			cout << string(y*2, ' ');

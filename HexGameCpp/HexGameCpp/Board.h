@@ -51,16 +51,18 @@ public:
 	int		sel_move_PMC(byte next);			//	純粋モンテカルロ法で着手を選択、return: 着手箇所
 
 public:
-	int		m_bd_width;
-	int		m_bd_height;
-	int		m_ary_width;
-	int		m_ary_height;
-	int		m_ary_size;
+	int		m_bd_width;					//	盤面幅
+	int		m_bd_height;				//	盤面高（通常は m_bd_width と同値）
+	int		m_ary_width;				//	周囲の壁（番人）を含む盤面幅
+	int		m_ary_height;				//	周囲の壁（番人）を含む盤面高
+	int		m_ary_size;					//	１次元盤面配列サイズ
 	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
-	std::vector<ushort>	m_dist;
-	std::vector<byte>	m_front;
+	std::vector<ushort>	m_dist;			//	上下・左右距離計測用
+	std::vector<byte>	m_front;		//	上下・左右距離計測：次探索位置
 	std::vector<byte>	m_list1;
 	std::vector<byte>	m_list2;
 	mutable std::vector<short>	m_rave;			//	統計的な各位置に打つ価値（黒白共有）
 };
+
+bool dfs_black_win(Board&, byte next);		//	双方最善で黒が勝つか？
 

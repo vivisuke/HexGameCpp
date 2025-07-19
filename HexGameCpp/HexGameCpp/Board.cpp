@@ -338,16 +338,18 @@ bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
 	return b;
 }
 bool Board::is_vert_connected() {
+	m_list1.resize(m_cell.size());
+	fill(m_list1.begin(), m_list1.end(), 0);
 	int ix0 = xyToIndex(0, 0);
 	int ix = xyToIndex(m_bd_width, 0);
 	while( --ix >= ix0 ) {
-		if( m_cell[ix] == BLACK ) break;
+		if( m_cell[ix] == BLACK ) {
+			m_list1[ix] = 1;
+			if( is_vert_connected_sub(ix) )
+				return true;
+		}
 	}
-	if( ix < ix0 ) return false;
-	m_list1.resize(m_cell.size());
-	fill(m_list1.begin(), m_list1.end(), 0);
-	m_list1[ix] = 1;
-	return is_vert_connected_sub(ix);
+	return false;
 }
 bool Board::is_vert_connected_sub(int ix) {
 	const int ixd = xyToIndex(0, m_bd_height-1);
@@ -496,4 +498,23 @@ int Board::white_turn(int depth) {
 			return min_ev;
 	}
 	return eval();
+}
+//
+bool dfs_black_win(Board& bd, byte next) {		//	双方最善で黒が勝つか？
+	bool put = false;
+	for(int ix = bd.xyToIndex(0, 0); ix <= bd.xyToIndex(bd.m_bd_width-1, bd.m_bd_height-1); ++ix) {
+		if( bd.m_cell[ix] == EMPTY ) {
+			bd.m_cell[ix] = next;
+			auto b = dfs_black_win(bd, (BLACK+WHITE)-next);
+			bd.m_cell[ix] = EMPTY;
+			if( (next == BLACK && b) || (next == WHITE && !b) )
+				return b;	//	勝ちがあれば、確定
+			put = true;
+		}
+	}
+	if( put ) {		//	全ての空欄を試したが勝ち無し
+		return next == BLACK ? false : true;
+	}
+	//	空欄無しの場合
+	return bd.is_vert_connected();
 }
