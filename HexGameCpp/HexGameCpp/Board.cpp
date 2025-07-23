@@ -21,6 +21,7 @@ Board::Board(int bd_width)
 	m_ary_height = m_bd_width + 2;
 	m_ary_size = m_ary_width * m_ary_height;
 	m_cell.resize(m_ary_size);
+	m_gid.resize(m_ary_size);
 	m_dist.resize(m_ary_size);
 	init();
 }
@@ -33,6 +34,8 @@ Board::Board(const Board &x)
 	//m_cell.resize(m_ary_size);
 	m_cell = x.m_cell;
 	m_dist.resize(m_ary_size);
+	m_next_gid = x.m_next_gid;
+	m_gid = x.m_gid;
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), BWALL);	//	for 上下壁
@@ -43,6 +46,8 @@ void Board::init() {
 	}
 	m_rave.resize(m_ary_size);
 	fill(m_rave.begin(), m_rave.end(), 0);	//	m_rave[] を 0 に初期化
+	m_next_gid = -1;
+	fill(m_gid.begin(), m_gid.end(), -1);	//	m_gid[] を -1 に初期化
 }
 void Board::print() const {
 	cout << "   ";
@@ -64,6 +69,46 @@ void Board::print() const {
 		cout << endl;
 	}
 	cout << endl;
+}
+bool Board::put_and_check(int x, int y, byte col) {
+	int ix = xyToIndex(x, y);
+	m_cell[ix] = col;
+	check_connected(ix, ix-m_bd_width, col);
+	check_connected(ix, ix-m_bd_width+1, col);
+	check_connected(ix, ix-1, col);
+	check_connected(ix, ix+1, col);
+	check_connected(ix, ix+m_bd_width-1, col);
+	check_connected(ix, ix+m_bd_width, col);
+	if( m_gid[ix] < 0 ) {	//	6近傍に非接続
+		m_gid[ix] = ++m_next_gid;
+		if( m_min_gid.size() <= m_next_gid ) m_min_gid.resize(m_next_gid+1);
+		m_min_gid[m_next_gid] = m_next_gid;
+	}
+	return false;
+}
+void Board::check_connected(int ix, int ix2, byte col) {
+	if( m_cell[ix2] != col ) return;	//	非接続
+	if( m_gid[ix] < 0 ) {				//	ix が接続処理済みではない
+		m_gid[ix] = m_gid[ix2];
+	} else {		//	ix が接続処理済み → マージ処理
+		// それぞれのグループの根（代表ID）を取得
+		int root1 = find_root(m_gid[ix]);
+		int root2 = find_root(m_gid[ix2]);
+		if (root1 != root2) {
+			// 根が異なる場合のみマージする
+			// 小さい方のIDを根にする
+			if (root1 < root2) {
+				m_min_gid[root2] = root1;
+			} else {
+				m_min_gid[root1] = root2;
+			}
+		}
+	}
+}
+int Board::find_root(int gid) {
+	if( m_min_gid[gid] == gid ) return gid;
+	//	再帰的に根を探し、途中のノードを根に直接つなぎ替える（経路圧縮）
+	return m_min_gid[gid] = find_root(m_min_gid[gid]);
 }
 void Board::print_dist() const {
 	for(int y = 0; y < m_bd_height; ++y) {

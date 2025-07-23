@@ -10,6 +10,7 @@ enum {
 	BYTE_MAX = 0xff,
 	USHORT_MAX = 0xffff,
 	DIST_MAX = 9999,
+	UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8,
 };
 
 class Board
@@ -26,6 +27,9 @@ public:
 	byte	get_color(int ix) const { return m_cell[ix]; }
 	void	set_color(int x, int y, byte col) { m_cell[xyToIndex(x, y)] = col; }
 	void	set_color(int ix, byte col) { m_cell[ix] = col; }
+	bool	put_and_check(int x, int y, byte col);
+	void	check_connected(int ix, int ix2, byte col);
+	int		find_root(int gid);
 
 	bool	is_vert_connected_sub(int ix);
 	bool	is_vert_connected();			//	上下辺が連結されているか？ 空欄が無い状態でコールされる
@@ -56,7 +60,11 @@ public:
 	int		m_ary_width;				//	周囲の壁（番人）を含む盤面幅
 	int		m_ary_height;				//	周囲の壁（番人）を含む盤面高
 	int		m_ary_size;					//	１次元盤面配列サイズ
+	short	m_next_gid;
 	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
+	std::vector<short>	m_gid;			//	各石のグループID
+	std::vector<byte>	m_min_gid;		//	接続しているグループの最小グループID
+	std::vector<byte>	m_gid_connected;	//	各グループIDの石が上下左右辺に接続しているか？
 	std::vector<ushort>	m_dist;			//	上下・左右距離計測用
 	std::vector<byte>	m_front;		//	上下・左右距離計測：次探索位置
 	std::vector<byte>	m_list1;

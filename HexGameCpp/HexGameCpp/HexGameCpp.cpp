@@ -3,6 +3,7 @@
 #include <chrono>
 #include <assert.h>
 #include "Board.h"
+#include "BitBoard44.h"
 
 using namespace std;
 
@@ -13,6 +14,13 @@ const int BD_WIDTH = 4;
 int main()
 {
 	cout << endl;
+	BitBoard44 b4;
+	if( 1 ) {
+		b4.init();
+		b4.set_black(1, 2);
+		b4.set_white(2, 0);
+		b4.print();
+	}
 	Board bd(BD_WIDTH);
 	if( 0 ) {	//	dfs_black_win() テスト
 		bd.init();
@@ -44,7 +52,7 @@ int main()
 		}
 		cout << endl;
 	}
-	if( 1 ) {	//	playout_rave() テスト
+	if( 0 ) {	//	playout_rave() テスト
 		bd.init();
 		//bd.set_color(1, 2, BLACK);
 		//bd.set_color(2, 0, WHITE);

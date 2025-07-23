@@ -123,10 +123,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BitBoard44.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="HexGameCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BitBoard44.h" />
     <ClInclude Include="Board.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
