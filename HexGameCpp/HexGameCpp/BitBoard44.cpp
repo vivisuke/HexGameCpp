@@ -9,8 +9,8 @@ using namespace std;
 static std::random_device rd;
 static std::mt19937 rgen(rd()); 
 
-const int BD_WIDTH = 4;
-const int BD_HEIGHT = 4;
+//const int BD_WIDTH = 4;
+//const int BD_HEIGHT = 4;
 
 void BitBoard44::print() const {
 	cout << "   ";
@@ -33,6 +33,11 @@ void BitBoard44::print() const {
 		cout << endl;
 	}
 	cout << endl;
+}
+byte BitBoard44::get_color(ushort mask) const {
+	if( (m_black & mask) != 0 ) return BLACK;
+	if( (m_white & mask) != 0 ) return WHITE;
+	return EMPTY;
 }
 bool BitBoard44::did_black_win() const {
 	ushort bc = m_black & 0xf000;		//	ã•Ó•Î
@@ -64,7 +69,7 @@ bool BitBoard44::did_white_win() const {
 	}
 	return (bc & 0x1111) != 0;		//	‰E•Ó‚É’B‚µ‚½‚©H
 }
-bool BitBoard44::playout(bool black_next) const {
+bool BitBoard44::playout_to_end(bool black_next) const {
 	BitBoard44 b2(*this);
 	ushort empty = ~(m_black | m_white);
 	if( !empty ) return false;		//	‹ó—“–³‚µ
@@ -82,7 +87,14 @@ bool BitBoard44::playout(bool black_next) const {
 			b2.set_white(mask);
 		black_next = !black_next;
 	}
-	b2.print();
+	//b2.print();
 	return b2.did_black_win();
 }
-
+double BitBoard44::playout_to_end(int N, bool black_next) const {
+	int bwc = 0;	//	•Ÿ‚¿‰ñ”
+	for(int i = 0; i < N; ++i) {
+		if( playout_to_end(black_next) )
+			++bwc;
+	}
+	return (double)bwc / N;
+}

@@ -17,7 +17,31 @@ int main()
 	BitBoard44 b4;
 	if (1) {
 		b4.init();
-		auto b = b4.playout(true);
+		b4.print();
+		auto start = std::chrono::high_resolution_clock::now();
+		bool next = true;	//	黒番
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( b4.get_color(x, y) == EMPTY ) {
+					b4.set_color(x, y, next);
+					double r = b4.playout_to_end(100000, !next);
+					printf(" %.3f", r);
+					b4.set_empty(x, y);
+				} else
+					cout << " ---";
+			}
+			cout << endl;
+		}
+		cout << endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
+	}
+	if (0) {
+		b4.init();
+		auto b = b4.playout_to_end(true);
 		//b4.print();
 		cout << (b ? "black won" : "not black won") << endl;
 	}
