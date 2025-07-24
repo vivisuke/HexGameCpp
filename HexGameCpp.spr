@@ -34,9 +34,9 @@
 0032 ◎ C 07/19 07/19 0.001│ToDo│Board::is_vert_connected() が動作不良
 0033 ● C 07/19            │ToDo│put_and_check(x, y, col)
 0034 ◎ C 07/24 07/24 0.001│ToDo│BitBoard44 クラス追加
-0035 ◎ C 07/24 07/24 0.001│ToDo│set_black(), set_white()
-0036 ● C 07/24            │ToDo│
-0037 ● C 07/24            │ToDo│
-0038 ● C 07/24            │ToDo│
-0039 ● C 07/24            │ToDo│
+0035 ◎ C 07/24 07/24 0.001│ToDo│set_black(x, y), set_white(x, y)
+0036 ◎ C 07/24 07/24 0.001│ToDo│did_black_win()
+0037 ◎ C 07/24 07/24 0.001│ToDo│did_white_win()
+0038 ◎ C 07/24 07/24 0.001│ToDo│set_black(mask), set_white(mask)
+0039 ◎ C 07/24 07/24 0.001│ToDo│playout(black_next);
 0040 ● C 07/24            │ToDo│

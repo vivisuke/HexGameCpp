@@ -7,8 +7,8 @@
 
 using namespace std;
 
-std::random_device rd;
-std::mt19937 rgen(rd()); 
+static std::random_device rd;
+static std::mt19937 rgen(rd()); 
 
 #define		is_empty()	empty()
 

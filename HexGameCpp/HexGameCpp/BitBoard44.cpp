@@ -1,8 +1,13 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <random>
 #include "BitBoard44.h"
 
 using namespace std;
+
+static std::random_device rd;
+static std::mt19937 rgen(rd()); 
 
 const int BD_WIDTH = 4;
 const int BD_HEIGHT = 4;
@@ -29,3 +34,55 @@ void BitBoard44::print() const {
 	}
 	cout << endl;
 }
+bool BitBoard44::did_black_win() const {
+	ushort bc = m_black & 0xf000;		//	上辺黒石
+	if( bc == 0 ) return false;
+	for(;;) {
+		ushort bc0 = bc;
+		bc |= (bc0 << 4) & m_black;
+		bc |= (bc0 << 3) & m_black & 0xeeee;
+		bc |= (bc0 << 1) & m_black & 0xeeee;
+		bc |= (bc0 >> 1) & m_black & 0x7777;
+		bc |= (bc0 >> 3) & m_black & 0x7777;
+		bc |= (bc0 >> 4) & m_black;
+		if( bc == bc0 ) break;
+	}
+	return (bc & 0x000f) != 0;		//	下辺に達したか？
+}
+bool BitBoard44::did_white_win() const {
+	ushort bc = m_white & 0x8888;		//	左辺白石
+	if( bc == 0 ) return false;
+	for(;;) {
+		ushort bc0 = bc;
+		bc |= (bc0 << 4) & m_white;
+		bc |= (bc0 << 3) & m_white & 0xeeee;
+		bc |= (bc0 << 1) & m_white & 0xeeee;
+		bc |= (bc0 >> 1) & m_white & 0x7777;
+		bc |= (bc0 >> 3) & m_white & 0x7777;
+		bc |= (bc0 >> 4) & m_white;
+		if( bc == bc0 ) break;
+	}
+	return (bc & 0x1111) != 0;		//	右辺に達したか？
+}
+bool BitBoard44::playout(bool black_next) const {
+	BitBoard44 b2(*this);
+	ushort empty = ~(m_black | m_white);
+	if( !empty ) return false;		//	空欄無し
+	vector<ushort> lst;			//	空欄リスト
+	while( empty != 0 ) {
+		ushort b = empty & -empty;	//	最右ビットを取り出す
+		lst.push_back(b);
+		empty ^= b;
+	}
+	shuffle(lst.begin(), lst.end(), rgen);
+	for(auto mask : lst) {
+		if( black_next )
+			b2.set_black(mask);
+		else
+			b2.set_white(mask);
+		black_next = !black_next;
+	}
+	b2.print();
+	return b2.did_black_win();
+}
+

@@ -15,11 +15,23 @@ int main()
 {
 	cout << endl;
 	BitBoard44 b4;
-	if( 1 ) {
+	if (1) {
+		b4.init();
+		auto b = b4.playout(true);
+		//b4.print();
+		cout << (b ? "black won" : "not black won") << endl;
+	}
+	if( 0 ) {
 		b4.init();
 		b4.set_black(1, 2);
 		b4.set_white(2, 0);
 		b4.print();
+		cout << (b4.did_black_win() ? "black won" : "not black won") << endl;
+		b4.set_black(1, 0);
+		b4.set_black(1, 1);
+		b4.set_black(1, 3);
+		b4.print();
+		cout << (b4.did_black_win() ? "black won" : "white won") << endl;
 	}
 	Board bd(BD_WIDTH);
 	if( 0 ) {	//	dfs_black_win() テスト
