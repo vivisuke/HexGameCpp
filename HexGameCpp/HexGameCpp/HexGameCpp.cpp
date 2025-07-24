@@ -41,9 +41,10 @@ int main()
 	}
 	if (0) {
 		b4.init();
-		auto b = b4.playout_to_end(true);
+		//auto b = b4.playout_to_end(true);
+		auto b = b4.playout_smart(true);
 		//b4.print();
-		cout << (b ? "black won" : "not black won") << endl;
+		cout << (b ? "black won" : "white won") << endl;
 	}
 	if( 0 ) {
 		b4.init();

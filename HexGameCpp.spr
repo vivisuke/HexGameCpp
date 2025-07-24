@@ -38,11 +38,11 @@
 0036 ◎ C 07/24 07/24 0.001│ToDo│did_black_win()
 0037 ◎ C 07/24 07/24 0.001│ToDo│did_white_win()
 0038 ◎ C 07/24 07/24 0.001│ToDo│set_black(mask), set_white(mask)
-0039 ◎ C 07/24 07/24 0.001│ToDo│playout(black_next);
+0039 ◎ C 07/24 07/24 0.001│ToDo│playout_to_end(black_next);
 0040 ◎ C 07/24 07/24 0.001│ToDo│完全ランダムプレイアウトによる、各位置に打った場合の勝敗判定
 0041 ◎ C 07/24 07/24 0.001│ToDo│double playout_to_end(black_next, N);
-0042 ● C 07/24            │ToDo│
-0043 ● C 07/24            │ToDo│
+0042 ◎ C 07/24 07/24 0.001│ToDo│playout_smart(black_next);
+0043 ◎ C 07/24 07/24 0.001│問題│did_white_win() が動作不良？
 0044 ● C 07/24            │ToDo│
 0045 ● C 07/24            │ToDo│
 0046 ● C 07/24            │ToDo│

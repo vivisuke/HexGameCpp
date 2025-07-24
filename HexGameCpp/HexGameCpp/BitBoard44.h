@@ -50,6 +50,8 @@ public:
 
 	bool	playout_to_end(bool black_next = true) const;	//	return: 黒の勝ちか？
 	double	playout_to_end(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
+	bool	playout_smart(bool black_next = true) const;	//	return: 黒の勝ちか？
+	double	playout_smart(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
 public:
 	ushort	m_black;
 	ushort	m_white;

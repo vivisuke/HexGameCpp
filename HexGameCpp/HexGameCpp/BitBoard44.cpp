@@ -8,6 +8,7 @@ using namespace std;
 
 static std::random_device rd;
 static std::mt19937 rgen(rd()); 
+//static std::mt19937 rgen(0); 
 
 //const int BD_WIDTH = 4;
 //const int BD_HEIGHT = 4;
@@ -45,10 +46,10 @@ bool BitBoard44::did_black_win() const {
 	for(;;) {
 		ushort bc0 = bc;
 		bc |= (bc0 << 4) & m_black;
-		bc |= (bc0 << 3) & m_black & 0xeeee;
+		bc |= (bc0 << 3) & m_black & 0x7777;
 		bc |= (bc0 << 1) & m_black & 0xeeee;
 		bc |= (bc0 >> 1) & m_black & 0x7777;
-		bc |= (bc0 >> 3) & m_black & 0x7777;
+		bc |= (bc0 >> 3) & m_black & 0xeeee;
 		bc |= (bc0 >> 4) & m_black;
 		if( bc == bc0 ) break;
 	}
@@ -60,10 +61,10 @@ bool BitBoard44::did_white_win() const {
 	for(;;) {
 		ushort bc0 = bc;
 		bc |= (bc0 << 4) & m_white;
-		bc |= (bc0 << 3) & m_white & 0xeeee;
+		bc |= (bc0 << 3) & m_white & 0x7777;
 		bc |= (bc0 << 1) & m_white & 0xeeee;
 		bc |= (bc0 >> 1) & m_white & 0x7777;
-		bc |= (bc0 >> 3) & m_white & 0x7777;
+		bc |= (bc0 >> 3) & m_white & 0xeeee;
 		bc |= (bc0 >> 4) & m_white;
 		if( bc == bc0 ) break;
 	}
@@ -79,7 +80,7 @@ bool BitBoard44::playout_to_end(bool black_next) const {
 		lst.push_back(b);
 		empty ^= b;
 	}
-	shuffle(lst.begin(), lst.end(), rgen);
+	shuffle(lst.begin(), lst.end(), rgen);		//	着手箇所をシャフル
 	for(auto mask : lst) {
 		if( black_next )
 			b2.set_black(mask);
@@ -97,4 +98,35 @@ double BitBoard44::playout_to_end(int N, bool black_next) const {
 			++bwc;
 	}
 	return (double)bwc / N;
+}
+bool BitBoard44::playout_smart(bool black_next) const {
+	BitBoard44 b2(*this);
+	ushort empty = ~(m_black | m_white);
+	if( !empty ) return false;		//	空欄無し
+	vector<ushort> lst;			//	空欄リスト
+	while( empty != 0 ) {
+		ushort b = empty & -empty;	//	最右ビットを取り出す
+		lst.push_back(b);
+		empty ^= b;
+	}
+	shuffle(lst.begin(), lst.end(), rgen);		//	着手箇所をシャフル
+	for(auto mask : lst) {
+		if( black_next ) {
+			b2.set_black(mask);
+			if( b2.did_black_win() ) {
+				b2.print();
+				return true;
+			}
+		} else {
+			b2.set_white(mask);
+			if( b2.did_white_win() ) {
+				b2.print();
+				//b2.did_white_win();
+				return false;
+			}
+		}
+		black_next = !black_next;
+	}
+	//b2.print();
+	return b2.did_black_win();
 }
