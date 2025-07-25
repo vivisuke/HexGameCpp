@@ -40,6 +40,12 @@ byte BitBoard44::get_color(ushort mask) const {
 	if( (m_white & mask) != 0 ) return WHITE;
 	return EMPTY;
 }
+bool BitBoard44::did_black_win_uf() const {
+	return false;
+}
+bool BitBoard44::did_white_win_uf() const {
+	return false;
+}
 bool BitBoard44::did_black_win() const {
 	ushort bc = m_black & 0xf000;		//	上辺黒石
 	if( bc == 0 ) return false;
@@ -99,7 +105,7 @@ double BitBoard44::playout_to_end(int N, bool black_next) const {
 	}
 	return (double)bwc / N;
 }
-bool BitBoard44::playout_smart(bool black_next) const {
+bool BitBoard44::playout_smart(bool black_next, bool verbose) const {
 	BitBoard44 b2(*this);
 	ushort empty = ~(m_black | m_white);
 	if( !empty ) return false;		//	空欄無し
@@ -114,13 +120,52 @@ bool BitBoard44::playout_smart(bool black_next) const {
 		if( black_next ) {
 			b2.set_black(mask);
 			if( b2.did_black_win() ) {
-				b2.print();
+				if( verbose ) b2.print();
 				return true;
 			}
 		} else {
 			b2.set_white(mask);
 			if( b2.did_white_win() ) {
-				b2.print();
+				if( verbose ) b2.print();
+				//b2.did_white_win();
+				return false;
+			}
+		}
+		black_next = !black_next;
+	}
+	//b2.print();
+	return b2.did_black_win();
+}
+double BitBoard44::playout_smart(int N, bool black_next) const {
+	int bwc = 0;	//	黒勝ち回数
+	for(int i = 0; i < N; ++i) {
+		if( playout_smart(black_next) )
+			++bwc;
+	}
+	return (double)bwc / N;
+}
+bool BitBoard44::playout_smart_uf(bool black_next, bool verbose) const {
+	BitBoard44 b2(*this);
+	ushort empty = ~(m_black | m_white);
+	if( !empty ) return false;		//	空欄無し
+	vector<ushort> lst;			//	空欄リスト
+	while( empty != 0 ) {
+		ushort b = empty & -empty;	//	最右ビットを取り出す
+		lst.push_back(b);
+		empty ^= b;
+	}
+	shuffle(lst.begin(), lst.end(), rgen);		//	着手箇所をシャフル
+	for(auto mask : lst) {
+		if( black_next ) {
+			b2.set_black(mask);
+			if( b2.did_black_win_uf() ) {
+				if( verbose ) b2.print();
+				return true;
+			}
+		} else {
+			b2.set_white(mask);
+			if( b2.did_white_win() ) {
+				if( verbose ) b2.print();
 				//b2.did_white_win();
 				return false;
 			}

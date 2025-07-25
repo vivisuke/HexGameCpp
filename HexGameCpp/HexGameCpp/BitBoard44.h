@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 using byte = unsigned char;
 using ushort = unsigned short;
 
@@ -10,6 +12,8 @@ public:
 	enum {
 		BD_WIDTH = 4,
 		BD_HEIGHT = BD_WIDTH,
+		BD_SIZE = BD_WIDTH * BD_HEIGHT,
+		UPPER_EDGE = BD_SIZE, LOWER_EDGE, LEFT_EDGE, RIGHT_EDGE, UT_SIZE,
 		EMPTY = 0, BLACK, WHITE,
 	};
 public:
@@ -19,11 +23,14 @@ public:
 	BitBoard44(const BitBoard44& x)
 		: m_black(x.m_black), m_white(x.m_white)
 	{
+		m_uf_parent = x.m_uf_parent;
 	}
 public:
 	void	init() {
 		m_black = 0;
 		m_white = 0;
+		m_uf_parent.resize(UT_SIZE);
+		for(auto& x: m_uf_parent) x = -1;
 	}
 	void	print() const;
 	ushort xyToMask(int x, int y) const {		//	x, y: [0, 3]
@@ -47,13 +54,18 @@ public:
 	}
 	bool	did_black_win() const;
 	bool	did_white_win() const;
+	bool	did_black_win_uf() const;
+	bool	did_white_win_uf() const;
 
 	bool	playout_to_end(bool black_next = true) const;	//	return: 黒の勝ちか？
 	double	playout_to_end(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
-	bool	playout_smart(bool black_next = true) const;	//	return: 黒の勝ちか？
+	bool	playout_smart(bool black_next = true, bool = false) const;	//	return: 黒の勝ちか？
 	double	playout_smart(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
+	bool	playout_smart_uf(bool black_next = true, bool = false) const;	//	return: 黒の勝ちか？
+	double	playout_smart_uf(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
 public:
 	ushort	m_black;
 	ushort	m_white;
+	std::vector<short>	m_uf_parent;		//	セル ix の gid
 };
 

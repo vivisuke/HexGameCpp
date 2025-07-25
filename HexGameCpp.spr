@@ -43,7 +43,7 @@
 0041 ◎ C 07/24 07/24 0.001│ToDo│double playout_to_end(black_next, N);
 0042 ◎ C 07/24 07/24 0.001│ToDo│playout_smart(black_next);
 0043 ◎ C 07/24 07/24 0.001│問題│did_white_win() が動作不良？
-0044 ● C 07/24            │ToDo│
+0044 ◎ C 07/24 07/26 0.001│ToDo│double playout_smart(N, black_next);
 0045 ● C 07/24            │ToDo│
 0046 ● C 07/24            │ToDo│
 0047 ● C 07/24            │ToDo│

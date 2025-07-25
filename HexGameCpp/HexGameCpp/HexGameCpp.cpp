@@ -2,30 +2,57 @@
 #include <random>
 #include <chrono>
 #include <assert.h>
+#include <bit>
+#include <intrin.h>
 #include "Board.h"
 #include "BitBoard44.h"
 
 using namespace std;
 
-extern std::mt19937 rgen(); 
+//extern std::mt19937 rgen; 
 
 const int BD_WIDTH = 4;
 
+//int my_popcount(ushort b) {
+//
+//}
+
 int main()
 {
+	if( 0 ) {
+		auto start = std::chrono::high_resolution_clock::now();
+		for(int i = 0; i < 1000*1000; ++i) {
+			//auto pc = std::popcount(0x123);
+			int r = rand() % 16;
+			//auto pc = __popcnt(r);
+			int m = 1 << r;
+			int r2 = __popcnt(m-1);
+			if( r2 != r ) {
+				cout << "???" << endl;
+				break;
+			}
+			//cout << "popcount = " << pc << endl;
+		}
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
+	}
 	cout << endl;
 	BitBoard44 b4;
 	if (1) {
 		b4.init();
+		b4.set_black(3, 0);
 		b4.print();
 		auto start = std::chrono::high_resolution_clock::now();
-		bool next = true;	//	黒番
+		bool next = false;	//	true for 黒番
 		for(int y = 0; y < BD_WIDTH; ++y) {
 			cout << string(y*3, ' ');
 			for(int x = 0; x < BD_WIDTH; ++x) {
 				if( b4.get_color(x, y) == EMPTY ) {
 					b4.set_color(x, y, next);
-					double r = b4.playout_to_end(100000, !next);
+					//double r = b4.playout_to_end(100000, !next);
+					double r = b4.playout_smart(100000, !next);
 					printf(" %.3f", r);
 					b4.set_empty(x, y);
 				} else
@@ -42,7 +69,7 @@ int main()
 	if (0) {
 		b4.init();
 		//auto b = b4.playout_to_end(true);
-		auto b = b4.playout_smart(true);
+		auto b = b4.playout_smart(true, true);
 		//b4.print();
 		cout << (b ? "black won" : "white won") << endl;
 	}
