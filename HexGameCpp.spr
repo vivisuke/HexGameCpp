@@ -45,7 +45,7 @@
 0043 ◎ C 07/24 07/24 0.001│問題│did_white_win() が動作不良？
 0044 ◎ C 07/24 07/26 0.001│ToDo│double playout_smart(N, black_next);
 0045 ◎ C 07/26 07/26 0.001│ToDo│double PMC_score(int N, black_next, verbose)
-0046 ● C 07/26            │ToDo│
+0046 ◎ C 07/26 07/27 0.001│ToDo│BitBoard44 は BitBoard4 にリネーム
 0047 ● C 07/26            │ToDo│
 0048 ● C 07/26            │ToDo│
 0049 ● C 07/26            │ToDo│

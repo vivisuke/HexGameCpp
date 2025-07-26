@@ -6,7 +6,7 @@ using byte = unsigned char;
 using ushort = unsigned short;
 
 
-class BitBoard44
+class BitBoard4
 {
 public:
 	enum {
@@ -17,10 +17,10 @@ public:
 		EMPTY = 0, BLACK, WHITE,
 	};
 public:
-	BitBoard44() {
+	BitBoard4() {
 		init();
 	}
-	BitBoard44(const BitBoard44& x)
+	BitBoard4(const BitBoard4& x)
 		: m_black(x.m_black), m_white(x.m_white)
 	{
 		m_uf_parent = x.m_uf_parent;

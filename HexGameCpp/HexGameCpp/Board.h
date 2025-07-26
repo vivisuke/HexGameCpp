@@ -47,6 +47,7 @@ public:
 	int		black_turn(int depth);
 	int		white_turn(int depth);
 
+	void	playout_to_end(byte next);	//	完全ランダムプレイアウト
 	bool	playout(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	bool	playout_old(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	bool	playout_rave(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち

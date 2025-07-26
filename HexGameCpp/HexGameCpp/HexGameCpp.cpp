@@ -5,7 +5,7 @@
 #include <bit>
 #include <intrin.h>
 #include "Board.h"
-#include "BitBoard44.h"
+#include "BitBoard4.h"
 #include "BitBoard8.h"
 
 using namespace std;
@@ -20,6 +20,36 @@ const int BD_WIDTH = 4;
 
 int main()
 {
+	const int N_PLAYOUT = 1000;
+	if( 0 ) {
+		auto start = std::chrono::high_resolution_clock::now();
+		for(int i = 0; i < N_PLAYOUT; ++i) {
+			BitBoard8 b8;
+			//b8.set_black(2, 1);
+			b8.playout(true);
+			//b8.print();
+		}
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		std::cout << "duration: " << seconds*1000 << " msec" << std::endl << endl;
+	}
+	if (0) {
+		Board bd(8);
+		auto start = std::chrono::high_resolution_clock::now();
+		for (int i = 0; i < N_PLAYOUT; ++i) {
+			Board b8(8);
+			//b8.set_black(2, 1);
+			b8.playout_to_end(true);
+			//b8.print();
+		}
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		std::cout << "duration: " << seconds * 1000 << " msec" << std::endl << endl;
+		//bd.playout_to_end(true);
+		//bd.print();
+	}
 	if( 0 ) {
 		auto start = std::chrono::high_resolution_clock::now();
 		for(int i = 0; i < 1000*1000; ++i) {
@@ -40,8 +70,8 @@ int main()
 		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
 	}
 	cout << endl;
-	BitBoard44 b4;
-	if (1) {
+	BitBoard4 b4;
+	if (0) {
 		b4.init();
 		b4.set_black(3, 0);
 		b4.print();

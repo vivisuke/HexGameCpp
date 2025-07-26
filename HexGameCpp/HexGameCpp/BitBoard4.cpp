@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <random>
-#include "BitBoard44.h"
+#include "BitBoard4.h"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ static std::mt19937 rgen(rd());
 //const int BD_WIDTH = 4;
 //const int BD_HEIGHT = 4;
 
-void BitBoard44::print() const {
+void BitBoard4::print() const {
 	cout << "   ";
 	for(int x = 0; x < BD_WIDTH; ++x)
 		printf("%c ", 'a'+x);
@@ -35,18 +35,18 @@ void BitBoard44::print() const {
 	}
 	cout << endl;
 }
-byte BitBoard44::get_color(ushort mask) const {
+byte BitBoard4::get_color(ushort mask) const {
 	if( (m_black & mask) != 0 ) return BLACK;
 	if( (m_white & mask) != 0 ) return WHITE;
 	return EMPTY;
 }
-bool BitBoard44::did_black_win_uf() const {
+bool BitBoard4::did_black_win_uf() const {
 	return false;
 }
-bool BitBoard44::did_white_win_uf() const {
+bool BitBoard4::did_white_win_uf() const {
 	return false;
 }
-bool BitBoard44::did_black_win() const {
+bool BitBoard4::did_black_win() const {
 	ushort bc = m_black & 0xf000;		//	上辺黒石
 	if( bc == 0 ) return false;
 	for(;;) {
@@ -61,7 +61,7 @@ bool BitBoard44::did_black_win() const {
 	}
 	return (bc & 0x000f) != 0;		//	下辺に達したか？
 }
-bool BitBoard44::did_white_win() const {
+bool BitBoard4::did_white_win() const {
 	ushort bc = m_white & 0x8888;		//	左辺白石
 	if( bc == 0 ) return false;
 	for(;;) {
@@ -76,8 +76,8 @@ bool BitBoard44::did_white_win() const {
 	}
 	return (bc & 0x1111) != 0;		//	右辺に達したか？
 }
-bool BitBoard44::playout_to_end(bool black_next) const {
-	BitBoard44 b2(*this);
+bool BitBoard4::playout_to_end(bool black_next) const {
+	BitBoard4 b2(*this);
 	ushort empty = ~(m_black | m_white);
 	if( !empty ) return false;		//	空欄無し
 	vector<ushort> lst;			//	空欄リスト
@@ -97,7 +97,7 @@ bool BitBoard44::playout_to_end(bool black_next) const {
 	//b2.print();
 	return b2.did_black_win();
 }
-double BitBoard44::playout_to_end(int N, bool black_next) const {
+double BitBoard4::playout_to_end(int N, bool black_next) const {
 	int bwc = 0;	//	黒勝ち回数
 	for(int i = 0; i < N; ++i) {
 		if( playout_to_end(black_next) )
@@ -105,8 +105,8 @@ double BitBoard44::playout_to_end(int N, bool black_next) const {
 	}
 	return (double)bwc / N;
 }
-bool BitBoard44::playout_smart(bool black_next, bool verbose) const {
-	BitBoard44 b2(*this);
+bool BitBoard4::playout_smart(bool black_next, bool verbose) const {
+	BitBoard4 b2(*this);
 	ushort empty = ~(m_black | m_white);
 	if( !empty ) return false;		//	空欄無し
 	vector<ushort> lst;			//	空欄リスト
@@ -136,7 +136,7 @@ bool BitBoard44::playout_smart(bool black_next, bool verbose) const {
 	//b2.print();
 	return b2.did_black_win();
 }
-double BitBoard44::playout_smart(int N, bool black_next) const {
+double BitBoard4::playout_smart(int N, bool black_next) const {
 	int bwc = 0;	//	黒勝ち回数
 	for(int i = 0; i < N; ++i) {
 		if( playout_smart(black_next) )
@@ -144,7 +144,7 @@ double BitBoard44::playout_smart(int N, bool black_next) const {
 	}
 	return (double)bwc / N;
 }
-double BitBoard44::PMC_score(int N, bool black_next, bool verbose) const {
+double BitBoard4::PMC_score(int N, bool black_next, bool verbose) const {
 	ushort empty = ~(m_black | m_white);
 	if( !empty ) return 0;		//	空欄無し
 	vector<ushort> lst;			//	空欄リスト
@@ -156,7 +156,7 @@ double BitBoard44::PMC_score(int N, bool black_next, bool verbose) const {
 	int sum = 0;
 	for(int i = 0; i < N; ++i) {
 		bool bn = black_next;
-		BitBoard44 b2(*this);
+		BitBoard4 b2(*this);
 		shuffle(lst.begin(), lst.end(), rgen);		//	着手箇所をシャフル
 		int n_empty = lst.size();
 		for(auto mask : lst) {

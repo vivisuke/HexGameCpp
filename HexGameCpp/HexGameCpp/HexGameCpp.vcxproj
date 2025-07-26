@@ -123,13 +123,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BitBoard44.cpp" />
+    <ClCompile Include="BitBoard4.cpp" />
     <ClCompile Include="BitBoard8.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="HexGameCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BitBoard44.h" />
+    <ClInclude Include="BitBoard4.h" />
     <ClInclude Include="BitBoard8.h" />
     <ClInclude Include="Board.h" />
   </ItemGroup>

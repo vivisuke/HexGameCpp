@@ -314,6 +314,19 @@ int Board::sel_move_random() {
 	int r = rgen() % g_lst.size();
 	return g_lst[r];
 }
+void Board::playout_to_end(byte next) {
+	vector<int> lst;		//	空欄位置リスト
+	lst.reserve(m_bd_width*m_bd_height);
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			lst.push_back(ix);
+	}
+	shuffle(lst.begin(), lst.end(), rgen);
+	for(auto ix: lst) {
+		set_color(ix, next);
+		next = (BLACK+WHITE) - next;
+	}
+}
 bool Board::playout(byte next) const {		//	return: true for 黒勝ち
 	Board bd(*this);
 	vector<int> lst;		//	空欄位置リスト
