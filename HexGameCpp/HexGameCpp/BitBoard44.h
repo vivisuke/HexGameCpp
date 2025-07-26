@@ -61,8 +61,8 @@ public:
 	double	playout_to_end(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
 	bool	playout_smart(bool black_next = true, bool = false) const;	//	return: 黒の勝ちか？
 	double	playout_smart(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
-	bool	playout_smart_uf(bool black_next = true, bool = false) const;	//	return: 黒の勝ちか？
-	double	playout_smart_uf(int N, bool black_next = true) const;	//	return: 黒の勝ち確率を返す
+	//bool	playout_smart_uf(bool black_next = true, bool = false) const;	//	return: 黒の勝ちか？
+	double	PMC_score(int N, bool black_next = true, bool = false) const;	//	return: 純粋MC法により黒の平均スコアを返す
 public:
 	ushort	m_black;
 	ushort	m_white;

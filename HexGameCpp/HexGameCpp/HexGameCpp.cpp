@@ -6,6 +6,7 @@
 #include <intrin.h>
 #include "Board.h"
 #include "BitBoard44.h"
+#include "BitBoard8.h"
 
 using namespace std;
 
@@ -45,6 +46,8 @@ int main()
 		b4.set_black(3, 0);
 		b4.print();
 		auto start = std::chrono::high_resolution_clock::now();
+		double maxv = -9999;
+		double minv = 9999;
 		bool next = false;	//	true for 黒番
 		for(int y = 0; y < BD_WIDTH; ++y) {
 			cout << string(y*3, ' ');
@@ -52,7 +55,10 @@ int main()
 				if( b4.get_color(x, y) == EMPTY ) {
 					b4.set_color(x, y, next);
 					//double r = b4.playout_to_end(100000, !next);
-					double r = b4.playout_smart(100000, !next);
+					//double r = b4.playout_smart(100000, !next);
+					double r = b4.PMC_score(100000, !next);
+					maxv = max(maxv, r);
+					minv = min(minv, r);
 					printf(" %.3f", r);
 					b4.set_empty(x, y);
 				} else
@@ -65,6 +71,10 @@ int main()
 		auto duration = end - start;
 		double seconds = std::chrono::duration<double>(duration).count();
 		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
+		//cout << "maxv = " << maxv << endl;
+		//cout << "minv = " << minv << endl;
+		printf("maxv = %.3f\n", maxv);
+		printf("minv = %.3f\n", minv);
 	}
 	if (0) {
 		b4.init();

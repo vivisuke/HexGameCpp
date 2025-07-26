@@ -144,34 +144,40 @@ double BitBoard44::playout_smart(int N, bool black_next) const {
 	}
 	return (double)bwc / N;
 }
-bool BitBoard44::playout_smart_uf(bool black_next, bool verbose) const {
-	BitBoard44 b2(*this);
+double BitBoard44::PMC_score(int N, bool black_next, bool verbose) const {
 	ushort empty = ~(m_black | m_white);
-	if( !empty ) return false;		//	空欄無し
+	if( !empty ) return 0;		//	空欄無し
 	vector<ushort> lst;			//	空欄リスト
 	while( empty != 0 ) {
 		ushort b = empty & -empty;	//	最右ビットを取り出す
 		lst.push_back(b);
 		empty ^= b;
 	}
-	shuffle(lst.begin(), lst.end(), rgen);		//	着手箇所をシャフル
-	for(auto mask : lst) {
-		if( black_next ) {
-			b2.set_black(mask);
-			if( b2.did_black_win_uf() ) {
-				if( verbose ) b2.print();
-				return true;
+	int sum = 0;
+	for(int i = 0; i < N; ++i) {
+		bool bn = black_next;
+		BitBoard44 b2(*this);
+		shuffle(lst.begin(), lst.end(), rgen);		//	着手箇所をシャフル
+		int n_empty = lst.size();
+		for(auto mask : lst) {
+			--n_empty;
+			if( bn ) {
+				b2.set_black(mask);
+				if( b2.did_black_win() ) {
+					if( verbose ) b2.print();
+					sum += 1 + n_empty;
+					break;
+				}
+			} else {
+				b2.set_white(mask);
+				if( b2.did_white_win() ) {
+					if( verbose ) b2.print();
+					sum -= 1 + n_empty;
+					break;
+				}
 			}
-		} else {
-			b2.set_white(mask);
-			if( b2.did_white_win() ) {
-				if( verbose ) b2.print();
-				//b2.did_white_win();
-				return false;
-			}
+			bn = !bn;
 		}
-		black_next = !black_next;
 	}
-	//b2.print();
-	return b2.did_black_win();
+	return (double)sum / N;
 }
