@@ -21,6 +21,20 @@ const int BD_WIDTH = 4;
 int main()
 {
 	const int N_PLAYOUT = 1000;
+	if (1) {
+		Board bd(4);
+		auto w = bd.playout_smart(BLACK);
+		bd.print();
+		if( w == BLACK ) cout << "BLACK won." << endl;
+		else cout << "BLACK won." << endl;
+	}
+	if (0) {
+		Board bd(3);
+		bool b = bd.put_and_check_uf(bd.xyToIndex(1, 0), BLACK);
+		b = bd.put_and_check_uf(bd.xyToIndex(1, 1), BLACK);
+		b = bd.put_and_check_uf(bd.xyToIndex(1, 2), BLACK);
+		bd.print();
+	}
 	if( 0 ) {
 		auto start = std::chrono::high_resolution_clock::now();
 		for(int i = 0; i < N_PLAYOUT; ++i) {

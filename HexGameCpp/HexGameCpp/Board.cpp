@@ -20,9 +20,12 @@ Board::Board(int bd_width)
 	m_ary_width = m_bd_width + 1;
 	m_ary_height = m_bd_width + 2;
 	m_ary_size = m_ary_width * m_ary_height;
+	DR_INDEX = xyToIndex(0, m_bd_height);
 	m_cell.resize(m_ary_size);
 	m_gid.resize(m_ary_size);
 	m_dist.resize(m_ary_size);
+	m_parent_ul.resize(m_ary_size);
+	m_parent_dr.resize(m_ary_size);
 	init();
 }
 Board::Board(const Board &x)
@@ -31,11 +34,14 @@ Board::Board(const Board &x)
 	m_ary_width = x.m_ary_width;
 	m_ary_height = x.m_ary_width;
 	m_ary_size = x.m_ary_size;
+	DR_INDEX = x.DR_INDEX;
 	//m_cell.resize(m_ary_size);
 	m_cell = x.m_cell;
 	m_dist.resize(m_ary_size);
 	m_next_gid = x.m_next_gid;
 	m_gid = x.m_gid;
+	m_parent_ul = x.m_parent_ul;
+	m_parent_dr = x.m_parent_dr;
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), BWALL);	//	for 上下壁
@@ -48,6 +54,10 @@ void Board::init() {
 	fill(m_rave.begin(), m_rave.end(), 0);	//	m_rave[] を 0 に初期化
 	m_next_gid = -1;
 	fill(m_gid.begin(), m_gid.end(), -1);	//	m_gid[] を -1 に初期化
+	fill(m_parent_ul.begin(), m_parent_ul.end(), UNCONNECT);	//	m_parent_ul[] を -1 に初期化
+	fill(m_parent_dr.begin(), m_parent_dr.end(), UNCONNECT);	//	m_parent_dr[] を -1 に初期化
+	m_parent_ul[UL_INDEX] = UL_INDEX;
+	m_parent_dr[DR_INDEX] = DR_INDEX;
 }
 void Board::print() const {
 	cout << "   ";
@@ -104,6 +114,79 @@ void Board::check_connected(int ix, int ix2, byte col) {
 			}
 		}
 	}
+}
+bool Board::put_and_check_uf(int ix, byte col) {	//	return: 着手により上下 or 左右辺が連結されたか？
+	//int ix = xyToIndex(x, y);
+	m_cell[ix] = col;
+	if( col == BLACK ) {
+		auto y = indexToY(ix);
+		if( y == 0 )
+			m_parent_ul[ix] = UL_INDEX;		//	上辺に接続
+		else if( y == m_bd_height - 1 )
+			m_parent_dr[ix] = DR_INDEX;		//	下辺に接続
+	} else {	//	col == WHITE
+		auto x = indexToX(ix);
+		if( x == 0 )
+			m_parent_ul[ix] = UL_INDEX;		//	左辺に接続
+		else if( x == m_bd_width - 1 )
+			m_parent_dr[ix] = DR_INDEX;		//	右辺に接続
+	}
+	check_connected_uf(ix, ix-m_ary_width, col);
+	check_connected_uf(ix, ix- m_ary_width +1, col);
+	check_connected_uf(ix, ix-1, col);
+	check_connected_uf(ix, ix+1, col);
+	check_connected_uf(ix, ix+ m_ary_width -1, col);
+	check_connected_uf(ix, ix+ m_ary_width, col);
+	if( m_parent_ul[ix] < 0 ) {	//	6近傍に非接続
+		m_parent_ul[ix] = ix;
+	}
+	if( m_parent_dr[ix] < 0 ) {	//	6近傍に非接続
+		m_parent_dr[ix] = ix;
+	}
+	return find_root_ul(ix) == UL_INDEX && find_root_dr(ix) == DR_INDEX;
+}
+void Board::check_connected_uf(int ix, int ix2, byte col) {
+	if( m_cell[ix2] != col ) return;	//	非接続
+	if( m_parent_ul[ix] == UNCONNECT ) {				//	ix が接続処理済みではない
+		m_parent_ul[ix] = find_root_ul(ix2);
+	} else {		//	ix が接続処理済み → マージ処理
+		// それぞれのグループの根（代表ID）を取得
+		int root1 = find_root_ul(ix);
+		int root2 = find_root_ul(ix2);
+		if (root1 != root2) {
+			// 根が異なる場合のみマージ、小さい方のIDを根にする
+			if (root1 < root2) {
+				m_parent_ul[root2] = root1;
+			} else {
+				m_parent_ul[root1] = root2;
+			}
+		}
+	}
+	if( m_parent_dr[ix] == UNCONNECT ) {				//	ix が接続処理済みではない
+		m_parent_dr[ix] = find_root_dr(ix2);
+	} else {		//	ix が接続処理済み → マージ処理
+		// それぞれのグループの根（代表ID）を取得
+		int root1 = find_root_dr(ix);
+		int root2 = find_root_dr(ix2);
+		if (root1 != root2) {
+			// 根が異なる場合のみマージ、大きい方のIDを根にする
+			if (root1 > root2) {
+				m_parent_dr[root2] = root1;
+			} else {
+				m_parent_dr[root1] = root2;
+			}
+		}
+	}
+}
+int Board::find_root_ul(int ix) {
+	if( m_parent_ul[ix] == ix ) return ix;
+	//	再帰的に根を探し、途中のノードを根に直接つなぎ替える（経路圧縮）
+	return m_parent_ul[ix] = find_root_ul(m_parent_ul[ix]);
+}
+int Board::find_root_dr(int ix) {
+	if( m_parent_dr[ix] == ix ) return ix;
+	//	再帰的に根を探し、途中のノードを根に直接つなぎ替える（経路圧縮）
+	return m_parent_dr[ix] = find_root_dr(m_parent_dr[ix]);
 }
 int Board::find_root(int gid) {
 	if( m_min_gid[gid] == gid ) return gid;
@@ -314,6 +397,22 @@ int Board::sel_move_random() {
 	int r = rgen() % g_lst.size();
 	return g_lst[r];
 }
+byte Board::playout_smart(byte next) {
+	vector<int> lst;		//	空欄位置リスト
+	lst.reserve(m_bd_width*m_bd_height);
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			lst.push_back(ix);
+	}
+	shuffle(lst.begin(), lst.end(), rgen);
+	for(auto ix: lst) {
+		if( put_and_check_uf(ix, next) ) {
+			return next;
+		}
+		next = (BLACK+WHITE) - next;
+	}
+	return EMPTY;
+}
 void Board::playout_to_end(byte next) {
 	vector<int> lst;		//	空欄位置リスト
 	lst.reserve(m_bd_width*m_bd_height);
@@ -341,6 +440,9 @@ bool Board::playout(byte next) const {		//	return: true for 黒勝ち
 		next = (BLACK+WHITE) - next;
 	}
 	return bd.is_vert_connected();
+}
+bool Board::did_black_win(int ix) {
+	return false;
 }
 void Board::get_empty_list(std::vector<int>& lst) const {
 	lst.reserve(m_bd_width*m_bd_height);
@@ -560,7 +662,7 @@ int Board::white_turn(int depth) {
 //
 bool dfs_black_win(Board& bd, byte next) {		//	双方最善で黒が勝つか？
 	bool put = false;
-	for(int ix = bd.xyToIndex(0, 0); ix <= bd.xyToIndex(bd.m_bd_width-1, bd.m_bd_height-1); ++ix) {
+	for(int ix = bd.xyToIndex(0, 0); ix <= bd.xyToIndex(bd.m_bd_width-1, bd.bd_height()-1); ++ix) {
 		if( bd.m_cell[ix] == EMPTY ) {
 			bd.m_cell[ix] = next;
 			auto b = dfs_black_win(bd, (BLACK+WHITE)-next);
