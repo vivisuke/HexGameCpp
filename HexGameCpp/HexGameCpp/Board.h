@@ -23,6 +23,7 @@ public:
 	void	init();
 	void	print() const;
 	void	print_dist() const;
+	void	print_parent() const;
 	int		bd_width() const { return m_bd_width; }
 	int		bd_height() const { return m_bd_height; }
 	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }

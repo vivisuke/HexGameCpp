@@ -26,7 +26,7 @@ int main()
 		auto w = bd.playout_smart(BLACK);
 		bd.print();
 		if( w == BLACK ) cout << "BLACK won." << endl;
-		else cout << "BLACK won." << endl;
+		else cout << "WHITE won." << endl;
 	}
 	if (0) {
 		Board bd(3);

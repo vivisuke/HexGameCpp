@@ -47,6 +47,6 @@
 0045 ◎ C 07/26 07/26 0.001│ToDo│double PMC_score(int N, black_next, verbose)
 0046 ◎ C 07/26 07/27 0.001│ToDo│BitBoard44 は BitBoard4 にリネーム
 0047 ◎ C 07/26 07/29 0.001│ToDo│playout_smart()
-0048 ● C 07/29            │ToDo│
+0048 ◎ C 07/29 07/29 0.001│ToDo│print_parent()
 0049 ● C 07/29            │ToDo│
 0050 ● C 07/29            │ToDo│

@@ -9,6 +9,7 @@ using namespace std;
 
 static std::random_device rd;
 static std::mt19937 rgen(rd()); 
+//static std::mt19937 rgen(3); 
 
 #define		is_empty()	empty()
 
@@ -201,6 +202,30 @@ void Board::print_dist() const {
 			auto d = m_dist[xyToIndex(x, y)];
 			if( d == DIST_MAX ) cout << "  -1";
 			else printf("%4d", d);
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+void Board::print_parent() const {
+	cout << "parent_ul[]:" << endl;
+	for(int y = 0; y < m_bd_height; ++y) {
+		cout << string(y*2, ' ');
+		printf("%2d:", y+1);
+		for(int x = 0; x < m_bd_width; ++x) {
+			auto d = m_parent_ul[xyToIndex(x, y)];
+			printf("%4d", d);
+		}
+		cout << endl;
+	}
+	cout << endl;
+	cout << "parent_dr[]:" << endl;
+	for(int y = 0; y < m_bd_height; ++y) {
+		cout << string(y*2, ' ');
+		printf("%2d:", y+1);
+		for(int x = 0; x < m_bd_width; ++x) {
+			auto d = m_parent_dr[xyToIndex(x, y)];
+			printf("%4d", d);
 		}
 		cout << endl;
 	}
@@ -407,8 +432,12 @@ byte Board::playout_smart(byte next) {
 	shuffle(lst.begin(), lst.end(), rgen);
 	for(auto ix: lst) {
 		if( put_and_check_uf(ix, next) ) {
+			print();
+			print_parent();
 			return next;
 		}
+		print();
+		print_parent();
 		next = (BLACK+WHITE) - next;
 	}
 	return EMPTY;
