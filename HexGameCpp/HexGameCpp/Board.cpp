@@ -4,14 +4,14 @@
 #include <random>
 #include <assert.h>
 #include "Board.h"
+#include "MCTSNode.h"
 
 using namespace std;
 
 static std::random_device rd;
 static std::mt19937 rgen(rd()); 
-//static std::mt19937 rgen(3); 
+//static std::mt19937 rgen(0); 
 
-#define		is_empty()	empty()
 
 vector<int> g_lst;
 
@@ -422,16 +422,57 @@ int Board::sel_move_random() {
 	int r = rgen() % g_lst.size();
 	return g_lst[r];
 }
-byte Board::playout_smart(byte next) {
+double Board::playout_smart(int N, byte next) const {
 	vector<int> lst;		//	空欄位置リスト
-	lst.reserve(m_bd_width*m_bd_height);
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
-		if( m_cell[ix] == EMPTY )
-			lst.push_back(ix);
+	get_empty_list(lst);
+	//lst.reserve(m_bd_width*m_bd_height);
+	//for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	//	if( m_cell[ix] == EMPTY )
+	//		lst.push_back(ix);
+	//}
+	int nbw = 0;	//	黒勝利回数
+	for(int i = 0; i < N; ++i) {
+		Board bd(*this);
+		shuffle(lst.begin(), lst.end(), rgen);
+		for(auto ix: lst) {
+			if( bd.put_and_check_uf(ix, next) ) {
+				//print();
+				//print_parent();
+				if( next == BLACK ) ++nbw;
+				break;
+			}
+			//print();
+			//print_parent();
+			next = (BLACK+WHITE) - next;
+		}
 	}
+	return (double)nbw / N;
+}
+byte Board::playout_smart(byte next) {
+	Board b0(*this);
+	auto n0 = next;
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	//lst.reserve(m_bd_width*m_bd_height);
+	//for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	//	if( m_cell[ix] == EMPTY )
+	//		lst.push_back(ix);
+	//}
 	shuffle(lst.begin(), lst.end(), rgen);
 	for(auto ix: lst) {
 		if( put_and_check_uf(ix, next) ) {
+			//print();
+			//print_parent();
+			return next;
+		}
+		//print();
+		//print_parent();
+		next = (BLACK+WHITE) - next;
+	}
+	b0.print();
+	next = n0;
+	for(auto ix: lst) {
+		if( b0.put_and_check_uf(ix, next) ) {
 			print();
 			print_parent();
 			return next;
@@ -440,6 +481,7 @@ byte Board::playout_smart(byte next) {
 		print_parent();
 		next = (BLACK+WHITE) - next;
 	}
+	assert(0);
 	return EMPTY;
 }
 void Board::playout_to_end(byte next) {
@@ -637,6 +679,69 @@ int Board::sel_move_PMC(byte next) {
 		}
 	}
 	return best_ix;
+}
+
+const int N_MCTS = 50000;
+int Board::sel_move_MCTS(byte next) {
+	MCTSNode* root = new MCTSNode(*this, next);
+	for(int i = 0; i < N_MCTS; ++i) {
+		MCTSNode* node = root;
+		//root->m_visits += 1;
+		Board board_copy = *this; // 盤面をコピーして進める
+
+		// 葉ノード or 未展開のノードまで選択を繰り返す
+		byte nx = next;
+		while (node->m_untried_moves.is_empty() && !node->m_children.is_empty()) {
+			//auto ptr = node;
+			node = node->select_child_UCT();
+			//if( node == nullptr )
+			//	ptr->select_child_UCT();
+			assert(node != nullptr);
+			//node->m_visits += 1;
+			board_copy.put_and_check_uf(node->m_move, nx); // 選択したノードの手に盤面を進める
+			nx = (BLACK + WHITE) - nx;
+		}
+		// もしゲームがまだ終わっておらず、未試行の手があれば展開する
+		if (!node->m_is_terminal) {
+		    node = node->expand(board_copy);
+		    if(node) { // expandが成功した場合
+				if (board_copy.put_and_check_uf(node->m_move, nx)) {
+					node->update(nx);
+					continue;
+				}
+				nx = (BLACK + WHITE) - nx;
+		    }
+		}
+		if (node->m_is_terminal) {
+			//board_copy.print();
+			node->update((BLACK+WHITE) - node->m_player_to_move);
+		}
+		else {
+			byte win_col = board_copy.playout_smart(nx);
+			//cout << "root: ";
+			//root->print();
+			//cout << endl;
+			node->update(win_col);
+			//cout << "root: ";
+			//root->print();
+			//cout << endl;
+		}
+	}
+	//cout << "root: ";
+	//root->print();
+	//cout << endl;
+	root->print_best(); cout << endl;
+	MCTSNode* best_child = nullptr;
+	int max_visits = -1;
+
+	for (MCTSNode* child : root->m_children) {
+	    if (child->m_visits > max_visits) {
+	        max_visits = child->m_visits;
+	        best_child = child;
+	    }
+	}
+
+	return best_child->m_move; // これがAIの選んだ最善手
 }
 int Board::eval() {
 	return calc_horz_dist() - calc_vert_dist();

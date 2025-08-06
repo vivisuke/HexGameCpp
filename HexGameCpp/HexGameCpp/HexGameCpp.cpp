@@ -21,7 +21,44 @@ const int BD_WIDTH = 4;
 int main()
 {
 	const int N_PLAYOUT = 1000;
+	if (0) {
+		Board bd(3);
+		auto ix = bd.sel_move_MCTS(BLACK);
+		printf("best: %c%d\n", 'a'+bd.indexToX(ix), bd.indexToY(ix)+1);
+		//cout << "best: " << bd.indexToX(ix) << ", " << bd.indexToY(ix) << endl;
+	}
 	if (1) {
+		Board bd(4);
+		bd.print();
+		byte next = BLACK;
+		for(;;) {
+			int ix;
+			if (next == BLACK) {
+				//ix = bd.sel_move_random();
+				ix = bd.sel_move_PMC(next);
+				//ix = bd.sel_move_MCTS(next);
+			} else {
+				//ix = bd.sel_move_random();
+				//ix = bd.sel_move_PMC(next);
+				ix = bd.sel_move_MCTS(next);
+			}
+			if( ix < 0 ) break;
+			if( bd.put_and_check_uf(ix, next) )
+				break;
+			bd.print();
+			next = (BLACK + WHITE) - next;
+		}
+		bd.print();
+	}
+	if (0) {
+		Board bd(4);
+		//bd.put_and_check_uf(bd.xyToIndex(1, 1), BLACK);
+		//bd.put_and_check_uf(bd.xyToIndex(0, 0), WHITE);
+		bd.print();
+		double p = bd.playout_smart(1000, BLACK);
+		cout << "black win rate = " << p << endl;
+	}
+	if (0) {
 		Board bd(4);
 		auto w = bd.playout_smart(BLACK);
 		bd.print();

@@ -5,6 +5,8 @@
 using byte = unsigned char;
 using ushort = unsigned short;
 
+#define		is_empty()	empty()
+
 enum {
 	EMPTY = 0, BLACK, WHITE, BWALL, WWALL,
 	BYTE_MAX = 0xff,
@@ -61,12 +63,14 @@ public:
 	void	playout_to_end(byte next);	//	完全ランダムプレイアウト
 	bool	playout(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	byte	playout_smart(byte next);	//	完全ランダムプレイアウト、return: BLACK | WHITE、勝敗判定を差分計算
+	double	playout_smart(int N, byte next) const;	//	完全ランダムプレイアウト、return: 黒勝率
 	bool	playout_old(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	bool	playout_rave(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	double	estimate_win_rate_PMC(byte next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
 	bool	did_black_win(int ix);		//	黒 ix に打って、上下辺が連結されたか？
 	int		sel_move_random();			//	完全ランダムに着手を選択、return: 着手箇所
 	int		sel_move_PMC(byte next);			//	純粋モンテカルロ法で着手を選択、return: 着手箇所
+	int		sel_move_MCTS(byte next);			//	モンテカルロ木探索で着手を選択、return: 着手箇所
 
 public:
 	int		m_bd_width;					//	盤面幅

@@ -48,5 +48,15 @@
 0046 ◎ C 07/26 07/27 0.001│ToDo│BitBoard44 は BitBoard4 にリネーム
 0047 ◎ C 07/26 07/29 0.001│ToDo│playout_smart()
 0048 ◎ C 07/29 07/29 0.001│ToDo│print_parent()
-0049 ● C 07/29            │ToDo│
-0050 ● C 07/29            │ToDo│
+0049 ◎ C 07/29 08/06 0.001│ToDo│playout_smart(N, next)：N回プレイアウトで黒勝率を返す
+0050 ◎ C 08/06 08/06 0.001│ToDo│MCTS による着手選択
+0051 ● C 08/06            │ToDo│
+0052 ● C 08/06            │ToDo│
+0053 ● C 08/06            │ToDo│
+0054 ● C 08/06            │ToDo│
+0055 ● C 08/06            │ToDo│
+0056 ● C 08/06            │ToDo│
+0057 ● C 08/06            │ToDo│
+0058 ● C 08/06            │ToDo│
+0059 ● C 08/06            │ToDo│
+0060 ● C 08/06            │ToDo│

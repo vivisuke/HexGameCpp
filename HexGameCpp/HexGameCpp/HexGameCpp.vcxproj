@@ -127,11 +127,13 @@
     <ClCompile Include="BitBoard8.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="HexGameCpp.cpp" />
+    <ClCompile Include="MCTSNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitBoard4.h" />
     <ClInclude Include="BitBoard8.h" />
     <ClInclude Include="Board.h" />
+    <ClInclude Include="MCTSNode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
