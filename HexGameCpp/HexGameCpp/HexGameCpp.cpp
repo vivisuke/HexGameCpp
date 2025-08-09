@@ -18,16 +18,144 @@ const int BD_WIDTH = 4;
 //
 //}
 
+void print_dvdh(Board& bd) {
+	bd.print();
+	auto dv = bd.calc_vert_dist();
+	cout << "vertical dist = " << dv << endl;
+	auto dh = bd.calc_horz_dist();
+	cout << "horizontal dist = " << dh << endl;
+}
+string ix_str(const Board& bd, int ix) {
+	string txt(1, 'a'+bd.indexToX(ix));
+	txt +=string(1,  '1' + bd.indexToY(ix));
+	return txt;
+}
+
 int main()
 {
 	const int N_PLAYOUT = 1000;
+	if (0) {
+		Board bd(4);
+		bd.print();
+		auto ix = bd.sel_move_win(BLACK);
+		cout << "move_win: ";
+		if (ix < 0) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(2, 1, BLACK);
+		bd.print();
+		ix = bd.sel_move_win(WHITE);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(WHITE);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(2, 0, WHITE);
+		bd.print();
+		ix = bd.sel_move_win(BLACK);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(BLACK);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(3, 0, BLACK);
+		bd.print();
+		ix = bd.sel_move_win(WHITE);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(WHITE);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+	}
+	if (0) {
+		Board bd(3);
+		bd.print();
+		auto ix = bd.sel_move_win(BLACK);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(2, 1, BLACK);
+		bd.print();
+		ix = bd.sel_move_win(WHITE);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(WHITE);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(2, 0, WHITE);
+		bd.print();
+		ix = bd.sel_move_win(BLACK);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(BLACK);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(0, 1, BLACK);
+		bd.print();
+		ix = bd.sel_move_win(WHITE);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(WHITE);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(0, 0, WHITE);
+		bd.print();
+		ix = bd.sel_move_win(BLACK);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(BLACK);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+
+		bd.set_color(1, 0, BLACK);
+		bd.print();
+		ix = bd.sel_move_win(WHITE);
+		cout << "move_win: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		ix = bd.sel_move_block(WHITE);
+		cout << "move_block: ";
+		if( ix < 0 ) cout << "none" << endl;
+		else cout << ix_str(bd, ix) << endl;
+		cout << endl;
+	}
 	if (0) {
 		Board bd(3);
 		auto ix = bd.sel_move_MCTS(BLACK);
 		printf("best: %c%d\n", 'a'+bd.indexToX(ix), bd.indexToY(ix)+1);
 		//cout << "best: " << bd.indexToX(ix) << ", " << bd.indexToY(ix) << endl;
 	}
-	if (1) {
+	if (0) {
 		Board bd(4);
 		bd.print();
 		byte next = BLACK;
@@ -121,6 +249,42 @@ int main()
 		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
 	}
 	cout << endl;
+	if (1) {
+		const int BD_WIDTH = 3;
+		Board bd(BD_WIDTH);
+		bd.init();
+		//bd.set_black(3, 0);
+		bd.print();
+		auto start = std::chrono::high_resolution_clock::now();
+		double maxv = -9999;
+		double minv = 9999;
+		//bool next = true;	//	true for 黒番
+		byte next = BLACK;
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, next);
+					double r = bd.playout_smart(100000, (BLACK+WHITE)-next);
+					maxv = max(maxv, r);
+					minv = min(minv, r);
+					printf(" %.3f", r);
+					bd.set_empty(x, y);
+				} else
+					cout << " ---";
+			}
+			cout << endl;
+		}
+		cout << endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
+		//cout << "maxv = " << maxv << endl;
+		//cout << "minv = " << minv << endl;
+		printf("maxv = %.3f\n", maxv);
+		printf("minv = %.3f\n", minv);
+	}
 	BitBoard4 b4;
 	if (0) {
 		b4.init();
@@ -244,6 +408,7 @@ int main()
 		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
 	}
 	if( 0 ) {
+		Board bd(4);
 		bd.init();
 		//bd.set_color(2, 3, BLACK);
 		//bd.set_color(1, 5, WHITE);
@@ -441,13 +606,26 @@ int main()
 		}
 		cout << endl;
 	}
-	if( false ) {
+	if( 0 ) {
+		Board bd(3);
+		bd.init();
+		print_dvdh(bd);
+		bd.set_color(2, 1, BLACK);
+		print_dvdh(bd);
+		bd.set_color(2, 0, BLACK);
+		print_dvdh(bd);
+		bd.set_color(2, 0, EMPTY);
+		bd.set_color(2, 2, BLACK);
+		print_dvdh(bd);
+	}
+	if( 0 ) {
+		Board bd(4);
 		bd.init();
 #if 1
 		bd.set_color(1, 2, BLACK);
-		bd.set_color(2, 0, WHITE);
-		bd.set_color(0, 1, BLACK);
-		bd.set_color(1, 1, WHITE);
+		//bd.set_color(2, 0, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(1, 1, WHITE);
 #else
 		bd.set_color(3, 0, BLACK);
 		bd.set_color(2, 2, WHITE);
@@ -462,12 +640,9 @@ int main()
 		//bd.set_color(2, 2, WHITE);
 		//assert( bd.get_color(1, 2) ==  WHITE );
 		//bd.set_color(0, 3, WHITE);
-		bd.print();
-		auto dv = bd.calc_vert_dist();
-		cout << "vertical dist = " << dv << endl;
-		auto dh = bd.calc_horz_dist();
-		cout << "horizontal dist = " << dh << endl;
-		//auto ev = bd.eval();
+		print_dvdh(bd);
+		bd.set_color(2, 0, WHITE);
+		print_dvdh(bd);
 	}
 #if 0
 	if( false ) {

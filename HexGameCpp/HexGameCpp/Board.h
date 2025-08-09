@@ -35,6 +35,7 @@ public:
 	byte	get_color(int ix) const { return m_cell[ix]; }
 	void	set_color(int x, int y, byte col) { m_cell[xyToIndex(x, y)] = col; }
 	void	set_color(int ix, byte col) { m_cell[ix] = col; }
+	void	set_empty(int x, int y) { set_color(x, y, EMPTY); }
 	bool	put_color(int x, int y, byte col);		//	return: 着手により上下 or 左右辺が連結された
 	bool	put_and_check(int x, int y, byte col);
 	void	check_connected(int ix, int ix2, byte col);
@@ -44,14 +45,13 @@ public:
 	int		find_root_ul(int ix);
 	int		find_root_dr(int ix);
 
-	bool	is_vert_connected_sub(int ix);
 	bool	is_vert_connected();			//	上下辺が連結されているか？ 空欄が無い状態でコールされる
 	int		calc_vert_dist(bool ex=true);	//	（黒）上下辺間距離計算（６連結＋間接連結(ex)）
 	int		calc_horz_dist(bool ex=true);	//	（白）左右辺間距離計算（６連結＋間接連結(ex)）
 	//int		calc_vert_dist_ex();	//	（黒）上下辺間距離計算（６連結＋間接連結）
 	//int		calc_horz_dist_ex();	//	（白）左右辺間距離計算（６連結＋間接連結）
-	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
-	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
+	int		find_winning_move_black();
+	int		find_winning_move_white();
 	void	get_empty_list(std::vector<int>&) const;
 
 	int		eval();				//	黒から見た評価値を計算
@@ -69,8 +69,14 @@ public:
 	double	estimate_win_rate_PMC(byte next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
 	bool	did_black_win(int ix);		//	黒 ix に打って、上下辺が連結されたか？
 	int		sel_move_random();			//	完全ランダムに着手を選択、return: 着手箇所
-	int		sel_move_PMC(byte next);			//	純粋モンテカルロ法で着手を選択、return: 着手箇所
-	int		sel_move_MCTS(byte next);			//	モンテカルロ木探索で着手を選択、return: 着手箇所
+	int		sel_move_PMC(byte next);		//	純粋モンテカルロ法で着手を選択、return: 着手箇所
+	int		sel_move_MCTS(byte next);		//	モンテカルロ木探索で着手を選択、return: 着手箇所
+	int		sel_move_win(byte next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
+	int		sel_move_block(byte next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
+private:
+	bool	is_vert_connected_sub(int ix);
+	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
+	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
 
 public:
 	int		m_bd_width;					//	盤面幅

@@ -9,8 +9,8 @@
 using namespace std;
 
 static std::random_device rd;
-static std::mt19937 rgen(rd()); 
-//static std::mt19937 rgen(0); 
+//static std::mt19937 rgen(rd()); 
+static std::mt19937 rgen(0); 
 
 
 vector<int> g_lst;
@@ -742,6 +742,54 @@ int Board::sel_move_MCTS(byte next) {
 	}
 
 	return best_child->m_move; // これがAIの選んだ最善手
+}
+int Board::sel_move_win(byte next) {
+	if( next == BLACK ) {
+		if( calc_vert_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
+		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+			if( m_cell[ix] == EMPTY ) {
+				set_color(ix, BLACK);
+				auto d = calc_vert_dist();
+				set_color(ix, EMPTY);
+				if( d == 0 ) return ix;
+			}
+		}
+	} else {
+		if( calc_horz_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
+		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+			if( m_cell[ix] == EMPTY ) {
+				set_color(ix, WHITE);
+				auto d = calc_horz_dist();
+				set_color(ix, EMPTY);
+				if( d == 0 ) return ix;
+			}
+		}
+	}
+	return -1;
+}
+int Board::sel_move_block(byte next) {
+	if( next == WHITE ) {
+		if( calc_vert_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
+		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+			if( m_cell[ix] == EMPTY ) {
+				set_color(ix, WHITE);
+				auto d = calc_vert_dist();
+				set_color(ix, EMPTY);
+				if( d > 1 ) return ix;
+			}
+		}
+	} else {
+		if( calc_horz_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
+		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+			if( m_cell[ix] == EMPTY ) {
+				set_color(ix, BLACK);
+				auto d = calc_horz_dist();
+				set_color(ix, EMPTY);
+				if( d > 1 ) return ix;
+			}
+		}
+	}
+	return -1;
 }
 int Board::eval() {
 	return calc_horz_dist() - calc_vert_dist();
