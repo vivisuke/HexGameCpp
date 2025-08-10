@@ -264,7 +264,8 @@ int main()
 			cout << string(y*3, ' ');
 			for(int x = 0; x < BD_WIDTH; ++x) {
 				if( bd.get_color(x, y) == EMPTY ) {
-					bd.set_color(x, y, next);
+					//bd.set_color(x, y, next);
+					bd.put_and_check_uf(bd.xyToIndex(x, y), next);
 					double r = bd.playout_smart(100000, (BLACK+WHITE)-next);
 					maxv = max(maxv, r);
 					minv = min(minv, r);

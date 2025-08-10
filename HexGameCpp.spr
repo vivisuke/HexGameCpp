@@ -50,9 +50,9 @@
 0048 ◎ C 07/29 07/29 0.001│ToDo│print_parent()
 0049 ◎ C 07/29 08/06 0.001│ToDo│playout_smart(N, next)：N回プレイアウトで黒勝率を返す
 0050 ◎ C 08/06 08/06 0.001│ToDo│MCTS による着手選択
-0051 ● C 08/09            │ToDo│sel_move_win_or_block()
-0052 ● C 08/09            │ToDo│sel_move_win()
-0053 ● C 08/09            │問題│Board::playout_smart(int N, byte next) でクラッシュすることがある
+0051 ◎ C 08/09 08/10 0.001│ToDo│sel_move_win_or_block()
+0052 ◎ C 08/09 08/10 0.001│ToDo│sel_move_win()
+0053 ◎ C 08/09 08/10 0.001│問題│Board::playout_smart(int N, byte next) でクラッシュすることがある？
 0054 ● C 08/09            │ToDo│
 0055 ● C 08/09            │ToDo│
 0056 ● C 08/09            │ToDo│
