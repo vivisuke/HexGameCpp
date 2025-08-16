@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 using byte = unsigned char;
@@ -31,6 +32,7 @@ public:
 	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
 	int		indexToX(int ix) const { return ix % m_ary_width; }
 	int		indexToY(int ix) const { return (ix / m_ary_width) - 1; }
+	std::string ixToStr(int ix) const;
 	byte	get_color(int x, int y) const { return m_cell[xyToIndex(x, y)]; }
 	byte	get_color(int ix) const { return m_cell[ix]; }
 	void	set_color(int x, int y, byte col) { m_cell[xyToIndex(x, y)] = col; }
@@ -53,8 +55,9 @@ public:
 	int		find_winning_move_black();
 	int		find_winning_move_white();
 	void	get_empty_list(std::vector<int>&) const;
+	int		n_empty() const;
 
-	int		eval();				//	•‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
+	float	eval();				//	•‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
 	int		alpha_beta_black(int alpha, int beta, int depth);
 	int		alpha_beta_white(int alpha, int beta, int depth);
 	int		black_turn(int depth);

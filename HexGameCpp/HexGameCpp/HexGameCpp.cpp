@@ -25,6 +25,15 @@ void print_dvdh(Board& bd) {
 	auto dh = bd.calc_horz_dist();
 	cout << "horizontal dist = " << dh << endl;
 }
+void print_dvdh2(Board& bd) {
+	bd.print();
+	auto dv = bd.calc_vert_dist();
+	auto dv2 = bd.calc_vert_dist(false);
+	cout << "vert dist = " << dv << ", " << dv2 << endl;
+	auto dh = bd.calc_horz_dist();
+	auto dh2 = bd.calc_horz_dist(false);
+	cout << "horz dist = " << dh << ", " << dh2 << endl;
+}
 string ix_str(const Board& bd, int ix) {
 	string txt(1, 'a'+bd.indexToX(ix));
 	txt +=string(1,  '1' + bd.indexToY(ix));
@@ -34,6 +43,24 @@ string ix_str(const Board& bd, int ix) {
 int main()
 {
 	const int N_PLAYOUT = 1000;
+	if (1) {
+#if 1
+		const int BD_WIDTH = 3;
+		Board bd(BD_WIDTH);
+		bd.set_color(1, 2, BLACK);
+		bd.set_color(2, 0, WHITE);
+#else
+		const int BD_WIDTH = 4;
+		Board bd(BD_WIDTH);
+		bd.set_color(1, 2, BLACK);
+		bd.set_color(2, 0, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(1, 0, WHITE);
+#endif
+		//bd.print();
+		print_dvdh2(bd);
+		cout << "eval = " << bd.eval() << endl;
+	}
 	if (0) {
 		Board bd(4);
 		bd.print();
@@ -249,17 +276,17 @@ int main()
 		std::cout << "duration: " << seconds*1000 << " msec" << std::endl;
 	}
 	cout << endl;
-	if (1) {
+	if (0) {
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
 		bd.init();
-		//bd.set_black(3, 0);
+		bd.put_and_check_uf(bd.xyToIndex(2, 0), BLACK);
 		bd.print();
 		auto start = std::chrono::high_resolution_clock::now();
 		double maxv = -9999;
 		double minv = 9999;
 		//bool next = true;	//	true for 黒番
-		byte next = BLACK;
+		byte next = WHITE;
 		for(int y = 0; y < BD_WIDTH; ++y) {
 			cout << string(y*3, ' ');
 			for(int x = 0; x < BD_WIDTH; ++x) {

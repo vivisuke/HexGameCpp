@@ -60,6 +60,13 @@ void Board::init() {
 	m_parent_ul[UL_INDEX] = UL_INDEX;
 	m_parent_dr[DR_INDEX] = DR_INDEX;
 }
+string Board::ixToStr(int ix) const {
+	if( ix < 0 ) return "-1";
+	string txt = "a1";
+	txt[0] = 'a' + indexToX(ix);
+	txt[1] = '1' + indexToY(ix);
+	return txt;
+}
 void Board::print() const {
 	cout << "   ";
 	for(int x = 0; x < m_bd_width; ++x)
@@ -313,7 +320,9 @@ int Board::calc_vert_dist(bool ex) {
 		}
 		//print_dist();
 	}
+#if 0
 	if( ex ) {
+		print_dist();
 		for(int x = 0; x < m_bd_width - 1; ++x) {
 			int ix = xyToIndex(x, m_bd_height-1);
 			if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
@@ -322,11 +331,19 @@ int Board::calc_vert_dist(bool ex) {
 			}
 		}
 	}
+#endif
 	//print_dist();
 	ushort mind = DIST_MAX;
 	for(int x = 0; x < m_bd_width; ++x) {
 		int ix = xyToIndex(x, m_bd_height-1);
 		mind = min(mind, m_dist[ix]);
+	}
+	if( ex ) {
+		for(int x = 1; x < m_bd_width - 1; ++x) {
+			int ix = xyToIndex(x, m_bd_height-2);
+			if( m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
+				mind = min(mind, m_dist[ix]);
+		}
 	}
 	return mind;
 	//auto itr = min_element(&m_cell[xyToIndex(0, m_bd_height-1)], &m_cell[xyToIndex(m_bd_width-1, m_bd_height-1)]);
@@ -410,6 +427,29 @@ int Board::calc_horz_dist(bool ex) {
 		mind = min(mind, m_dist[ix]);
 	}
 	return mind;
+}
+int Board::find_winning_move_black() {
+	for(int x = 1; x < m_bd_width; ++x) {
+		int ix = xyToIndex(x, m_bd_height-2);
+		if( m_dist[ix] == 0 ) {
+			if( m_cell[ix+m_ary_width-1] == EMPTY )
+				return ix+m_ary_width-1;
+			if( m_cell[ix+m_ary_width] == EMPTY )
+				return ix+m_ary_width;
+		}
+		if( m_cell[ix] == EMPTY && m_dist[ix] == 1 &&
+			m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
+		{
+			return ix;
+		}
+	}
+	for(int x = 0; x < m_bd_width; ++x) {
+		int ix = xyToIndex(x, m_bd_height-1);
+		if( m_cell[ix] == EMPTY && m_dist[ix] == 1 ) {
+			return ix;
+		}
+	}
+	return -1;		//	not found
 }
 int Board::sel_move_random() {
 	g_lst.reserve(m_bd_width*m_bd_height);
@@ -521,6 +561,14 @@ void Board::get_empty_list(std::vector<int>& lst) const {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
+}
+int Board::n_empty() const {
+	int n = 0;
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			++n;
+	}
+	return n;
 }
 bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
 	Board bd(*this);
@@ -791,8 +839,21 @@ int Board::sel_move_block(byte next) {
 	}
 	return -1;
 }
-int Board::eval() {
-	return calc_horz_dist() - calc_vert_dist();
+//	次の手番：黒
+//	return: 黒から見た評価値を返す
+float Board::eval() {
+	auto dv = calc_vert_dist();		//	間接連結距離
+	if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
+		print_dist();
+		int ix = find_winning_move_black();
+		cout << "winning move = " << ixToStr(ix) << endl;
+		auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+		return n_empty() - (dv6*2 - 1) + 1;
+		//return 10.0;
+	}
+	auto dh = calc_horz_dist();
+	return dh - dv;
+	//return calc_horz_dist() - calc_vert_dist();
 	//if( next == BLACK )
 	//	return calc_horz_dist() - calc_vert_dist() + 1;
 	//else
