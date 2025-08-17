@@ -448,6 +448,28 @@ int Board::find_winning_move_white() {
 	}
 	return -1;		//	not found
 }
+void Board::find_winning_moves_black(vector<int> &lst) {
+	vector<ushort>	dist2(m_dist.size());			//	上下・左右距離計測用
+	dist2.swap(m_dist);
+	calc_vert_dist(true, false);		//	下辺→上辺 距離
+	//print_dist();
+	lst.clear();
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_dist[ix] == 1 && dist2[ix] == 1 )
+			lst.push_back(ix);
+	}
+}
+void Board::find_winning_moves_white(vector<int> &lst) {
+	vector<ushort>	dist2(m_dist.size());			//	上下・左右距離計測用
+	dist2.swap(m_dist);
+	calc_horz_dist(true, false);		//	右辺→左辺 距離
+	//print_dist();
+	lst.clear();
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_dist[ix] == 1 && dist2[ix] == 1 )
+			lst.push_back(ix);
+	}
+}
 int Board::sel_move_random() {
 	g_lst.reserve(m_bd_width*m_bd_height);
 	g_lst.clear();
@@ -844,9 +866,13 @@ float Board::eval_black() {
 		//print_dist();
 		//calc_vert_dist(true, false);		//	間接連結距離
 		//print_dist();
-		int ix = find_winning_move_black();
-		cout << "winning move = " << ixToStr(ix) << endl;
-		if( ix > 0 ) {
+		//int ix = find_winning_move_black();
+		vector<int> lst;
+		find_winning_moves_black(lst);
+		cout << "winning move = ";
+		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+		if( !lst.is_empty() ) {
+			int ix = lst[0];
 			set_color(ix, BLACK);
 			auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 			set_color(ix, EMPTY);
@@ -865,9 +891,12 @@ float Board::eval_black() {
 float Board::eval_white() {
 	auto dh = calc_horz_dist();		//	間接連結距離
 	if( dh <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
-		int ix = find_winning_move_white();
-		cout << "winning move = " << ixToStr(ix) << endl;
-		if( ix > 0 ) {
+		vector<int> lst;
+		find_winning_moves_white(lst);
+		cout << "winning move = ";
+		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+		if( !lst.is_empty() ) {
+			int ix = lst[0];
 			set_color(ix, WHITE);
 			auto dh6 = calc_horz_dist(false);		//	６近傍 直接連結距離
 			set_color(ix, EMPTY);

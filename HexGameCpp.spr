@@ -59,7 +59,7 @@
 0057 ● C 08/16            │ToDo│Board::calc_vert_dist()：front を deque に変更？
 0058 ◎ C 08/17 08/17 0.001│問題│2x2 初期状態での winning move が間違っている
 0059 ◎ C 08/17 08/17 0.001│ToDo│eval() を eval_black(), eval_whitge() に分ける？
-0060 ● C 08/17            │ToDo│
+0060 ◎ C 08/17 08/17 0.001│ToDo│winning move が複数ある場合：vector に格納
 0061 ● C 08/17            │ToDo│
 0062 ● C 08/17            │ToDo│
 0063 ● C 08/17            │ToDo│
