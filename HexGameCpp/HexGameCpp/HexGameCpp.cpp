@@ -45,19 +45,20 @@ int main()
 {
 	const int N_PLAYOUT = 1000;
 	if (1) {
-#if 1
+#if 0
 		const int BD_WIDTH = 2;
 		Board bd(BD_WIDTH);
 		//bd.calc_horz_dist();
 		//bd.print_dist();
 		//bd.calc_horz_dist(true, false);
 		//bd.print_dist();
-		//bd.set_color(0, 0, WHITE);
+		bd.set_color(0, 0, BLACK);
+		bd.set_color(0, 1, WHITE);
 #elif 1
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
 		bd.set_color(2, 0, BLACK);
-		bd.set_color(1, 2, WHITE);
+		//bd.set_color(1, 2, WHITE);
 #else
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
@@ -67,9 +68,13 @@ int main()
 		//bd.set_color(1, 0, WHITE);
 #endif
 		bd.print();
+		//bd.calc_horz_dist();
+		//bd.print_dist();
+		//bd.calc_horz_dist(true, false);
+		//bd.print_dist();
 		print_dvdh2(bd);
-		cout << "black: eval = " << bd.eval_black() << endl;
-		cout << "white: eval = " << bd.eval_white() << endl;
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+		cout << "white: eval = " << bd.eval_white() << endl << endl;
 	}
 	if (0) {
 		Board bd(4);

@@ -415,7 +415,7 @@ int Board::calc_horz_dist(bool ex, bool lr) {
 		for(int y = 1; y < m_bd_height; ++y) {
 			if( lr ) {
 				int ix = xyToIndex(m_bd_width-2, y);
-				if( m_cell[ix+1] == EMPTY && m_cell[ix+m_ary_width+1] == EMPTY )
+				if( m_cell[ix - m_ary_width +1] == EMPTY && m_cell[ix+1] == EMPTY )
 					mind = min(mind, m_dist[ix]);
 			} else {
 				int ix = xyToIndex(1, y);
