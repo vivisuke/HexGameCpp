@@ -26,13 +26,14 @@ void print_dvdh(Board& bd) {
 	cout << "horizontal dist = " << dh << endl;
 }
 void print_dvdh2(Board& bd) {
-	bd.print();
+	//bd.print();
 	auto dv = bd.calc_vert_dist();
+	bd.print_dist();
 	auto dv2 = bd.calc_vert_dist(false);
 	cout << "vert dist = " << dv << ", " << dv2 << endl;
 	auto dh = bd.calc_horz_dist();
 	auto dh2 = bd.calc_horz_dist(false);
-	cout << "horz dist = " << dh << ", " << dh2 << endl;
+	cout << "horz dist = " << dh << ", " << dh2 << endl << endl;
 }
 string ix_str(const Board& bd, int ix) {
 	string txt(1, 'a'+bd.indexToX(ix));
@@ -44,11 +45,19 @@ int main()
 {
 	const int N_PLAYOUT = 1000;
 	if (1) {
-#if 1
+#if 0
+		const int BD_WIDTH = 2;
+		Board bd(BD_WIDTH);
+		//bd.calc_horz_dist();
+		//bd.print_dist();
+		//bd.calc_horz_dist(true, false);
+		//bd.print_dist();
+		bd.set_color(0, 0, WHITE);
+#elif 1
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
-		bd.set_color(1, 2, BLACK);
-		bd.set_color(2, 0, WHITE);
+		bd.set_color(2, 0, BLACK);
+		bd.set_color(1, 2, WHITE);
 #else
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
@@ -57,9 +66,10 @@ int main()
 		//bd.set_color(0, 1, BLACK);
 		//bd.set_color(1, 0, WHITE);
 #endif
-		//bd.print();
+		bd.print();
 		print_dvdh2(bd);
-		cout << "eval = " << bd.eval() << endl;
+		cout << "black: eval = " << bd.eval_black() << endl;
+		cout << "white: eval = " << bd.eval_white() << endl;
 	}
 	if (0) {
 		Board bd(4);
@@ -622,7 +632,7 @@ int main()
 			for(int x = 0; x < BD_WIDTH; ++x) {
 				if( bd.get_color(x, y) == EMPTY ) {
 					bd.set_color(x, y, BLACK);
-					auto ev = bd.eval();
+					auto ev = bd.eval_black();
 					//cout << "ev = " << ev << endl;
 					//bd.print();
 					bd.set_color(x, y, EMPTY);

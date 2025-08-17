@@ -258,18 +258,18 @@ void Board::calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte 
 		}
 	}
 }
-int Board::calc_vert_dist(bool ex) {
+int Board::calc_vert_dist(bool ex, bool ud) {
 	fill(m_dist.begin(), m_dist.end(), DIST_MAX);
 	m_front.clear();
 	m_list1.clear();
 	for(int x = 0; x < m_bd_width; ++x) {
-		int ix = xyToIndex(x, 0);
+		int ix = xyToIndex(x, ud ? 0 : m_bd_height-1);
 		switch( m_cell[ix] ) {
 		case EMPTY:
 			m_dist[ix] = 1;
 			m_list1.push_back(ix);
 			if( ex && x+1 < m_bd_width && m_cell[ix+1] == EMPTY ) {
-				int ix2 = ix + m_ary_width;
+				int ix2 = ix + (ud ? m_ary_width : -m_ary_width+1);
 				switch( m_cell[ix2] ) {
 				case EMPTY:
 					m_dist[ix2] = 1;
@@ -320,47 +320,41 @@ int Board::calc_vert_dist(bool ex) {
 		}
 		//print_dist();
 	}
-#if 0
-	if( ex ) {
-		print_dist();
-		for(int x = 0; x < m_bd_width - 1; ++x) {
-			int ix = xyToIndex(x, m_bd_height-1);
-			if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
-				m_dist[ix] = min(m_dist[ix], m_dist[ix-m_ary_width+1]);
-				m_dist[ix+1] = min(m_dist[ix+1], m_dist[ix-m_ary_width+1]);
-			}
-		}
-	}
-#endif
 	//print_dist();
 	ushort mind = DIST_MAX;
 	for(int x = 0; x < m_bd_width; ++x) {
-		int ix = xyToIndex(x, m_bd_height-1);
+		int ix = xyToIndex(x, ud ? m_bd_height-1 : 0);
 		mind = min(mind, m_dist[ix]);
 	}
 	if( ex ) {
 		for(int x = 1; x < m_bd_width - 1; ++x) {
-			int ix = xyToIndex(x, m_bd_height-2);
-			if( m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
-				mind = min(mind, m_dist[ix]);
+			if( ud ) {
+				int ix = xyToIndex(x, m_bd_height-2);
+				if( m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
+					mind = min(mind, m_dist[ix]);
+			} else {
+				int ix = xyToIndex(x, 1);
+				if( m_cell[ix-m_ary_width] == EMPTY && m_cell[ix-m_ary_width+1] == EMPTY )
+					mind = min(mind, m_dist[ix]);
+			}
 		}
 	}
 	return mind;
 	//auto itr = min_element(&m_cell[xyToIndex(0, m_bd_height-1)], &m_cell[xyToIndex(m_bd_width-1, m_bd_height-1)]);
 	//return *itr;
 }
-int Board::calc_horz_dist(bool ex) {
+int Board::calc_horz_dist(bool ex, bool lr) {
 	fill(m_dist.begin(), m_dist.end(), DIST_MAX);
 	m_front.clear();
 	m_list1.clear();
 	for(int y = 0; y < m_bd_width; ++y) {
-		int ix = xyToIndex(0, y);
+		int ix = xyToIndex(lr ? 0 : m_bd_width-1, y);
 		switch( m_cell[ix] ) {
 		case EMPTY:
 			m_dist[ix] = 1;
 			m_list1.push_back(ix);
 			if( ex && y+1 < m_bd_height && m_cell[ix+m_ary_width] == EMPTY ) {
-				int ix2 = ix + 1;
+				int ix2 = ix + (lr ? 1 : m_ary_width-1);
 				switch( m_cell[ix2] ) {
 				case EMPTY:
 					m_dist[ix2] = 1;
@@ -411,43 +405,46 @@ int Board::calc_horz_dist(bool ex) {
 		}
 		//print_dist();
 	}
-	if( ex ) {
-		for(int y = 0; y < m_bd_height - 1; ++y) {
-			int ix = xyToIndex(m_bd_width-1, y);
-			if( m_cell[ix] == EMPTY && m_cell[ix+m_ary_width] == EMPTY ) {
-				m_dist[ix] = min(m_dist[ix], m_dist[ix+m_ary_width-1]);
-				m_dist[ix+m_ary_width] = min(m_dist[ix+m_ary_width], m_dist[ix+m_ary_width-1]);
-			}
-		}
-	}
 	//print_dist();
 	ushort mind = DIST_MAX;
 	for(int y = 0; y < m_bd_height; ++y) {
 		int ix = xyToIndex(m_bd_width-1, y);
 		mind = min(mind, m_dist[ix]);
 	}
+	if( ex ) {
+		for(int y = 1; y < m_bd_height; ++y) {
+			if( lr ) {
+				int ix = xyToIndex(m_bd_width-2, y);
+				if( m_cell[ix+1] == EMPTY && m_cell[ix+m_ary_width+1] == EMPTY )
+					mind = min(mind, m_dist[ix]);
+			} else {
+				int ix = xyToIndex(1, y);
+				if( m_cell[ix-1] == EMPTY && m_cell[ix+m_ary_width-1] == EMPTY )
+					mind = min(mind, m_dist[ix]);
+			}
+		}
+	}
 	return mind;
 }
 int Board::find_winning_move_black() {
-	for(int x = 1; x < m_bd_width; ++x) {
-		int ix = xyToIndex(x, m_bd_height-2);
-		if( m_dist[ix] == 0 ) {
-			if( m_cell[ix+m_ary_width-1] == EMPTY )
-				return ix+m_ary_width-1;
-			if( m_cell[ix+m_ary_width] == EMPTY )
-				return ix+m_ary_width;
-		}
-		if( m_cell[ix] == EMPTY && m_dist[ix] == 1 &&
-			m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
-		{
+	vector<ushort>	dist2(m_dist.size());			//	上下・左右距離計測用
+	dist2.swap(m_dist);
+	calc_vert_dist(true, false);		//	下辺→上辺 距離
+	//print_dist();
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_dist[ix] == 1 && dist2[ix] == 1 )
 			return ix;
-		}
 	}
-	for(int x = 0; x < m_bd_width; ++x) {
-		int ix = xyToIndex(x, m_bd_height-1);
-		if( m_cell[ix] == EMPTY && m_dist[ix] == 1 ) {
+	return -1;		//	not found
+}
+int Board::find_winning_move_white() {
+	vector<ushort>	dist2(m_dist.size());			//	上下・左右距離計測用
+	dist2.swap(m_dist);
+	calc_horz_dist(true, false);		//	右辺→左辺 距離
+	//print_dist();
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		if( m_dist[ix] == 1 && dist2[ix] == 1 )
 			return ix;
-		}
 	}
 	return -1;		//	not found
 }
@@ -841,27 +838,51 @@ int Board::sel_move_block(byte next) {
 }
 //	次の手番：黒
 //	return: 黒から見た評価値を返す
-float Board::eval() {
+float Board::eval_black() {
 	auto dv = calc_vert_dist();		//	間接連結距離
 	if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
-		print_dist();
+		//print_dist();
+		//calc_vert_dist(true, false);		//	間接連結距離
+		//print_dist();
 		int ix = find_winning_move_black();
 		cout << "winning move = " << ixToStr(ix) << endl;
-		auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
-		return n_empty() - (dv6*2 - 1) + 1;
+		if( ix > 0 ) {
+			set_color(ix, BLACK);
+			auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+			set_color(ix, EMPTY);
+			return n_empty() - (dv6*2 - 1) - 1;
+		} else {
+			auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+			return n_empty() - (dv6*2 - 1) + 1;
+		}
 		//return 10.0;
 	}
 	auto dh = calc_horz_dist();
 	return dh - dv;
-	//return calc_horz_dist() - calc_vert_dist();
-	//if( next == BLACK )
-	//	return calc_horz_dist() - calc_vert_dist() + 1;
-	//else
-	//	return calc_vert_dist() - calc_horz_dist() - 1;
+}
+//	次の手番：白
+//	return: 白から見た評価値を返す
+float Board::eval_white() {
+	auto dh = calc_horz_dist();		//	間接連結距離
+	if( dh <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
+		int ix = find_winning_move_white();
+		cout << "winning move = " << ixToStr(ix) << endl;
+		if( ix > 0 ) {
+			set_color(ix, WHITE);
+			auto dh6 = calc_horz_dist(false);		//	６近傍 直接連結距離
+			set_color(ix, EMPTY);
+			return n_empty() - (dh6*2 - 1) - 1;
+		} else {
+			auto dh6 = calc_horz_dist(false);		//	６近傍 直接連結距離
+			return n_empty() - (dh6*2 - 1) + 1;
+		}
+	}
+	auto dv = calc_vert_dist();
+	return dv - dh;
 }
 int Board::alpha_beta_black(int alpha, int beta, int depth) {
 	if( depth == 0 )
-		return eval();
+		return eval_black();
 	for(int y = 0; y < m_bd_height; ++y) {
 		for(int x = 0; x < m_bd_width; ++x) {
 		}
@@ -884,7 +905,7 @@ int Board::black_turn(int depth) {
 		if( max_ev != INT_MIN )
 			return max_ev;
 	}
-	return eval();
+	return eval_black();
 }
 int Board::white_turn(int depth) {
 	if( depth != 0 ) {
@@ -900,7 +921,7 @@ int Board::white_turn(int depth) {
 		if( min_ev != SHRT_MAX )
 			return min_ev;
 	}
-	return eval();
+	return eval_white();
 }
 //
 bool dfs_black_win(Board& bd, byte next) {		//	双方最善で黒が勝つか？

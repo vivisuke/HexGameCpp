@@ -48,8 +48,8 @@ public:
 	int		find_root_dr(int ix);
 
 	bool	is_vert_connected();			//	上下辺が連結されているか？ 空欄が無い状態でコールされる
-	int		calc_vert_dist(bool ex=true);	//	（黒）上下辺間距離計算（６連結＋間接連結(ex)）
-	int		calc_horz_dist(bool ex=true);	//	（白）左右辺間距離計算（６連結＋間接連結(ex)）
+	int		calc_vert_dist(bool ex=true, bool ud=true);	//	（黒）上下辺間距離計算（６連結＋間接連結(ex)）
+	int		calc_horz_dist(bool ex=true, bool lr=true);	//	（白）左右辺間距離計算（６連結＋間接連結(ex)）
 	//int		calc_vert_dist_ex();	//	（黒）上下辺間距離計算（６連結＋間接連結）
 	//int		calc_horz_dist_ex();	//	（白）左右辺間距離計算（６連結＋間接連結）
 	int		find_winning_move_black();
@@ -57,7 +57,8 @@ public:
 	void	get_empty_list(std::vector<int>&) const;
 	int		n_empty() const;
 
-	float	eval();				//	黒から見た評価値を計算
+	float	eval_black();				//	黒番、黒から見た評価値を計算
+	float	eval_white();				//	白番、白から見た評価値を計算
 	int		alpha_beta_black(int alpha, int beta, int depth);
 	int		alpha_beta_white(int alpha, int beta, int depth);
 	int		black_turn(int depth);
