@@ -327,7 +327,7 @@ int Board::calc_vert_dist(bool ex, bool ud) {
 		mind = min(mind, m_dist[ix]);
 	}
 	if( ex ) {
-		for(int x = 1; x < m_bd_width - 1; ++x) {
+		for(int x = 1; x < m_bd_width; ++x) {
 			if( ud ) {
 				int ix = xyToIndex(x, m_bd_height-2);
 				if( m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
@@ -863,6 +863,7 @@ int Board::sel_move_block(byte next) {
 float Board::eval_black() {
 	vector<int> lst;
 	auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+	//print_dist();
 	if( dv6 == 1 ) {
 		find_winning_moves_black(lst, false);		//	false for 6近傍
 		cout << "winning move = ";
@@ -870,6 +871,7 @@ float Board::eval_black() {
 		return n_empty();
 	}
 	auto dv = calc_vert_dist();		//	間接連結距離
+	//print_dist();
 	if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
 		//print_dist();
 		//calc_vert_dist(true, false);		//	間接連結距離

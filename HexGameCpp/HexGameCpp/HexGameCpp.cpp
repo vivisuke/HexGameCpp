@@ -28,7 +28,7 @@ void print_dvdh(Board& bd) {
 void print_dvdh2(Board& bd) {
 	//bd.print();
 	auto dv = bd.calc_vert_dist();
-	//bd.print_dist();
+	bd.print_dist();
 	auto dv2 = bd.calc_vert_dist(false);
 	cout << "vert dist = " << dv << ", " << dv2 << endl;
 	auto dh = bd.calc_horz_dist();
@@ -58,7 +58,7 @@ int main()
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
 		bd.set_color(2, 1, BLACK);
-		bd.set_color(1, 0, WHITE);
+		bd.set_color(2, 0, WHITE);
 #else
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
