@@ -448,10 +448,10 @@ int Board::find_winning_move_white() {
 	}
 	return -1;		//	not found
 }
-void Board::find_winning_moves_black(vector<int> &lst) {
+void Board::find_winning_moves_black(vector<int> &lst, bool ex) {
 	vector<ushort>	dist2(m_dist.size());			//	上下・左右距離計測用
 	dist2.swap(m_dist);
-	calc_vert_dist(true, false);		//	下辺→上辺 距離
+	calc_vert_dist(ex, false);		//	false for 下辺→上辺 距離
 	//print_dist();
 	lst.clear();
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
@@ -861,24 +861,30 @@ int Board::sel_move_block(byte next) {
 //	次の手番：黒
 //	return: 黒から見た評価値を返す
 float Board::eval_black() {
+	vector<int> lst;
+	auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+	if( dv6 == 1 ) {
+		find_winning_moves_black(lst, false);		//	false for 6近傍
+		cout << "winning move = ";
+		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+		return n_empty();
+	}
 	auto dv = calc_vert_dist();		//	間接連結距離
 	if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
 		//print_dist();
 		//calc_vert_dist(true, false);		//	間接連結距離
 		//print_dist();
 		//int ix = find_winning_move_black();
-		vector<int> lst;
 		find_winning_moves_black(lst);
 		cout << "winning move = ";
 		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 		if( !lst.is_empty() ) {
 			int ix = lst[0];
 			set_color(ix, BLACK);
-			auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 			set_color(ix, EMPTY);
 			return n_empty() - (dv6*2 - 1) - 1;
 		} else {
-			auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+			//auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 			return n_empty() - (dv6*2 - 1) + 1;
 		}
 		//return 10.0;

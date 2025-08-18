@@ -54,7 +54,7 @@ public:
 	//int		calc_horz_dist_ex();	//	（白）左右辺間距離計算（６連結＋間接連結）
 	int		find_winning_move_black();
 	int		find_winning_move_white();
-	void	find_winning_moves_black(std::vector<int>&);
+	void	find_winning_moves_black(std::vector<int>&, bool ex=true);
 	void	find_winning_moves_white(std::vector<int>&);
 	void	get_empty_list(std::vector<int>&) const;
 	int		n_empty() const;
