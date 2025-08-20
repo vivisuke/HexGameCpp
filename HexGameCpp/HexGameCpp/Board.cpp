@@ -9,8 +9,8 @@
 using namespace std;
 
 static std::random_device rd;
-//static std::mt19937 rgen(rd()); 
-static std::mt19937 rgen(0); 
+static std::mt19937 rgen(rd()); 
+//static std::mt19937 rgen(0); 
 
 
 vector<int> g_lst;
@@ -574,6 +574,25 @@ bool Board::playout(byte next) const {		//	return: true for 黒勝ち
 bool Board::did_black_win(int ix) {
 	return false;
 }
+void Board::swap_black_white() {
+	for(int y = 0; y < m_bd_height-1; ++y) {
+		for(int x = 0; x < m_bd_width-1-y; ++x) {
+			int ix1 = xyToIndex(x, y);	//	対角線の左上側
+			int ix2 = xyToIndex(m_bd_width-1-y, m_bd_height-1-x);	//	対角線の左上側
+			auto t1 = m_cell[ix1];
+			auto t2 = m_cell[ix2];
+			if( t1 != EMPTY ) t1 = (BLACK+WHITE) - t1;
+			if( t2 != EMPTY ) t2 = (BLACK+WHITE) - t2;
+			m_cell[ix1] = t2;
+			m_cell[ix2] = t1;
+		}
+	}
+	for(int y = 0; y < m_bd_height; ++y) {
+		int ix = xyToIndex(m_bd_width-1-y, y);
+		if( m_cell[ix] != EMPTY ) 
+			m_cell[ix] = (BLACK+WHITE) - m_cell[ix];
+	}
+}
 void Board::get_empty_list(std::vector<int>& lst) const {
 	lst.reserve(m_bd_width*m_bd_height);
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
@@ -855,6 +874,27 @@ int Board::sel_move_block(byte next) {
 				if( d > 1 ) return ix;
 			}
 		}
+	}
+	return -1;
+}
+int Board::sel_move_heuristic(byte next) {
+	vector<int> lst;
+	if( next == BLACK ) {
+		auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
+		if( dv6 == 1 ) {
+			find_winning_moves_black(lst, false);		//	false for 6近傍
+			cout << "winning move = ";
+			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+			return lst[0];
+		}
+		auto dv = calc_vert_dist();		//	間接連結距離
+		if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
+			find_winning_moves_black(lst);
+			cout << "winning move = ";
+			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+			return lst[0];
+		}
+	} else {
 	}
 	return -1;
 }

@@ -58,6 +58,7 @@ public:
 	void	find_winning_moves_white(std::vector<int>&);
 	void	get_empty_list(std::vector<int>&) const;
 	int		n_empty() const;
+	void	swap_black_white();
 
 	float	eval_black();				//	黒番、黒から見た評価値を計算
 	float	eval_white();				//	白番、白から見た評価値を計算
@@ -79,6 +80,7 @@ public:
 	int		sel_move_MCTS(byte next);		//	モンテカルロ木探索で着手を選択、return: 着手箇所
 	int		sel_move_win(byte next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
 	int		sel_move_block(byte next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
+	int		sel_move_heuristic(byte next);			//	
 private:
 	bool	is_vert_connected_sub(int ix);
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
