@@ -897,7 +897,21 @@ int Board::sel_move_heuristic(byte next) {
 			find_winning_moves_black(lst);
 			cout << "winning move = ";
 			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
-			return lst[0];
+			//return lst[0];
+			int mind = 9999;
+			int bestix = -1;
+			for(auto ix: lst) {
+				set_color(ix, BLACK);
+				auto dv = calc_vert_dist();			//	間接連結距離
+				auto dv6 = calc_vert_dist(false);	//	直接連結距離
+				set_color(ix, EMPTY);
+				auto d = dv*100 + dv6;
+				if( d < mind ) {
+					mind = d;
+					bestix = ix;
+				}
+			}
+			return bestix;
 		}
 		auto dh = calc_horz_dist();		//	間接連結距離
 		if( dh == 1 ) {		//	白に勝ちを確定させる手がある
@@ -906,16 +920,24 @@ int Board::sel_move_heuristic(byte next) {
 			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 			if( lst.size() == 1 )
 				return lst[0];
+			int maxd = 0;
+			int bestix = -1;
 			for(auto ix: lst) {
 				set_color(ix, BLACK);
-				auto dh = calc_horz_dist();		//	間接連結距離
+				auto dh = calc_horz_dist();			//	間接連結距離
+				auto dh6 = calc_horz_dist(false);	//	直接連結距離
 				set_color(ix, EMPTY);
-				if( dh > 1 )
-					return ix;
+				auto d = dh*100 + dh6;
+				if( d > maxd ) {
+					maxd = d;
+					bestix = ix;
+				}
 			}
+			return bestix;
 		}
 	} else {
 		swap_black_white();
+		print();
 		int ix = sel_move_heuristic(BLACK);
 		swap_black_white();
 		if (ix < 0) return -1;

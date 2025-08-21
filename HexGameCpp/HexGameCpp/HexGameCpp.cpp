@@ -69,22 +69,33 @@ int main()
 		//bd.print_dist();
 		bd.set_color(0, 0, BLACK);
 		//bd.set_color(0, 1, WHITE);
-#elif 1
+#elif 0
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
 		bd.set_color(2, 1, BLACK);
 		bd.set_color(2, 0, WHITE);
-		//bd.set_color(0, 1, BLACK);
-		//bd.set_color(0, 2, WHITE);
+		bd.set_color(0, 1, BLACK);
+		bd.set_color(0, 2, WHITE);
+		bd.set_color(1, 1, BLACK);
+		bd.set_color(0, 0, WHITE);
 		byte next = BLACK;
 		//byte next = WHITE;
 #else
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
+		bd.set_color(3, 0, BLACK);
+		bd.set_color(2, 2, WHITE);
 		bd.set_color(1, 2, BLACK);
-		bd.set_color(2, 0, WHITE);
+		bd.set_color(2, 1, WHITE);
+
+		//bd.set_color(1, 1, BLACK);
+		// 
+		//bd.set_color(1, 2, BLACK);
+		//bd.set_color(2, 0, WHITE);
 		//bd.set_color(0, 1, BLACK);
 		//bd.set_color(1, 0, WHITE);
+		byte next = BLACK;
+		//byte next = WHITE;
 #endif
 		bd.print();
 		//bd.calc_horz_dist();
