@@ -59,6 +59,7 @@ public:
 	void	get_empty_list(std::vector<int>&) const;
 	int		n_empty() const;
 	void	swap_black_white();
+	int		swap_bw_ix(int ix) const;
 
 	float	eval_black();				//	黒番、黒から見た評価値を計算
 	float	eval_white();				//	白番、白から見た評価値を計算

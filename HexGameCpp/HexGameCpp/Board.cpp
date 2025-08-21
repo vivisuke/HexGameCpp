@@ -593,6 +593,11 @@ void Board::swap_black_white() {
 			m_cell[ix] = (BLACK+WHITE) - m_cell[ix];
 	}
 }
+int Board::swap_bw_ix(int ix) const {
+	int x = indexToX(ix);
+	int y = indexToY(ix);
+	return xyToIndex(m_bd_height-1-y, m_bd_width-1-x);
+}
 void Board::get_empty_list(std::vector<int>& lst) const {
 	lst.reserve(m_bd_width*m_bd_height);
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
@@ -894,7 +899,27 @@ int Board::sel_move_heuristic(byte next) {
 			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 			return lst[0];
 		}
+		auto dh = calc_horz_dist();		//	間接連結距離
+		if( dh == 1 ) {		//	白に勝ちを確定させる手がある
+			find_winning_moves_white(lst);
+			cout << "winning move = ";
+			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+			if( lst.size() == 1 )
+				return lst[0];
+			for(auto ix: lst) {
+				set_color(ix, BLACK);
+				auto dh = calc_horz_dist();		//	間接連結距離
+				set_color(ix, EMPTY);
+				if( dh > 1 )
+					return ix;
+			}
+		}
 	} else {
+		swap_black_white();
+		int ix = sel_move_heuristic(BLACK);
+		swap_black_white();
+		if (ix < 0) return -1;
+		return swap_bw_ix(ix);
 	}
 	return -1;
 }

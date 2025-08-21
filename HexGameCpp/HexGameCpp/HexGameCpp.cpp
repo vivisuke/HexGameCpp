@@ -44,7 +44,7 @@ string ix_str(const Board& bd, int ix) {
 int main()
 {
 	const int N_PLAYOUT = 1000;
-	if (1) {
+	if (0) {
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
 		byte next = BLACK;
@@ -59,7 +59,7 @@ int main()
 		bd.print();
 		print_dvdh2(bd);
 	}
-	if (0) {
+	if (1) {
 #if 0
 		const int BD_WIDTH = 2;
 		Board bd(BD_WIDTH);
@@ -72,10 +72,12 @@ int main()
 #elif 1
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
-		//bd.set_color(2, 1, BLACK);
-		//bd.set_color(2, 0, WHITE);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(2, 0, WHITE);
 		//bd.set_color(0, 1, BLACK);
 		//bd.set_color(0, 2, WHITE);
+		byte next = BLACK;
+		//byte next = WHITE;
 #else
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
@@ -93,7 +95,7 @@ int main()
 		cout << "black: eval = " << bd.eval_black() << endl << endl;
 		cout << "white: eval = " << bd.eval_white() << endl << endl;
 
-		auto ix = bd.sel_move_heuristic(BLACK);
+		auto ix = bd.sel_move_heuristic(next);
 		cout << "sel_move_heuristic(): ";
 		if( ix < 0 ) cout << "ix = " << ix << endl;
 		else cout << "put " << bd.ixToStr(ix) << endl;
