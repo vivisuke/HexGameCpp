@@ -819,5 +819,11 @@ void test_Board() {
 		auto ev = bd.eval_black();
 		assert(ev == 5.0);
 	}
+	if (1) {
+		Board bd(4);
+		bd.print();
+		auto ev = bd.eval_black();
+		assert(ev == 0.5);
+	}
 	cout << "test_Board finished." << endl;
 }

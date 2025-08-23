@@ -982,11 +982,18 @@ float Board::eval_black() {
 		//return 10.0;
 	}
 	auto dh = calc_horz_dist();
-	return dh - dv;
+	auto dh6 = calc_horz_dist(false);
+	return dh - dv + (dh6 - dv6)/100.0 + 0.5;
 }
 //	次の手番：白
-//	return: 白から見た評価値を返す
+//	return: 白から見た評価値を返す、白が有利な場合はプラスの値を返す
 float Board::eval_white() {
+#if 1
+	swap_black_white();
+	auto ev = eval_black();
+	swap_black_white();
+	return ev;
+#else
 	auto dh = calc_horz_dist();		//	間接連結距離
 	if( dh <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
 		vector<int> lst;
@@ -1006,6 +1013,7 @@ float Board::eval_white() {
 	}
 	auto dv = calc_vert_dist();
 	return dv - dh;
+#endif
 }
 int Board::alpha_beta_black(int alpha, int beta, int depth) {
 	if( depth == 0 )
