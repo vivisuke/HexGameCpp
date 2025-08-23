@@ -14,6 +14,8 @@ using namespace std;
 
 const int BD_WIDTH = 4;
 
+void test_Board();
+
 //int my_popcount(ushort b) {
 //
 //}
@@ -43,6 +45,10 @@ string ix_str(const Board& bd, int ix) {
 
 int main()
 {
+#ifdef	_DEBUG
+	test_Board();
+#endif
+
 	const int N_PLAYOUT = 1000;
 	if (0) {
 		const int BD_WIDTH = 4;
@@ -59,7 +65,7 @@ int main()
 		bd.print();
 		print_dvdh2(bd);
 	}
-	if (1) {
+	if (0) {
 #if 0
 		const int BD_WIDTH = 2;
 		Board bd(BD_WIDTH);
@@ -69,18 +75,18 @@ int main()
 		//bd.print_dist();
 		bd.set_color(0, 0, BLACK);
 		//bd.set_color(0, 1, WHITE);
-#elif 0
+#elif 1
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
 		bd.set_color(2, 1, BLACK);
-		bd.set_color(2, 0, WHITE);
-		bd.set_color(0, 1, BLACK);
-		bd.set_color(0, 2, WHITE);
-		bd.set_color(1, 1, BLACK);
-		bd.set_color(0, 0, WHITE);
+		bd.set_color(1, 0, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(0, 2, WHITE);
+		//bd.set_color(1, 1, BLACK);
+		//bd.set_color(0, 0, WHITE);
 		byte next = BLACK;
 		//byte next = WHITE;
-#else
+#elif 0
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);
 		bd.set_color(3, 0, BLACK);
@@ -96,6 +102,15 @@ int main()
 		//bd.set_color(1, 0, WHITE);
 		byte next = BLACK;
 		//byte next = WHITE;
+#else
+		const int BD_WIDTH = 5;
+		Board bd(BD_WIDTH);
+		bd.set_color(4, 0, BLACK);
+		bd.set_color(2, 2, WHITE);
+		bd.set_color(3, 2, BLACK);
+		//bd.set_color(3, 1, WHITE);
+		//byte next = BLACK;
+		byte next = WHITE;
 #endif
 		bd.print();
 		//bd.calc_horz_dist();
@@ -743,4 +758,66 @@ int main()
 #endif
 
     std::cout << "\nOK.\n";
+}
+void test_Board() {
+	cout << "test_Board:" << endl;
+	if( 1 ) {
+		Board bd(3);
+		bd.print();
+		auto dv = bd.calc_vert_dist();		//	間接連結考慮
+		assert( dv == 1 );
+		auto dh = bd.calc_horz_dist();
+		assert( dh == 1 );
+		auto dv6 = bd.calc_vert_dist(false);		//	６近傍連結
+		assert( dv6 == 3 );
+		auto dh6 = bd.calc_horz_dist(false);
+		assert( dh6 == 3 );
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(2, 0, WHITE);
+		bd.print();
+		auto dv = bd.calc_vert_dist();		//	間接連結考慮
+		assert(dv == 2);
+		auto dh = bd.calc_horz_dist();
+		assert(dh == 1);
+		auto dv6 = bd.calc_vert_dist(false);		//	６近傍連結
+		assert(dv6 == 3);
+		auto dh6 = bd.calc_horz_dist(false);
+		assert(dh6 == 2);
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(1, 1, BLACK);
+		bd.set_color(0, 0, WHITE);
+		bd.print();
+		auto ev = bd.eval_black();
+		assert(ev == 5.0);
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(1, 1, BLACK);
+		bd.set_color(1, 0, WHITE);
+		bd.print();
+		auto ev = bd.eval_black();
+		assert(ev == 5.0);
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(1, 0, WHITE);
+		bd.print();
+		auto dv = bd.calc_vert_dist();		//	間接連結考慮
+		assert(dv == 1);
+		auto dh = bd.calc_horz_dist();
+		assert(dh == 1);
+		auto dv6 = bd.calc_vert_dist(false);		//	６近傍連結
+		assert(dv6 == 2);
+		auto dh6 = bd.calc_horz_dist(false);
+		assert(dh6 == 2);
+		auto ev = bd.eval_black();
+		assert(ev == 5.0);
+	}
+	cout << "test_Board finished." << endl;
 }

@@ -959,7 +959,10 @@ float Board::eval_black() {
 	}
 	auto dv = calc_vert_dist();		//	間接連結距離
 	//print_dist();
-	if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
+	if( dv == 0 ) {		//	すでに勝ち確定
+		return n_empty() - dv6*2 + 2;
+	}
+	if( dv == 1 ) {		//	勝ちを確定させる手がある
 		//print_dist();
 		//calc_vert_dist(true, false);		//	間接連結距離
 		//print_dist();
@@ -968,10 +971,10 @@ float Board::eval_black() {
 		cout << "winning move = ";
 		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 		if( !lst.is_empty() ) {
-			int ix = lst[0];
-			set_color(ix, BLACK);
-			set_color(ix, EMPTY);
-			return n_empty() - (dv6*2 - 1) - 1;
+			//int ix = lst[0];
+			//set_color(ix, BLACK);
+			//set_color(ix, EMPTY);
+			return n_empty() - (dv6-dv)*2;
 		} else {
 			//auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 			return n_empty() - (dv6*2 - 1) + 1;
