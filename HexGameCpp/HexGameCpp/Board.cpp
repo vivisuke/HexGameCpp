@@ -948,19 +948,27 @@ int Board::sel_move_heuristic(byte next) {
 //	次の手番：黒
 //	return: 黒から見た評価値を返す
 float Board::eval_black() {
+	auto n_emp = n_empty();
 	vector<int> lst;
 	auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 	//print_dist();
+	if( dv6 == 0 ) {
+		return n_emp + 1;
+	}
+	auto dh6 = calc_horz_dist(false);
+	if( dh6 == 0 ) {
+		return -(n_emp + 1);
+	}
 	if( dv6 == 1 ) {
 		//find_winning_moves_black(lst, false);		//	false for 6近傍
 		//cout << "winning move = ";
 		//for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
-		return n_empty();
+		return n_emp;
 	}
 	auto dv = calc_vert_dist();		//	間接連結距離
 	//print_dist();
 	if( dv == 0 ) {		//	すでに勝ち確定
-		return n_empty() - dv6*2 + 2;
+		return n_emp - dv6*2 + 2;
 	}
 	if( dv == 1 ) {		//	勝ちを確定させる手がある
 		//print_dist();
@@ -974,15 +982,14 @@ float Board::eval_black() {
 			//int ix = lst[0];
 			//set_color(ix, BLACK);
 			//set_color(ix, EMPTY);
-			return n_empty() - (dv6-dv)*2;
+			return n_emp - (dv6-dv)*2;
 		} else {
 			//auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
-			return n_empty() - (dv6*2 - 1) + 1;
+			return n_emp - (dv6*2 - 1) + 1;
 		}
 		//return 10.0;
 	}
 	auto dh = calc_horz_dist();
-	auto dh6 = calc_horz_dist(false);
 	return dh - dv + (dh6 - dv6)/100.0 + 0.5;
 }
 //	次の手番：白

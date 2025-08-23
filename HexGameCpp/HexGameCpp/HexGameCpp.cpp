@@ -51,6 +51,16 @@ int main()
 
 	const int N_PLAYOUT = 1000;
 	if (1) {
+		Board bd(2);
+		bd.set_color(0, 0, BLACK);
+		bd.set_color(1, 0, WHITE);
+		bd.set_color(1, 1, BLACK);
+		bd.set_color(0, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+#if 0
+	if (1) {
 		Board bd(3);
 		bd.set_color(0, 0, WHITE);
 		bd.print();
@@ -175,6 +185,7 @@ int main()
 		}
 		cout << endl;
 	}
+#endif
 #if 0
 	if (1) {
 		Board bd(4);
@@ -938,7 +949,7 @@ void test_Board() {
 	cout << "test_Board:" << endl;
 	if( 1 ) {
 		Board bd(3);
-		bd.print();
+		//bd.print();
 		auto dv = bd.calc_vert_dist();		//	間接連結考慮
 		assert( dv == 1 );
 		auto dh = bd.calc_horz_dist();
@@ -952,7 +963,7 @@ void test_Board() {
 		Board bd(3);
 		bd.set_color(2, 1, BLACK);
 		bd.set_color(2, 0, WHITE);
-		bd.print();
+		//bd.print();
 		auto dv = bd.calc_vert_dist();		//	間接連結考慮
 		assert(dv == 2);
 		auto dh = bd.calc_horz_dist();
@@ -966,7 +977,7 @@ void test_Board() {
 		Board bd(3);
 		bd.set_color(1, 1, BLACK);
 		bd.set_color(0, 0, WHITE);
-		bd.print();
+		//bd.print();
 		auto ev = bd.eval_black();
 		assert(ev == 5.0);
 	}
@@ -974,7 +985,7 @@ void test_Board() {
 		Board bd(3);
 		bd.set_color(1, 1, BLACK);
 		bd.set_color(1, 0, WHITE);
-		bd.print();
+		//bd.print();
 		auto ev = bd.eval_black();
 		assert(ev == 5.0);
 	}
@@ -982,7 +993,7 @@ void test_Board() {
 		Board bd(3);
 		bd.set_color(2, 1, BLACK);
 		bd.set_color(1, 0, WHITE);
-		bd.print();
+		//bd.print();
 		auto dv = bd.calc_vert_dist();		//	間接連結考慮
 		assert(dv == 1);
 		auto dh = bd.calc_horz_dist();
@@ -996,7 +1007,7 @@ void test_Board() {
 	}
 	if (1) {
 		Board bd(4);
-		bd.print();
+		//bd.print();
 		auto ev = bd.eval_black();
 		assert(ev == 0.5);
 	}
