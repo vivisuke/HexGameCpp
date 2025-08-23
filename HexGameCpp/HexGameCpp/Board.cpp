@@ -1033,6 +1033,11 @@ float Board::eval(byte next) {
 	}
 }
 float Board::nega_max(byte next, int depth) {
+	if( next == BLACK && calc_vert_dist(false) == 0 ||
+		next == WHITE && calc_horz_dist(false) == 0 )
+	{
+		return n_empty() + 1;
+	}
 	if( depth <= 0 ) {
 		return eval(next);
 	}

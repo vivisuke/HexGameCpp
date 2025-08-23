@@ -50,7 +50,7 @@ int main()
 #endif
 
 	const int N_PLAYOUT = 1000;
-	if (1) {
+	if (0) {
 		Board bd(2);
 		bd.set_color(0, 0, BLACK);
 		bd.set_color(1, 0, WHITE);
@@ -186,6 +186,38 @@ int main()
 		cout << endl;
 	}
 #endif
+	if (1) {
+		const int DEPTH = 9;		//	先読み深さ
+		const int BD_WIDTH = 3;
+		Board bd(BD_WIDTH);
+		//bd.set_color(2, 0, BLACK);
+		//bd.set_color(1, 2, WHITE);
+		//bd.set_color(0, 2, BLACK);
+#if 1
+		byte next = BLACK;
+		byte next2 = WHITE;
+#else
+		byte next = WHITE;
+		byte next2 = BLACK;
+#endif
+		bd.print();
+		cout << "DEPTH = " << DEPTH << endl << endl;
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, next);
+					//auto ev = -bd.eval_black();		// ev: 白から見た評価値
+					auto ev = -bd.nega_max(next2, DEPTH-1);		// ev: next から見た評価値
+					bd.set_color(x, y, EMPTY);
+					printf(" %5.2f", ev);
+				} else
+					cout << " -----";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
 #if 0
 	if (1) {
 		Board bd(4);
