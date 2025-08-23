@@ -187,12 +187,15 @@ int main()
 	}
 #endif
 	if (1) {
-		const int DEPTH = 9;		//	先読み深さ
+		const int DEPTH = 3;		//	先読み深さ
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
-		//bd.set_color(2, 0, BLACK);
-		//bd.set_color(1, 2, WHITE);
-		//bd.set_color(0, 2, BLACK);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(2, 0, WHITE);
+		//bd.set_color(3, 0, BLACK);
+		//bd.set_color(2, 1, WHITE);
+		//bd.set_color(2, 2, BLACK);
+		//bd.set_color(3, 1, WHITE);
 #if 1
 		byte next = BLACK;
 		byte next2 = WHITE;

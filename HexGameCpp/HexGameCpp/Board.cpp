@@ -1033,10 +1033,10 @@ float Board::eval(byte next) {
 	}
 }
 float Board::nega_max(byte next, int depth) {
-	if( next == BLACK && calc_vert_dist(false) == 0 ||
-		next == WHITE && calc_horz_dist(false) == 0 )
+	if( next == WHITE && calc_vert_dist(false) == 0 ||
+		next == BLACK && calc_horz_dist(false) == 0 )
 	{
-		return n_empty() + 1;
+		return -(n_empty() + 1);		//	手番でない方が勝利してる
 	}
 	if( depth <= 0 ) {
 		return eval(next);
