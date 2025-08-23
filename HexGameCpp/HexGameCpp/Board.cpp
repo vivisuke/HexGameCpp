@@ -952,9 +952,9 @@ float Board::eval_black() {
 	auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 	//print_dist();
 	if( dv6 == 1 ) {
-		find_winning_moves_black(lst, false);		//	false for 6近傍
-		cout << "winning move = ";
-		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+		//find_winning_moves_black(lst, false);		//	false for 6近傍
+		//cout << "winning move = ";
+		//for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 		return n_empty();
 	}
 	auto dv = calc_vert_dist();		//	間接連結距離
@@ -968,8 +968,8 @@ float Board::eval_black() {
 		//print_dist();
 		//int ix = find_winning_move_black();
 		find_winning_moves_black(lst);
-		cout << "winning move = ";
-		for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+		//cout << "winning move = ";
+		//for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 		if( !lst.is_empty() ) {
 			//int ix = lst[0];
 			//set_color(ix, BLACK);
@@ -1014,6 +1014,34 @@ float Board::eval_white() {
 	auto dv = calc_vert_dist();
 	return dv - dh;
 #endif
+}
+float Board::eval(byte next) {
+	if( next == BLACK )
+		return eval_black();
+	else {
+		swap_black_white();
+		auto ev = eval_black();
+		swap_black_white();
+		return ev;
+	}
+}
+float Board::nega_max(byte next, int depth) {
+	if( depth <= 0 ) {
+		return eval(next);
+	}
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	if( lst.is_empty() ) {	//	空欄無しの場合
+		return eval(next);
+	}
+	float maxev = std::numeric_limits<float>::lowest();
+	byte nn = (BLACK+WHITE) - next;
+	for(auto ix: lst) {
+		set_color(ix, next);
+		maxev = max(maxev, -nega_max(nn, depth-1));
+		set_color(ix, EMPTY);
+	}
+	return maxev;
 }
 int Board::alpha_beta_black(int alpha, int beta, int depth) {
 	if( depth == 0 )

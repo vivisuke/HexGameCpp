@@ -50,6 +50,181 @@ int main()
 #endif
 
 	const int N_PLAYOUT = 1000;
+	if (1) {
+		Board bd(3);
+		bd.set_color(0, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(1, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(2, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(0, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(1, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(0, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(0, 0, BLACK);
+		bd.print();
+		cout << "eval = " << -bd.eval_white() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(1, 0, BLACK);
+		bd.print();
+		cout << "eval = " << -bd.eval_white() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(2, 0, BLACK);
+		bd.print();
+		cout << "eval = " << -bd.eval_white() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(0, 1, BLACK);
+		bd.print();
+		cout << "eval = " << -bd.eval_white() << endl << endl;
+	}
+	if (1) {
+		Board bd(3);
+		bd.set_color(1, 1, BLACK);
+		bd.print();
+		cout << "eval = " << -bd.eval_white() << endl << endl;
+	}
+	if (1) {
+		const int BD_WIDTH = 3;
+		Board bd(BD_WIDTH);
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				bd.set_color(x, y, BLACK);
+				auto ev = -bd.eval_white();		// ev: 黒から見た評価値
+				bd.set_color(x, y, EMPTY);
+				printf(" %5.2f", ev);
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+	if (1) {
+		const int BD_WIDTH = 3;
+		Board bd(BD_WIDTH);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(2, 0, WHITE);
+		bd.set_color(0, 1, BLACK);
+		bd.print();
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, WHITE);
+					auto ev = -bd.eval_black();		// ev: 白から見た評価値
+					bd.set_color(x, y, EMPTY);
+					printf(" %5.2f", ev);
+				} else
+					cout << " -----";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+	if (1) {
+		const int BD_WIDTH = 3;
+		Board bd(BD_WIDTH);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(2, 0, WHITE);
+		bd.print();
+		for(int y = 0; y < BD_WIDTH; ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < BD_WIDTH; ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, BLACK);
+					auto ev = -bd.eval_white();		// ev: 黒から見た評価値
+					//auto ev = -bd.eval_black();		// ev: 白から見た評価値
+					bd.set_color(x, y, EMPTY);
+					printf(" %5.2f", ev);
+				} else
+					cout << " -----";
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+#if 0
+	if (1) {
+		Board bd(4);
+		bd.set_color(0, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(1, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(2, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(3, 0, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(0, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(1, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(2, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+	if (1) {
+		Board bd(4);
+		bd.set_color(3, 1, WHITE);
+		bd.print();
+		cout << "black: eval = " << bd.eval_black() << endl << endl;
+	}
+#endif
 	if (0) {
 		const int BD_WIDTH = 4;
 		Board bd(BD_WIDTH);

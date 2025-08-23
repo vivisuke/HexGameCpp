@@ -63,6 +63,8 @@ public:
 
 	float	eval_black();				//	•”ÔA•‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
 	float	eval_white();				//	”’”ÔA”’‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
+	float	eval(byte next);			//	next: è”ÔAè”Ô‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
+	float	nega_max(byte next, int depth);		//	”Õ–Ê”’•”½“]‚µ‚È‚¢ nega_max
 	int		alpha_beta_black(int alpha, int beta, int depth);
 	int		alpha_beta_white(int alpha, int beta, int depth);
 	int		black_turn(int depth);
