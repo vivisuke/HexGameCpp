@@ -187,12 +187,12 @@ int main()
 	}
 #endif
 	if (1) {
-		const int DEPTH = 3;		//	先読み深さ
+		const int DEPTH = 8;		//	先読み深さ
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
-		bd.set_color(2, 1, BLACK);
-		bd.set_color(2, 0, WHITE);
-		//bd.set_color(3, 0, BLACK);
+		//bd.set_color(0, 2, BLACK);
+		//bd.set_color(0, 3, WHITE);
+		//bd.set_color(2, 2, BLACK);
 		//bd.set_color(2, 1, WHITE);
 		//bd.set_color(2, 2, BLACK);
 		//bd.set_color(3, 1, WHITE);
@@ -211,7 +211,8 @@ int main()
 				if( bd.get_color(x, y) == EMPTY ) {
 					bd.set_color(x, y, next);
 					//auto ev = -bd.eval_black();		// ev: 白から見た評価値
-					auto ev = -bd.nega_max(next2, DEPTH-1);		// ev: next から見た評価値
+					//auto ev = -bd.nega_max(next2, DEPTH-1);		// ev: next から見た評価値
+					auto ev = -bd.nega_alpha(next2, DEPTH-1, -9999, +9999);		// ev: next から見た評価値
 					bd.set_color(x, y, EMPTY);
 					printf(" %5.2f", ev);
 				} else

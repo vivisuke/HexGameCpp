@@ -1055,6 +1055,31 @@ float Board::nega_max(byte next, int depth) {
 	}
 	return maxev;
 }
+float Board::nega_alpha(byte next, int depth, float alpha, float beta) {
+	if( next == WHITE && calc_vert_dist(false) == 0 ||
+		next == BLACK && calc_horz_dist(false) == 0 )
+	{
+		return -(n_empty() + 1);		//	手番でない方が勝利してる
+	}
+	if( depth <= 0 ) {
+		return eval(next);
+	}
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	if( lst.is_empty() ) {	//	空欄無しの場合
+		return eval(next);
+	}
+	//float maxev = std::numeric_limits<float>::lowest();
+	byte nn = (BLACK+WHITE) - next;
+	for(auto ix: lst) {
+		set_color(ix, next);
+		alpha = max(alpha, -nega_alpha(nn, depth-1, -beta, -alpha));
+		set_color(ix, EMPTY);
+		if( alpha >= beta )
+			return alpha;
+	}
+	return alpha;
+}
 int Board::alpha_beta_black(int alpha, int beta, int depth) {
 	if( depth == 0 )
 		return eval_black();
