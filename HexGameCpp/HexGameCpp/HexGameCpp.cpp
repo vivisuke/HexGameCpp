@@ -186,7 +186,7 @@ int main()
 		cout << endl;
 	}
 #endif
-	if (1) {
+	if (0) {
 		const int DEPTH = 8;		//	先読み深さ
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
@@ -469,8 +469,8 @@ int main()
 		printf("best: %c%d\n", 'a'+bd.indexToX(ix), bd.indexToY(ix)+1);
 		//cout << "best: " << bd.indexToX(ix) << ", " << bd.indexToY(ix) << endl;
 	}
-	if (0) {
-		Board bd(4);
+	if (1) {
+		Board bd(6);
 		bd.print();
 		byte next = BLACK;
 		for(;;) {
@@ -479,10 +479,12 @@ int main()
 				//ix = bd.sel_move_random();
 				ix = bd.sel_move_PMC(next);
 				//ix = bd.sel_move_MCTS(next);
+				//ix = bd.sel_move_ab(next);
 			} else {
 				//ix = bd.sel_move_random();
 				//ix = bd.sel_move_PMC(next);
-				ix = bd.sel_move_MCTS(next);
+				//ix = bd.sel_move_MCTS(next);
+				ix = bd.sel_move_ab(next);
 			}
 			if( ix < 0 ) break;
 			if( bd.put_and_check_uf(ix, next) )

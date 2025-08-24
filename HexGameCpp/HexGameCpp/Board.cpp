@@ -888,15 +888,15 @@ int Board::sel_move_heuristic(byte next) {
 		auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
 		if( dv6 == 1 ) {
 			find_winning_moves_black(lst, false);		//	false for 6近傍
-			cout << "winning move = ";
+			//cout << "winning move = ";
 			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 			return lst[0];
 		}
 		auto dv = calc_vert_dist();		//	間接連結距離
 		if( dv <= 1 ) {		//	勝ちを確定させる手がある or すでに勝ち確定
 			find_winning_moves_black(lst);
-			cout << "winning move = ";
-			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+			//cout << "winning move = ";
+			//for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 			//return lst[0];
 			int mind = 9999;
 			int bestix = -1;
@@ -916,8 +916,8 @@ int Board::sel_move_heuristic(byte next) {
 		auto dh = calc_horz_dist();		//	間接連結距離
 		if( dh == 1 ) {		//	白に勝ちを確定させる手がある
 			find_winning_moves_white(lst);
-			cout << "winning move = ";
-			for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
+			//cout << "winning move = ";
+			//for(auto ix: lst) cout << ixToStr(ix) << ", "; cout << endl;
 			if( lst.size() == 1 )
 				return lst[0];
 			int maxd = 0;
@@ -937,13 +937,34 @@ int Board::sel_move_heuristic(byte next) {
 		}
 	} else {
 		swap_black_white();
-		print();
+		//print();
 		int ix = sel_move_heuristic(BLACK);
 		swap_black_white();
 		if (ix < 0) return -1;
 		return swap_bw_ix(ix);
 	}
 	return -1;
+}
+int Board::sel_move_ab(byte next) {
+	auto ix = sel_move_heuristic(next);
+	if( ix >= 0 ) return ix;
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	float alpha = std::numeric_limits<float>::lowest();
+	float beta = std::numeric_limits<float>::max();
+	const byte nn = (BLACK+WHITE) - next;
+	int bestix = 0;
+	const int DEPTH = 5;		//	先読み深さ
+	for(auto ix: lst) {
+		set_color(ix, next);
+		auto ev = -nega_alpha(nn, DEPTH-1, -beta, -alpha);
+		set_color(ix, EMPTY);
+		if( ev > alpha ) {
+			alpha = ev;
+			bestix = ix;
+		}
+	}
+	return bestix;
 }
 //	次の手番：黒
 //	return: 黒から見た評価値を返す
@@ -1047,7 +1068,7 @@ float Board::nega_max(byte next, int depth) {
 		return eval(next);
 	}
 	float maxev = std::numeric_limits<float>::lowest();
-	byte nn = (BLACK+WHITE) - next;
+	const byte nn = (BLACK+WHITE) - next;
 	for(auto ix: lst) {
 		set_color(ix, next);
 		maxev = max(maxev, -nega_max(nn, depth-1));
@@ -1070,7 +1091,7 @@ float Board::nega_alpha(byte next, int depth, float alpha, float beta) {
 		return eval(next);
 	}
 	//float maxev = std::numeric_limits<float>::lowest();
-	byte nn = (BLACK+WHITE) - next;
+	const byte nn = (BLACK+WHITE) - next;
 	for(auto ix: lst) {
 		set_color(ix, next);
 		alpha = max(alpha, -nega_alpha(nn, depth-1, -beta, -alpha));

@@ -85,6 +85,7 @@ public:
 	int		sel_move_win(byte next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
 	int		sel_move_block(byte next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
 	int		sel_move_heuristic(byte next);			//	
+	int		sel_move_ab(byte next);			//	αβ法＋評価関数による着手選択
 private:
 	bool	is_vert_connected_sub(int ix);
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
