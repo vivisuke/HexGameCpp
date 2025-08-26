@@ -2,9 +2,12 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using byte = unsigned char;
+using uchar = unsigned char;
 using ushort = unsigned short;
+using uint64 = uint64_t;
 
 #define		is_empty()	empty()
 
@@ -15,6 +18,20 @@ enum {
 	DIST_MAX = 9999,
 	UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8,
 	UNCONNECT = -1, UL_INDEX = 0,
+};
+
+enum TTFlag {
+    FLAG_UNKNOWN,
+    FLAG_TERMINAL,		//	確定評価値（先読みによる更新不要）
+    FLAG_EXACT,			// 評価値は正確
+    FLAG_LOWER,			// 評価値は下界
+    FLAG_UPPER,			// 評価値は上界
+};
+struct TTEntry {		//	置換表に格納するデータ構造
+	float	m_score = 0.0;			//	この局面の評価値
+	uchar	m_flag = FLAG_UNKNOWN;
+	uchar	m_depth = 0;
+	ushort	m_best_move = 0;		// この局面での最善手
 };
 
 class Board
@@ -85,11 +102,15 @@ public:
 	int		sel_move_win(byte next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
 	int		sel_move_block(byte next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
 	int		sel_move_heuristic(byte next);			//	
-	int		sel_move_ab(byte next);			//	αβ法＋評価関数による着手選択
+	int		sel_move_AB(byte next);			//	αβ法＋評価関数による着手選択
+	int		sel_move_itrdeep(byte next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
 private:
 	bool	is_vert_connected_sub(int ix);
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
+	void	build_zobrist_table();
+	float	nega_max_tt(byte next, int depth);		//	盤面白黒反転しない nega_max、置換表使用版
+	float	nega_alpha_tt(byte next, int depth, float alpha, float beta);	//	盤面白黒反転しない nega_alpha、置換表使用版
 
 public:
 	int		m_bd_width;					//	盤面幅
@@ -99,6 +120,7 @@ public:
 	int		m_ary_size;					//	１次元盤面配列サイズ
 	int		DR_INDEX;
 	short	m_next_gid;
+	uint64	m_hash_val;				//	盤面ハッシュ値
 	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
 	std::vector<short>	m_gid;			//	各石のグループID
 	std::vector<byte>	m_min_gid;		//	接続しているグループの最小グループID
@@ -109,6 +131,10 @@ public:
 	std::vector<byte>	m_list2;
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
 	std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
+	std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
+	std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
+	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
+	
 	mutable std::vector<short>	m_rave;			//	統計的な各位置に打つ価値（黒白共有）
 };
 

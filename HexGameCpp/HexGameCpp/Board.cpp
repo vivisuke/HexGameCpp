@@ -11,6 +11,7 @@ using namespace std;
 static std::random_device rd;
 static std::mt19937 rgen(rd()); 
 //static std::mt19937 rgen(0); 
+std::mt19937_64 rgen64(rd());		// 64ビット版
 
 
 vector<int> g_lst;
@@ -945,7 +946,7 @@ int Board::sel_move_heuristic(byte next) {
 	}
 	return -1;
 }
-int Board::sel_move_ab(byte next) {
+int Board::sel_move_AB(byte next) {
 	auto ix = sel_move_heuristic(next);
 	if( ix >= 0 ) return ix;
 	vector<int> lst;		//	空欄位置リスト
@@ -965,6 +966,21 @@ int Board::sel_move_ab(byte next) {
 		}
 	}
 	return bestix;
+}
+void Board::build_zobrist_table() {
+	if( !m_zobrist_black.is_empty() ) return;	//	初期化済み
+	m_zobrist_black.resize(m_ary_size);
+	for(auto& r: m_zobrist_black) r = rgen64();
+	m_zobrist_white.resize(m_ary_size);
+	for(auto& r: m_zobrist_white) r = rgen64();
+}
+int Board::sel_move_itrdeep(byte next, int limit) {
+	build_zobrist_table();
+	m_hash_val = 0;			//	現局面のハッシュ値を０に
+	m_tt.clear();			//	置換表クリア
+	TTEntry& root = m_tt[m_hash_val];
+	nega_max_tt(next, 1);
+	return root.m_best_move;
 }
 //	次の手番：黒
 //	return: 黒から見た評価値を返す
@@ -1075,6 +1091,94 @@ float Board::nega_max(byte next, int depth) {
 		set_color(ix, EMPTY);
 	}
 	return maxev;
+}
+//	置換表を利用した nega_max()
+float Board::nega_max_tt(byte next, int depth) {
+	TTEntry& entry = m_tt[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
+	if( entry.m_flag == FLAG_TERMINAL )		//	確定評価値の場合
+		return entry.m_score;
+	if( next == WHITE && calc_vert_dist(false) == 0 ||
+		next == BLACK && calc_horz_dist(false) == 0 )
+	{
+		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
+		return entry.m_score = -(n_empty() + 1);	//	手番でない方が勝利してる
+	}
+	if( depth <= 0 ) {
+		entry.m_flag = FLAG_EXACT;				//	評価値
+		return entry.m_score = eval(next);
+	}
+	if( entry.m_depth >= depth )	//	すでに depth で探索済み
+		return entry.m_score;
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	if( lst.is_empty() ) {	//	空欄無しの場合
+		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
+		return entry.m_score = eval(next);
+	}
+	if( entry.m_best_move != 0 ) {
+		//	undone: 最善手が保存されていれば、それを最初に評価
+		auto itr = std::find(lst.begin(), lst.end(), entry.m_best_move);
+		//assert( itr != lst.end() );		//	m_best_move は必ず含まれているはず
+		if( itr != lst.begin() && itr != lst.end() )
+			swap(*itr, lst[0]);
+	}
+	float maxev = std::numeric_limits<float>::lowest();
+	int bestix = 0;
+	const byte nn = (BLACK+WHITE) - next;
+	for(auto ix: lst) {
+		set_color(ix, next);
+		m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+		//maxev = max(maxev, -nega_max(nn, depth-1));
+		auto ev = -nega_max_tt(nn, depth-1);
+		if( ev > maxev ) {
+			maxev = ev;
+			bestix = ix;
+		}
+		set_color(ix, EMPTY);
+		m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	}
+	entry.m_flag = FLAG_EXACT;				//	評価値
+	entry.m_depth = depth;
+	entry.m_best_move = bestix;
+	return entry.m_score = maxev;
+}
+//	置換表を利用した nega_alpha()
+float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
+	TTEntry& entry = m_tt[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
+	if( entry.m_flag == FLAG_TERMINAL )		//	確定評価値の場合
+		return entry.m_score;
+	if( next == WHITE && calc_vert_dist(false) == 0 ||
+		next == BLACK && calc_horz_dist(false) == 0 )
+	{
+		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
+		return entry.m_score = -(n_empty() + 1);	//	手番でない方が勝利してる
+	}
+	if( depth <= 0 ) {
+		entry.m_flag = FLAG_EXACT;				//	評価値
+		return entry.m_score = eval(next);
+	}
+	if( entry.m_depth >= depth )	//	すでに depth で探索済み
+		return entry.m_score;
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	if( lst.is_empty() ) {	//	空欄無しの場合
+		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
+		return entry.m_score = eval(next);
+	}
+	if( entry.m_best_move != 0 ) {
+		//	undone: 最善手が保存されていれば、それを最初に評価
+		auto itr = std::find(lst.begin(), lst.end(), entry.m_best_move);
+		//assert( itr != lst.end() );		//	m_best_move は必ず含まれているはず
+		if( itr != lst.begin() && itr != lst.end() )
+			swap(*itr, lst[0]);
+	}
+	float maxev = std::numeric_limits<float>::lowest();
+	int bestix = 0;
+
+	entry.m_flag = FLAG_EXACT;				//	評価値
+	entry.m_depth = depth;
+	entry.m_best_move = bestix;
+	return entry.m_score = maxev;
 }
 float Board::nega_alpha(byte next, int depth, float alpha, float beta) {
 	if( next == WHITE && calc_vert_dist(false) == 0 ||

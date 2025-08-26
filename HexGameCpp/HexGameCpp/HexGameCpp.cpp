@@ -50,6 +50,12 @@ int main()
 #endif
 
 	const int N_PLAYOUT = 1000;
+	if (1) {
+		Board bd(3);
+		bd.print();
+		auto ix = bd.sel_move_itrdeep(BLACK);
+		cout << bd.ixToStr(ix) << endl;
+	}
 	if (0) {
 		Board bd(2);
 		bd.set_color(0, 0, BLACK);
@@ -469,22 +475,22 @@ int main()
 		printf("best: %c%d\n", 'a'+bd.indexToX(ix), bd.indexToY(ix)+1);
 		//cout << "best: " << bd.indexToX(ix) << ", " << bd.indexToY(ix) << endl;
 	}
-	if (1) {
-		Board bd(6);
+	if (0) {
+		Board bd(5);
 		bd.print();
 		byte next = BLACK;
 		for(;;) {
 			int ix;
 			if (next == BLACK) {
 				//ix = bd.sel_move_random();
-				ix = bd.sel_move_PMC(next);
-				//ix = bd.sel_move_MCTS(next);
-				//ix = bd.sel_move_ab(next);
-			} else {
-				//ix = bd.sel_move_random();
 				//ix = bd.sel_move_PMC(next);
 				//ix = bd.sel_move_MCTS(next);
-				ix = bd.sel_move_ab(next);
+				ix = bd.sel_move_AB(next);
+			} else {
+				//ix = bd.sel_move_random();
+				ix = bd.sel_move_PMC(next);
+				//ix = bd.sel_move_MCTS(next);
+				//ix = bd.sel_move_AB(next);
 			}
 			if( ix < 0 ) break;
 			if( bd.put_and_check_uf(ix, next) )
