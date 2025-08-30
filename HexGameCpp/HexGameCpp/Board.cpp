@@ -773,7 +773,20 @@ double Board::estimate_win_rate_PMC(byte next, int N) const {	//	return: 次の�
 	else
 		return (double)(N - black_won) / N;
 }
-int Board::sel_move_PMC(byte next) {
+int Board::sel_move_PMC(byte next, int limit) {
+#if 1
+	vector<int> lst;		//	空欄位置リスト
+	get_empty_list(lst);
+	vector<int> nwin(lst.size(), 0);	//	勝ち数
+	for(int i = 0; i < lst.size(); ++i) {
+		int ix = lst[i];
+		m_cell[ix] = next;
+
+		m_cell[ix] = EMPTY;
+
+	}
+	return -1;
+#else
 	const int N_PLAYOUT = 1000;
 	byte n2 = (BLACK+WHITE) - next;
 	int best_ix = -1;
@@ -790,6 +803,7 @@ int Board::sel_move_PMC(byte next) {
 		}
 	}
 	return best_ix;
+#endif
 }
 
 const int N_MCTS = 50000;
@@ -1059,6 +1073,9 @@ float Board::eval_black() {
 		//return 10.0;
 	}
 	auto dh = calc_horz_dist();
+	if( dh == 0 ) {		//	白勝ち確定状態
+		return -(n_emp - dh6*2 + 1);
+	}
 	return dh - dv + (dh6 - dv6)/100.0 + 0.5;
 }
 //	次の手番：白

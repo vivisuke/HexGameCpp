@@ -63,7 +63,7 @@ int main()
 		//bd.set_color(2, 3, BLACK);
 		//bd.set_color(3, 3, WHITE);
 		byte next = BLACK;
-		next = WHITE;
+		//next = WHITE;
 		bd.print();
 		auto ix = bd.sel_move_itrdeep(next, 1000);
 		cout << "put " << bd.ixToStr(ix) << endl;
@@ -1004,6 +1004,12 @@ int main()
 }
 void test_Board() {
 	cout << "test_Board:" << endl;
+	if( 1 ) {
+		Board bd(3);
+		bd.set_color(1, 1, BLACK);
+		auto ev = bd.eval(WHITE);
+		assert( ev == -5 );
+	}
 	if( 1 ) {
 		Board bd(3);
 		//bd.print();

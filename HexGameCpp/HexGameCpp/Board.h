@@ -94,12 +94,13 @@ public:
 	bool	playout(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	byte	playout_smart(byte next);	//	完全ランダムプレイアウト、return: BLACK | WHITE、勝敗判定を差分計算
 	double	playout_smart(int N, byte next) const;	//	完全ランダムプレイアウト、return: 黒勝率
+	byte	get_playout_winner(byte next) const;	//	完全ランダムプレイアウト、return: BLACK or WHITE
 	bool	playout_old(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	bool	playout_rave(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
 	double	estimate_win_rate_PMC(byte next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
 	bool	did_black_win(int ix);		//	黒 ix に打って、上下辺が連結されたか？
 	int		sel_move_random();			//	完全ランダムに着手を選択、return: 着手箇所
-	int		sel_move_PMC(byte next);		//	純粋モンテカルロ法で着手を選択、return: 着手箇所
+	int		sel_move_PMC(byte next, int limit=1000);		//	純粋モンテカルロ法で着手を選択、limit: ミリ秒単位
 	int		sel_move_MCTS(byte next);		//	モンテカルロ木探索で着手を選択、return: 着手箇所
 	int		sel_move_win(byte next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
 	int		sel_move_block(byte next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
