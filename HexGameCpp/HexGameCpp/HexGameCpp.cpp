@@ -51,10 +51,23 @@ int main()
 
 	const int N_PLAYOUT = 1000;
 	if (1) {
-		Board bd(3);
+		Board bd(4);
+		//bd.set_color(7, 0, BLACK);
+		//bd.set_color(1, 5, WHITE);
+		//bd.set_color(6, 2, BLACK);
+		//bd.set_color(2, 3, WHITE);
+		//bd.set_color(4, 1, BLACK);
+		//bd.set_color(3, 2, WHITE);
+		//bd.set_color(4, 2, BLACK);
+		//bd.set_color(3, 4, WHITE);
+		//bd.set_color(2, 3, BLACK);
+		//bd.set_color(3, 3, WHITE);
+		byte next = BLACK;
+		next = WHITE;
 		bd.print();
-		auto ix = bd.sel_move_itrdeep(BLACK);
-		cout << bd.ixToStr(ix) << endl;
+		auto ix = bd.sel_move_itrdeep(next, 1000);
+		cout << "put " << bd.ixToStr(ix) << endl;
+		//bd.print_tt(next);
 	}
 	if (0) {
 		Board bd(2);

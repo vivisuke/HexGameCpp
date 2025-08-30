@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <chrono>
 
 using byte = unsigned char;
 using uchar = unsigned char;
@@ -44,6 +45,7 @@ public:
 	void	print() const;
 	void	print_dist() const;
 	void	print_parent() const;
+	void	print_tt(byte);				//	置換表の最善手表示
 	int		bd_width() const { return m_bd_width; }
 	int		bd_height() const { return m_bd_height; }
 	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
@@ -105,6 +107,7 @@ public:
 	int		sel_move_AB(byte next);			//	αβ法＋評価関数による着手選択
 	int		sel_move_itrdeep(byte next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
 private:
+	void	print_tt_sub(byte);				//	置換表の最善手表示
 	bool	is_vert_connected_sub(int ix);
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
@@ -136,6 +139,12 @@ public:
 	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
 	
 	mutable std::vector<short>	m_rave;			//	統計的な各位置に打つ価値（黒白共有）
+private:
+	// --- 時間管理用のメンバ変数 ---
+	std::chrono::high_resolution_clock::time_point m_startTime;
+	int m_timeLimit = 0;
+	bool m_timeOver = false;
+	long long m_nodesSearched = 0; // パフォーマンス計測用の探索ノード数
 };
 
 bool dfs_black_win(Board&, byte next);		//	双方最善で黒が勝つか？

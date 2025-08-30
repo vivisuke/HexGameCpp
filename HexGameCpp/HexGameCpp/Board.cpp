@@ -239,6 +239,25 @@ void Board::print_parent() const {
 	}
 	cout << endl;
 }
+void Board::print_tt(byte next) {
+	const TTEntry& entry = m_tt[m_hash_val];
+	//cout << "eval = " << entry.m_score << " ";
+	printf("eval = %5.2f ", entry.m_score);
+	print_tt_sub(next);
+	cout << endl;
+}
+void Board::print_tt_sub(byte next) {
+	const TTEntry& entry = m_tt[m_hash_val];
+	if( entry.m_flag == FLAG_UNKNOWN || entry.m_best_move == 0 )
+		return;
+	cout << ixToStr(entry.m_best_move) << " ";
+	auto ix = entry.m_best_move;
+	set_color(ix, next);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	print_tt_sub((BLACK+WHITE)-next);
+	set_color(ix, EMPTY);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+}
 void Board::calc_dist_sub(int ix, int dix, ushort dist, byte col) {
 	if( m_cell[dix] == EMPTY && dist + 1 < m_dist[dix] ) {
 		m_dist[dix] = dist + 1;
@@ -974,12 +993,25 @@ void Board::build_zobrist_table() {
 	m_zobrist_white.resize(m_ary_size);
 	for(auto& r: m_zobrist_white) r = rgen64();
 }
-int Board::sel_move_itrdeep(byte next, int limit) {
+int Board::sel_move_itrdeep(byte next, int limit) {		//	limit: ミリ秒単位
 	build_zobrist_table();
+	// --- 時間計測の準備 ---
+	m_startTime = std::chrono::high_resolution_clock::now();
+	m_timeLimit = limit;
+	m_timeOver = false;
+	m_nodesSearched = 0;
+
 	m_hash_val = 0;			//	現局面のハッシュ値を０に
 	m_tt.clear();			//	置換表クリア
 	TTEntry& root = m_tt[m_hash_val];
-	nega_max_tt(next, 1);
+	auto alpha = std::numeric_limits<float>::lowest();
+	auto beta = std::numeric_limits<float>::max();
+	for(int depth = 1; depth <= 1000; ++depth) {
+		//nega_max_tt(next, depth);
+		nega_alpha_tt(next, depth, alpha, beta);
+		print_tt(next);
+		if( m_timeOver ) break;
+	}
 	return root.m_best_move;
 }
 //	次の手番：黒
@@ -1144,6 +1176,14 @@ float Board::nega_max_tt(byte next, int depth) {
 }
 //	置換表を利用した nega_alpha()
 float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
+	if ((++m_nodesSearched & 2047) == 0) {
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
+        if (duration >= m_timeLimit) {
+            m_timeOver = true;
+            return 0;
+        }
+    }
 	TTEntry& entry = m_tt[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
 	if( entry.m_flag == FLAG_TERMINAL )		//	確定評価値の場合
 		return entry.m_score;
@@ -1157,8 +1197,18 @@ float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
 		entry.m_flag = FLAG_EXACT;				//	評価値
 		return entry.m_score = eval(next);
 	}
-	if( entry.m_depth >= depth )	//	すでに depth で探索済み
-		return entry.m_score;
+	if( entry.m_depth >= depth ) {	//	すでに depth で探索済み
+		//return entry.m_score;
+		if ( entry.m_flag == FLAG_EXACT )
+			return entry.m_score;
+		if ( entry.m_flag == FLAG_LOWER ) {
+			if ( entry.m_score >= beta ) return entry.m_score; // この枝を刈れる
+			alpha = std::max(alpha, entry.m_score);
+		} else if ( entry.m_flag == FLAG_UPPER ) {
+			if ( entry.m_score <= alpha ) return entry.m_score; // この枝を刈れる
+			beta = std::min(beta, entry.m_score);
+		}
+	}
 	vector<int> lst;		//	空欄位置リスト
 	get_empty_list(lst);
 	if( lst.is_empty() ) {	//	空欄無しの場合
@@ -1172,13 +1222,43 @@ float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
 		if( itr != lst.begin() && itr != lst.end() )
 			swap(*itr, lst[0]);
 	}
-	float maxev = std::numeric_limits<float>::lowest();
+	auto alpha_org = alpha;
+	//float maxev = std::numeric_limits<float>::lowest();
 	int bestix = 0;
-
-	entry.m_flag = FLAG_EXACT;				//	評価値
+	const byte nn = (BLACK + WHITE) - next;
+	for(auto ix: lst) {
+		set_color(ix, next);
+		m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+		//alpha = max(alpha, -nega_alpha_tt(nn, depth-1, -beta, -alpha));
+		auto ev = -nega_alpha_tt(nn, depth-1, -beta, -alpha);
+		if( m_timeOver ) return 0;
+		if( ev > alpha ) {
+			alpha = ev;
+			bestix = ix;
+		}
+		set_color(ix, EMPTY);
+		m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+		if( alpha >= beta ) {
+			entry.m_flag = FLAG_LOWER;			//	下限値
+			entry.m_depth = depth;
+			entry.m_best_move = bestix;
+			return entry.m_score = alpha;
+		}
+	}
+	//entry.m_flag = FLAG_EXACT;				//	評価値
 	entry.m_depth = depth;
 	entry.m_best_move = bestix;
-	return entry.m_score = maxev;
+	entry.m_score = alpha;
+
+	if ( alpha <= alpha_org ) {
+		// 一度もalphaが更新されなかった場合、スコアは上限値
+		entry.m_flag = FLAG_UPPER;
+	} else {
+		// alphaが更新されたがβカットは起きなかった場合、スコアは正確な値
+		entry.m_flag = FLAG_EXACT;
+	}
+	
+	return alpha;
 }
 float Board::nega_alpha(byte next, int depth, float alpha, float beta) {
 	if( next == WHITE && calc_vert_dist(false) == 0 ||
