@@ -52,20 +52,26 @@ int main()
 	const int N_PLAYOUT = 1000;
 	if (1) {
 		Board bd(4);
-		//bd.set_color(7, 0, BLACK);
-		//bd.set_color(1, 5, WHITE);
-		//bd.set_color(6, 2, BLACK);
+		//bd.set_color(3, 2, BLACK);
+		//bd.set_color(2, 4, WHITE);
+		//bd.set_color(1, 4, BLACK);
+		//bd.set_color(4, 1, WHITE);
+		//bd.set_color(3, 1, BLACK);
 		//bd.set_color(2, 3, WHITE);
-		//bd.set_color(4, 1, BLACK);
-		//bd.set_color(3, 2, WHITE);
-		//bd.set_color(4, 2, BLACK);
+		//bd.set_color(1, 3, BLACK);
+		//bd.set_color(2, 2, WHITE);
+		//bd.set_color(1, 2, BLACK);
+		//bd.set_color(1, 5, WHITE);
+		//bd.set_color(2, 4, BLACK);
+		//bd.set_color(2, 5, WHITE);
+		//bd.set_color(4, 4, BLACK);
 		//bd.set_color(3, 4, WHITE);
-		//bd.set_color(2, 3, BLACK);
+		//bd.set_color(4, 3, BLACK);
 		//bd.set_color(3, 3, WHITE);
 		byte next = BLACK;
 		//next = WHITE;
 		bd.print();
-		auto ix = bd.sel_move_itrdeep(next, 1000);
+		auto ix = bd.sel_move_itrdeep(next, 3000);
 		cout << "put " << bd.ixToStr(ix) << endl;
 		//bd.print_tt(next);
 	}
@@ -489,7 +495,7 @@ int main()
 		//cout << "best: " << bd.indexToX(ix) << ", " << bd.indexToY(ix) << endl;
 	}
 	if (0) {
-		Board bd(5);
+		Board bd(6);
 		bd.print();
 		byte next = BLACK;
 		for(;;) {
@@ -501,9 +507,10 @@ int main()
 				ix = bd.sel_move_AB(next);
 			} else {
 				//ix = bd.sel_move_random();
-				ix = bd.sel_move_PMC(next);
+				//ix = bd.sel_move_PMC(next);
 				//ix = bd.sel_move_MCTS(next);
 				//ix = bd.sel_move_AB(next);
+				ix = bd.sel_move_itrdeep(next);
 			}
 			if( ix < 0 ) break;
 			if( bd.put_and_check_uf(ix, next) )

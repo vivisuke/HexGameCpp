@@ -46,6 +46,7 @@ public:
 	void	print_dist() const;
 	void	print_parent() const;
 	void	print_tt(byte);				//	置換表の最善手表示
+	void	get_tt_best_moves(byte, std::vector<int>&);
 	int		bd_width() const { return m_bd_width; }
 	int		bd_height() const { return m_bd_height; }
 	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
@@ -109,6 +110,7 @@ public:
 	int		sel_move_itrdeep(byte next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
 private:
 	void	print_tt_sub(byte);				//	置換表の最善手表示
+	void	get_tt_best_moves_sub(byte, std::vector<int>&);
 	bool	is_vert_connected_sub(int ix);
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);

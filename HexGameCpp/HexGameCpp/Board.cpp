@@ -239,6 +239,22 @@ void Board::print_parent() const {
 	}
 	cout << endl;
 }
+void Board::get_tt_best_moves(byte next, vector<int>& moves) {
+	moves.clear();
+	get_tt_best_moves_sub(next, moves);
+}
+void Board::get_tt_best_moves_sub(byte next, vector<int>& moves) {
+	const TTEntry& entry = m_tt[m_hash_val];
+	if( entry.m_flag == FLAG_UNKNOWN || entry.m_best_move == 0 )
+		return;
+	moves.push_back(entry.m_best_move);
+	auto ix = entry.m_best_move;
+	set_color(ix, next);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	get_tt_best_moves_sub((BLACK+WHITE)-next, moves);
+	set_color(ix, EMPTY);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+}
 void Board::print_tt(byte next) {
 	const TTEntry& entry = m_tt[m_hash_val];
 	//cout << "eval = " << entry.m_score << " ";
@@ -1020,9 +1036,13 @@ int Board::sel_move_itrdeep(byte next, int limit) {		//	limit: ミリ秒単位
 	TTEntry& root = m_tt[m_hash_val];
 	auto alpha = std::numeric_limits<float>::lowest();
 	auto beta = std::numeric_limits<float>::max();
+	vector<int> moves, moves0;
 	for(int depth = 1; depth <= 1000; ++depth) {
 		//nega_max_tt(next, depth);
 		nega_alpha_tt(next, depth, alpha, beta);
+		get_tt_best_moves(next, moves);
+		if( moves == moves0 ) break;
+		moves0.swap(moves);
 		print_tt(next);
 		if( m_timeOver ) break;
 	}
