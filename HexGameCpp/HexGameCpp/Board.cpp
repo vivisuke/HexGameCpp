@@ -695,13 +695,37 @@ bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
 	//bd.print();
 	return b;
 }
-bool Board::is_vert_connected() {
+bool Board::is_vert_connected_ex() {
 	m_list1.resize(m_cell.size());
-	fill(m_list1.begin(), m_list1.end(), 0);
+	fill(m_list1.begin(), m_list1.end(), 0);	//	探索済みフラグ初期化
 	int ix0 = xyToIndex(0, 0);
 	int ix = xyToIndex(m_bd_width, 0);
 	while( --ix >= ix0 ) {
-		if( m_cell[ix] == BLACK ) {
+		if( m_cell[ix] == BLACK && m_list1[ix] == 0 ) {
+			m_list1[ix] = 1;
+			if( is_vert_connected_ex_sub(ix) )
+				return true;
+		}
+	}
+	for(int ix = xyToIndex(0, 0); ix < xyToIndex(m_bd_width-1, 0); ++ix) {
+		if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
+			int ix2 = ix + m_ary_width;
+			if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {	//	チェック先が黒 ＆ 未探索
+				m_list1[ix2] = 1;
+				if( is_vert_connected_ex_sub(ix2) )
+					return true;
+			}
+		}
+	}
+	return false;
+}
+bool Board::is_vert_connected() {
+	m_list1.resize(m_cell.size());
+	fill(m_list1.begin(), m_list1.end(), 0);	//	探索済みフラグ初期化
+	int ix0 = xyToIndex(0, 0);
+	int ix = xyToIndex(m_bd_width, 0);
+	while( --ix >= ix0 ) {
+		if( m_cell[ix] == BLACK && m_list1[ix] == 0 ) {
 			m_list1[ix] = 1;
 			if( is_vert_connected_sub(ix) )
 				return true;
@@ -710,11 +734,11 @@ bool Board::is_vert_connected() {
 	return false;
 }
 bool Board::is_vert_connected_sub(int ix) {
-	const int ixd = xyToIndex(0, m_bd_height-1);
-	int ix2 = ix + m_ary_width;
-	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
-		if( ix2 >= ixd ) return true;
-		m_list1[ix2] = 1;
+	const int ixd = xyToIndex(0, m_bd_height-1);		//	下辺左端
+	int ix2 = ix + m_ary_width;		//	連結チェック先
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {	//	チェック先が黒 ＆ 未探索
+		if( ix2 >= ixd ) return true;		//	下辺到達
+		m_list1[ix2] = 1;			//	探索済みフラグON
 		if( is_vert_connected_sub(ix2) )
 			return true;
 	}
@@ -748,6 +772,131 @@ bool Board::is_vert_connected_sub(int ix) {
 		m_list1[ix2] = 1;
 		if( is_vert_connected_sub(ix2) )
 			return true;
+	}
+	return false;
+}
+//bool Board::is_bridged_bottom(int ix) {
+//	return indexToY(ix) == m_bd_height - 2 &&
+//			m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY;
+//}
+bool Board::is_vert_connected_ex_sub(int ix) {
+	if( is_bridged_to_bottom(ix) ) return true;	//	下辺にブリッジ
+	const int ixd = xyToIndex(0, m_bd_height-1);		//	下辺左端
+	int ix2 = ix + m_ary_width;		//	連結チェック先
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {	//	チェック先が黒 ＆ 未探索
+		if( ix2 >= ixd ) return true;		//	下辺到達
+		if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+		m_list1[ix2] = 1;			//	探索済みフラグON
+		if( is_vert_connected_ex_sub(ix2) )
+			return true;
+	}
+	ix2 = ix + m_ary_width - 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+		m_list1[ix2] = 1;
+		if( is_vert_connected_ex_sub(ix2) )
+			return true;
+	}
+	ix2 = ix + 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+		m_list1[ix2] = 1;
+		if( is_vert_connected_ex_sub(ix2) )
+			return true;
+	}
+	ix2 = ix - 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+		m_list1[ix2] = 1;
+		if( is_vert_connected_ex_sub(ix2) )
+			return true;
+	}
+	ix2 = ix - m_ary_width + 1;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+		m_list1[ix2] = 1;
+		if( is_vert_connected_ex_sub(ix2) )
+			return true;
+	}
+	ix2 = ix - m_ary_width;
+	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+		if( ix2 >= ixd ) return true;
+		if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+		m_list1[ix2] = 1;
+		if( is_vert_connected_ex_sub(ix2) )
+			return true;
+	}
+/*
+                  -2W+1
+        -W-1 -W   -W+1 -W+2
+        -1   0    +1
+   +W-2 +W-1 +W   +W+1
+        2W-1
+*/
+	const int W = m_ary_width;
+	if( m_cell[ix-W] == EMPTY && m_cell[ix-W+1] == EMPTY ) {
+		ix2 = ix - 2*W + 1;
+		if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+			if( ix2 >= ixd ) return true;
+			if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+			m_list1[ix2] = 1;
+			if( is_vert_connected_ex_sub(ix2) )
+				return true;
+		}
+	}
+	if( m_cell[ix-W+1] == EMPTY && m_cell[ix+1] == EMPTY ) {
+		ix2 = ix - W + 2;
+		if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+			if( ix2 >= ixd ) return true;
+			if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+			m_list1[ix2] = 1;
+			if( is_vert_connected_ex_sub(ix2) )
+				return true;
+		}
+	}
+	if( m_cell[ix+1] == EMPTY && m_cell[ix-W] == EMPTY ) {
+		ix2 = ix + W + 1;
+		if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+			if( ix2 >= ixd ) return true;
+			if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+			m_list1[ix2] = 1;
+			if( is_vert_connected_ex_sub(ix2) )
+				return true;
+		}
+	}
+	if( m_cell[ix+W-1] == EMPTY && m_cell[ix+W] == EMPTY ) {
+		ix2 = ix + 2*W - 1;
+		if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+			if( ix2 >= ixd ) return true;
+			if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+			m_list1[ix2] = 1;
+			if( is_vert_connected_ex_sub(ix2) )
+				return true;
+		}
+	}
+	if( m_cell[ix+W-1] == EMPTY && m_cell[ix-1] == EMPTY ) {
+		ix2 = ix + W - 2;
+		if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+			if( ix2 >= ixd ) return true;
+			if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+			m_list1[ix2] = 1;
+			if( is_vert_connected_ex_sub(ix2) )
+				return true;
+		}
+	}
+	if( m_cell[ix-W] == EMPTY && m_cell[ix-1] == EMPTY ) {
+		ix2 = ix - W - 1;
+		if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {
+			if( ix2 >= ixd ) return true;
+			if( is_bridged_to_bottom(ix2) ) return true;	//	下辺にブリッジ
+			m_list1[ix2] = 1;
+			if( is_vert_connected_ex_sub(ix2) )
+				return true;
+		}
 	}
 	return false;
 }
@@ -1046,6 +1195,7 @@ int Board::sel_move_itrdeep(byte next, int limit) {		//	limit: ミリ秒単位
 		print_tt(next);
 		if( m_timeOver ) break;
 	}
+	cout << "nodesSearched = " << m_nodesSearched << endl;
 	return root.m_best_move;
 }
 //	次の手番：黒
@@ -1132,10 +1282,11 @@ float Board::eval(byte next) {
 	if( next == BLACK )
 		return eval_black();
 	else {
-		swap_black_white();
-		auto ev = eval_black();
-		swap_black_white();
-		return ev;
+		return eval_white();
+		//swap_black_white();
+		//auto ev = eval_black();
+		//swap_black_white();
+		//return ev;
 	}
 }
 float Board::nega_max(byte next, int depth) {

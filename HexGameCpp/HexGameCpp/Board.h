@@ -67,7 +67,8 @@ public:
 	int		find_root_ul(int ix);
 	int		find_root_dr(int ix);
 
-	bool	is_vert_connected();			//	上下辺が連結されているか？ 空欄が無い状態でコールされる
+	bool	is_vert_connected();			//	上下辺が連結されているか？ 空欄が無い状態でコールされる？
+	bool	is_vert_connected_ex();			//	上下辺が連結されているか？ 間接連結（ブリッジ？）も連結とみなす
 	int		calc_vert_dist(bool ex=true, bool ud=true);	//	（黒）上下辺間距離計算（６連結＋間接連結(ex)）
 	int		calc_horz_dist(bool ex=true, bool lr=true);	//	（白）左右辺間距離計算（６連結＋間接連結(ex)）
 	//int		calc_vert_dist_ex();	//	（黒）上下辺間距離計算（６連結＋間接連結）
@@ -112,6 +113,10 @@ private:
 	void	print_tt_sub(byte);				//	置換表の最善手表示
 	void	get_tt_best_moves_sub(byte, std::vector<int>&);
 	bool	is_vert_connected_sub(int ix);
+	bool	is_vert_connected_ex_sub(int ix);
+	bool	is_bridged_to_bottom(int ix) const {
+				return indexToY(ix) == m_bd_height - 2 && m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY;
+	}
 	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
 	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
 	void	build_zobrist_table();
@@ -126,7 +131,7 @@ public:
 	int		m_ary_size;					//	１次元盤面配列サイズ
 	int		DR_INDEX;
 	short	m_next_gid;
-	uint64	m_hash_val;				//	盤面ハッシュ値
+	uint64	m_hash_val = 0;				//	盤面ハッシュ値
 	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
 	std::vector<short>	m_gid;			//	各石のグループID
 	std::vector<byte>	m_min_gid;		//	接続しているグループの最小グループID

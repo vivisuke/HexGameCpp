@@ -50,8 +50,8 @@ int main()
 #endif
 
 	const int N_PLAYOUT = 1000;
-	if (1) {
-		Board bd(4);
+	if (0) {
+		Board bd(5);
 		//bd.set_color(3, 2, BLACK);
 		//bd.set_color(2, 4, WHITE);
 		//bd.set_color(1, 4, BLACK);
@@ -71,7 +71,7 @@ int main()
 		byte next = BLACK;
 		//next = WHITE;
 		bd.print();
-		auto ix = bd.sel_move_itrdeep(next, 3000);
+		auto ix = bd.sel_move_itrdeep(next, 1000);
 		cout << "put " << bd.ixToStr(ix) << endl;
 		//bd.print_tt(next);
 	}
@@ -1081,5 +1081,24 @@ void test_Board() {
 		auto ev = bd.eval_black();
 		assert(ev == 0.5);
 	}
+	if (1) {
+		Board bd(3);
+		assert( !bd.is_vert_connected() );
+		bd.set_color(0, 0, BLACK);
+		assert( !bd.is_vert_connected() );
+		bd.set_color(0, 1, BLACK);
+		assert( !bd.is_vert_connected() );
+		bd.set_color(0, 2, BLACK);
+		assert( bd.is_vert_connected() );
+	}
+	if (1) {
+		Board bd(3);
+		assert( !bd.is_vert_connected() );
+		assert( !bd.is_vert_connected_ex() );
+		bd.set_color(1, 1, BLACK);
+		assert( !bd.is_vert_connected() );		//	６近傍連結
+		assert( bd.is_vert_connected_ex() );	//	６近傍＋間接連結
+	}
+
 	cout << "test_Board finished." << endl;
 }
