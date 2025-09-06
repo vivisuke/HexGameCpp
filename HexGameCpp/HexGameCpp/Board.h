@@ -129,7 +129,7 @@ public:
 	int		m_ary_width;				//	周囲の壁（番人）を含む盤面幅
 	int		m_ary_height;				//	周囲の壁（番人）を含む盤面高
 	int		m_ary_size;					//	１次元盤面配列サイズ
-	int		DR_INDEX;
+	int		DR_INDEX;					//	下右辺仮想ルート for Union-Find
 	short	m_next_gid;
 	uint64	m_hash_val = 0;				//	盤面ハッシュ値
 	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
