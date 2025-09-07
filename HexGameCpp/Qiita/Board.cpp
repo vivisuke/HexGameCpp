@@ -11,6 +11,8 @@ static std::random_device rd;
 static std::mt19937 rgen(rd()); 
 //static std::mt19937 rgen(0); 
 
+#define		is_empty()	empty()
+
 Board::Board(int width)
     : m_bd_width(width), m_ary_width(width + 1)
     , m_ary_height(width + 2), m_ary_size((width + 1)* (width + 2))
@@ -34,6 +36,11 @@ void Board::init() {
 	m_parent_dr[BT_INDEX] = BT_INDEX;
 	m_parent_dr[RT_INDEX] = RT_INDEX;
 	m_last_put_ix = 0;
+}
+Board& Board::operator=(const Board& s) {
+	m_cell = s.m_cell;
+
+	return *this;
 }
 void Board::print() const {
 	cout << "   ";
@@ -132,7 +139,7 @@ bool Board::playout_to_win(Color next) {
 	shuffle(lst.begin(), lst.end(), rgen);
 	for(int ix: lst) {
 		set_color(ix, next);
-#if 1
+#if 0
 		if( union_find(ix, next) ) {
 			m_last_put_ix = ix;
 			break;
@@ -141,6 +148,7 @@ bool Board::playout_to_win(Color next) {
 		if( next == BLACK && is_vert_connected() ||
 			next == WHITE && is_horz_connected() )
 		{
+			m_last_put_ix = ix;
 			break;
 		}
 #endif
@@ -277,4 +285,46 @@ int Board::find_root_dr(int ix) {
 	if(ix < 0 || m_parent_dr[ix] == ix ) return ix;
 	//	再帰的に根を探し、途中のノードを根に直接つなぎ替える（経路圧縮）
 	return m_parent_dr[ix] = find_root_dr(m_parent_dr[ix]);
+}
+
+int Board::sel_move_random() const {
+	vector<int> lst;
+	get_empty_indexes(lst);
+	if( lst.is_empty() ) return -1;
+	return lst[rgen() % lst.size()];
+}
+int Board::sel_move_PMC(Color next, int limit) const {	//	limit: 思考時間 単位：ミリ秒
+	vector<int> lst;
+	get_empty_indexes(lst);
+	if( lst.is_empty() ) return -1;
+	Board b2(this->m_bd_width);
+	// --- 時間計測の準備 ---
+	m_startTime = std::chrono::high_resolution_clock::now();
+	m_timeLimit = limit;
+	m_timeOver = false;
+	m_nodesSearched = 0;
+	//
+	vector<int> nwon(lst.size(), 0);
+	for(;;) {
+		for(int i = 0; i != lst.size(); ++i) {
+			b2 = *this;
+			b2.set_color(lst[i], next);
+			bool b = b2.playout_to_full((BLACK+WHITE)-next);
+			if( !b )
+				nwon[i] += 1;
+		}
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
+        if (duration >= m_timeLimit)
+        	break;
+	}
+	int best_ix = -1;
+	int max_nw = -1;
+	for(int i = 0; i != lst.size(); ++i) {
+		if( nwon[i] > max_nw ) {
+			max_nw = nwon[i];
+			best_ix = lst[i];
+		}
+	}
+	return best_ix;
 }

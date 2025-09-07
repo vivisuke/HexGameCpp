@@ -7,6 +7,29 @@ using namespace std;
 
 int main()
 {
+	if( 1 ) {
+	    Board bd(11);
+	    Color next = BLACK;
+	    for(;;) {
+	    	int ix;
+	    	if( next == BLACK ) {
+		    	//ix = bd.sel_move_random();
+				ix = bd.sel_move_PMC(next, 1000);
+			} else {
+		    	ix = bd.sel_move_PMC(next, 1000);
+	    	}
+	    	if( ix < 0 ) break;
+	    	bd.set_color(ix, next);
+	    	bd.set_last_put_ix(ix);
+	    	bd.print();
+			if( next == BLACK && bd.is_vert_connected() ||
+				next == WHITE && bd.is_horz_connected() )
+			{
+				break;
+			}
+			next = (BLACK+WHITE) - next;
+	    }
+	}
 	if( 0 ) {
 	    Board bd(4);
 	    //bool bw = bd.playout_to_full(BLACK);		//	空欄が無くなるまで
@@ -15,20 +38,25 @@ int main()
 	    if( bw ) cout << "BLACK won." << endl;
 	    else cout << "WHITE won." << endl;
 	}
-	if( 1 ) {
+	if( 0 ) {
 	    Board bd(11);
 		auto start = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i != 1000000; ++i) {
+		const int N_LOOP = 1000*1;
+		int bwon = 0;
+		for (int i = 0; i != N_LOOP; ++i) {
 			bd.init();
 			//bd.random_playout(BLACK);
-			//bd.playout_to_full(BLACK);		//	最後までプレイアウト＆勝敗判定
-			bd.playout_to_win(BLACK);		//	勝敗がつくまでプレイアウト
+			//if( bd.playout_to_full(BLACK) )		//	最後までプレイアウト＆勝敗判定
+			if( bd.playout_to_win(BLACK) )		//	勝敗がつくまでプレイアウト
+				bwon += 1;		//	黒勝ちの場合
 			//bd.print();
 		}
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration = end - start;
 		double seconds = std::chrono::duration<double>(duration).count();
-		std::cout << "duration: " << seconds*1000 << " msec" << std::endl << endl;
+		cout << "N_LOOP = " << N_LOOP << endl;
+		cout << "duration: " << seconds*1000 << " msec" << std::endl << endl;
+		cout << "black won rate = " << bwon *100.0 / N_LOOP << "%" << endl << endl;
 	    bd.print();
 	}
 
