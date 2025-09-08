@@ -8,7 +8,23 @@ using namespace std;
 int main()
 {
 	if( 1 ) {
-	    Board bd(11);
+	    Board bd(3);
+	    bd.set_color(2, 0, BLACK);
+	    bd.set_color(1, 1, BLACK);
+	    bd.print();
+	    int vbd = bd.calc_vert_dist(true);
+	    bd.print_dist();
+	    int hbd = bd.calc_horz_dist(true);
+	    cout << "vert bridged dist = " << vbd << endl;
+	    cout << "horz bridged dist = " << hbd << endl << endl;
+	    int vd = bd.calc_vert_dist();
+	    bd.print_dist();
+	    int hd = bd.calc_horz_dist();
+	    cout << "vert dist = " << vd << endl;
+	    cout << "horz dist = " << hd << endl << endl;
+	}
+	if( 0 ) {
+	    Board bd(4);
 	    Color next = BLACK;
 	    for(;;) {
 	    	int ix;
