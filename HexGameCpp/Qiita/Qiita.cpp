@@ -8,6 +8,16 @@ using namespace std;
 int main()
 {
 	if( 1 ) {
+	    Board bd(11);
+		auto start = std::chrono::high_resolution_clock::now();
+		bd.do_DFS(BLACK, 4);
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		cout << "duration: " << seconds*1000 << " msec" << std::endl << endl;
+		cout << "nodeSearched = " << bd.get_nodeSearched() << endl << endl;
+	}
+	if( 0 ) {
 	    Board bd(3);
 	    bd.set_color(2, 0, BLACK);
 	    bd.set_color(1, 1, BLACK);

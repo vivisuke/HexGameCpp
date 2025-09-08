@@ -497,3 +497,20 @@ int Board::sel_move_PMC(Color next, int limit) const {	//	limit: vlŠÔ ’PˆÊF
 	cout << "n_won / n_playout = " << max_nw << "/" << np << " = " << (double)max_nw/np <<  endl << endl;
 	return best_ix;
 }
+void Board::do_DFS(Color next, int depth) {		//	depth == 0 ‚É‚È‚é‚Ü‚Å[‚³—Dæ’Tõ
+	m_nodesSearched = 0;
+	DFS_recursive(next, depth);
+}
+void Board::DFS_recursive(Color next, int depth) {		//	depth == 0 ‚É‚È‚é‚Ü‚Å[‚³—Dæ’Tõ
+	if( depth == 0 ) {
+		m_nodesSearched += 1;
+		return;
+	}
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+		if( m_cell[ix] == EMPTY ) {
+			m_cell[ix] = next;
+			DFS_recursive((BLACK+WHITE)-next, depth-1);
+			m_cell[ix] = EMPTY;
+		}
+	}
+}
