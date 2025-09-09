@@ -78,6 +78,30 @@ void Board::print_dist() const {
 	}
 	cout << endl;
 }
+void Board::swap_black_white() {
+	for(int y = 0; y < m_bd_width-1; ++y) {
+		for(int x = 0; x < m_bd_width-1-y; ++x) {
+			int ix1 = xyToIndex(x, y);	//	対角線の左上側
+			int ix2 = xyToIndex(m_bd_width-1-y, m_bd_width-1-x);	//	対角線の左上側
+			auto t1 = m_cell[ix1];
+			auto t2 = m_cell[ix2];
+			if( t1 != EMPTY ) t1 = (BLACK+WHITE) - t1;
+			if( t2 != EMPTY ) t2 = (BLACK+WHITE) - t2;
+			m_cell[ix1] = t2;
+			m_cell[ix2] = t1;
+		}
+	}
+	for(int y = 0; y < m_bd_width; ++y) {
+		int ix = xyToIndex(m_bd_width-1-y, y);
+		if( m_cell[ix] != EMPTY ) 
+			m_cell[ix] = (BLACK+WHITE) - m_cell[ix];
+	}
+}
+int Board::swap_bw_ix(int ix) const {
+	int x = ixToX(ix);
+	int y = ixToY(ix);
+	return xyToIndex(m_bd_width-1-y, m_bd_width-1-x);
+}
 bool Board::is_vert_connected() const {
 	m_connected.resize(m_ary_size);
 	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);
@@ -280,6 +304,38 @@ void Board::get_empty_indexes(vector<int>& lst) const {
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
+	}
+}
+void Board::get_local_indexes(vector<int>& lst, int last_ix) const {
+	const int offsets[] = {	// 隣接セルのインデックス差分
+		-1, +1, -m_ary_width, +m_ary_width, -m_ary_width + 1, +m_ary_width - 1
+	};
+	lst.clear();
+	if( last_ix == 0 ) {	//	直前手が無い場合は、副対角線上セルを候補に
+		for(int y = 0; y < m_bd_width; ++y) {
+			int ix = xyToIndex(m_bd_width-y-1, y);
+			if (m_cell[ix] == EMPTY)
+				lst.push_back(ix);
+		}
+	} else {
+		for (int offset : offsets) {	// 隣接セルを探索
+			int ix = last_ix + offset;
+			if (m_cell[ix] == EMPTY)
+				lst.push_back(ix);
+		}
+	}
+	if( lst.is_empty() )
+		get_empty_indexes(lst);
+}
+void Board::local_playout(Color next, int ix) {
+	vector<int> lst;
+	for(;;) {
+		get_local_indexes(lst, ix);
+		if( lst.is_empty() )
+			break;
+		ix = lst[rgen() % lst.size()];
+		set_color(ix, next);
+		next = (BLACK+WHITE) - next;
 	}
 }
 void Board::random_playout(Color next) {

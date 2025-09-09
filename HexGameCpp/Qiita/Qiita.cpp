@@ -8,6 +8,40 @@ using namespace std;
 int main()
 {
 	if( 1 ) {
+	    Board bd(5);
+	    Color next = BLACK;
+	    for(int i = 0; i != 15; ++i) {
+	    	int ix = bd.sel_move_random();
+	    	bd.set_color(ix, next);
+	    	next = (BLACK+WHITE)-next;
+	    }
+	    bd.print();
+	    int bvd = bd.calc_vert_dist(true);
+	    //bd.print_dist();
+	    int bhd = bd.calc_horz_dist(true);
+	    cout << "bridged vert dist = " << bvd << endl;
+	    cout << "bridged horz dist = " << bhd << endl << endl;
+	    int vd = bd.calc_vert_dist();
+	    //bd.print_dist();
+	    int hd = bd.calc_horz_dist();
+	    cout << "vert dist = " << vd << endl;
+	    cout << "horz dist = " << hd << endl << endl;
+	    if( 1 ) {
+		    bd.swap_black_white();
+		    bd.print();
+		    int bvd = bd.calc_vert_dist(true);
+		    //bd.print_dist();
+		    int bhd = bd.calc_horz_dist(true);
+		    cout << "bridged vert dist = " << bvd << endl;
+		    cout << "bridged horz dist = " << bhd << endl << endl;
+		    int vd = bd.calc_vert_dist();
+		    //bd.print_dist();
+		    int hd = bd.calc_horz_dist();
+		    cout << "vert dist = " << vd << endl;
+		    cout << "horz dist = " << hd << endl << endl;
+	    }
+	}
+	if( 0 ) {
 	    Board bd(11);
 	    int d = bd.do_itrdeep(BLACK, 1000);
 		cout << "max depth = " << d << endl;

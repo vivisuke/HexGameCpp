@@ -47,10 +47,11 @@ public:
 	void	print_dist() const;
 	void	set_color(int x, int y, Color col) { m_cell[xyToIndex(x, y)] = col; }
 	void	set_color(int ix, Color col) { m_cell[ix] = col; }
-	void	get_empty_indexes(std::vector<int>&) const;
 	void	set_last_put_ix(int ix) { m_last_put_ix = ix; }
 	long long get_nodeSearched() const { return m_nodesSearched; }
 	int		get_tt_size() const { return m_tt.size(); }
+	void	swap_black_white();
+	int		swap_bw_ix(int ix) const;
 
 	void	build_zobrist_table();
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
@@ -59,6 +60,7 @@ public:
 	bool	is_vert_connected() const;		//	上下辺が連結しているか？
 	bool	is_horz_connected() const;		//	左右辺が連結しているか？
 	void	random_playout(Color next);
+	void	local_playout(Color next, int ix = 0);
 	bool	playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
 	bool	playout_to_win(Color next);		//	勝敗が決まるまでプレイアウトし、next が勝ったかどうかを返す
 
@@ -68,6 +70,8 @@ public:
 	int		sel_move_random() const;
 	int		sel_move_PMC(Color next, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
 private:
+	void	get_empty_indexes(std::vector<int>&) const;
+	void	get_local_indexes(std::vector<int>&, int last_ix) const;
 	bool	is_vert_connected_DFS(int ix) const;
 	bool	is_horz_connected_DFS(int ix) const;
 	int		calc_dist(bool vertical, bool bridge, bool rev) const;
