@@ -3,10 +3,14 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <unordered_map>
 #include <chrono>
 
 using Color = unsigned char;
 using byte = unsigned char;
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint64 = uint64_t;
 
 enum {
 	EMPTY = 0, BLACK, WHITE, WALL,
@@ -15,6 +19,19 @@ enum {
 	TL_INDEX = 0, BT_INDEX, RT_INDEX,
 };
 
+enum TTFlag {
+    FLAG_UNKNOWN,
+    FLAG_TERMINAL,		//	確定評価値（先読みによる更新不要）
+    FLAG_EXACT,			// 評価値は正確
+    FLAG_LOWER,			// 評価値は下界
+    FLAG_UPPER,			// 評価値は上界
+};
+struct TTEntry {		//	置換表に格納するデータ構造
+	float	m_score = 0.0;			//	この局面の評価値
+	uchar	m_flag = FLAG_UNKNOWN;
+	uchar	m_depth = 0;
+	ushort	m_best_move = 0;		// この局面での最善手
+};
 
 class Board
 {
@@ -33,7 +50,9 @@ public:
 	void	get_empty_indexes(std::vector<int>&) const;
 	void	set_last_put_ix(int ix) { m_last_put_ix = ix; }
 	long long get_nodeSearched() const { return m_nodesSearched; }
+	int		get_tt_size() const { return m_tt.size(); }
 
+	void	build_zobrist_table();
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
 	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }
 	bool	union_find(int ix, Color col);
@@ -69,9 +88,13 @@ private:
 	const int	m_ary_height;
 	const int	m_ary_size;
 	int		m_last_put_ix = 0;
+	uint64	m_hash_val = 0;				//	盤面ハッシュ値
 	std::vector<Color>	m_cell;					//	各セル状態（空・黒・白）
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
 	std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
+	std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
+	std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
+	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
 	mutable std::vector<int>	m_dist;
 	mutable std::vector<byte>	m_connected;
 };

@@ -11,7 +11,8 @@ int main()
 	    Board bd(11);
 	    int d = bd.do_itrdeep(BLACK, 1000);
 		cout << "max depth = " << d << endl;
-		cout << "nodeSearched = " << bd.get_nodeSearched() << endl << endl;
+		cout << "nodeSearched = " << bd.get_nodeSearched() << endl;
+		cout << "tt.size() = " << bd.get_tt_size() << endl << endl;
 	}
 	if( 0 ) {
 	    Board bd(11);

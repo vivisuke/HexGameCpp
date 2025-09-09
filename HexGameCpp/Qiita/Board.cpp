@@ -10,6 +10,7 @@ using namespace std;
 static std::random_device rd;
 static std::mt19937 rgen(rd()); 
 //static std::mt19937 rgen(0); 
+std::mt19937_64 rgen64(rd());		// 64ビット版
 
 #define		is_empty()	empty()
 
@@ -515,6 +516,9 @@ void Board::DFS_recursive(Color next, int depth) {		//	depth == 0 になるまで深さ
 	}
 }
 int Board::do_itrdeep(Color next, int limit) {		//	
+	build_zobrist_table();
+	m_hash_val = 0;			//	現局面のハッシュ値を０に
+	m_tt.clear();			//	置換表クリア
 	// --- 時間計測の準備 ---
 	m_startTime = std::chrono::high_resolution_clock::now();
 	m_timeLimit = limit;
@@ -539,12 +543,25 @@ void Board::itrdeep_recursive(Color next, int depth) {		//	depth == 0 になるまで
 	if( depth == 0 ) {
 		return;
 	}
+	TTEntry& entry = m_tt[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
+	if( entry.m_depth >= depth )			//	現局面は探索済み
+		return;
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
 		if( m_cell[ix] == EMPTY ) {
 			m_cell[ix] = next;
+			m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 			itrdeep_recursive((BLACK+WHITE)-next, depth-1);
 			m_cell[ix] = EMPTY;
+			m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 			if( m_timeOver ) break;
 		}
 	}
+	entry.m_depth = depth;
+}
+void Board::build_zobrist_table() {
+	if( !m_zobrist_black.is_empty() ) return;	//	初期化済み
+	m_zobrist_black.resize(m_ary_size);
+	for(auto& r: m_zobrist_black) r = rgen64();
+	m_zobrist_white.resize(m_ary_size);
+	for(auto& r: m_zobrist_white) r = rgen64();
 }
