@@ -17,8 +17,8 @@ int main()
 	    }
 	    bd.print();
 	    int bvd = bd.calc_vert_dist(true);
-	    //bd.print_dist();
 	    int bhd = bd.calc_horz_dist(true);
+	    bd.print_dist();
 	    cout << "bridged vert dist = " << bvd << endl;
 	    cout << "bridged horz dist = " << bhd << endl << endl;
 	    int vd = bd.calc_vert_dist();
@@ -32,6 +32,7 @@ int main()
 		    int bvd = bd.calc_vert_dist(true);
 		    //bd.print_dist();
 		    int bhd = bd.calc_horz_dist(true);
+		    bd.print_dist();
 		    cout << "bridged vert dist = " << bvd << endl;
 		    cout << "bridged horz dist = " << bhd << endl << endl;
 		    int vd = bd.calc_vert_dist();

@@ -161,10 +161,10 @@ int Board::calc_dist(bool vertical, bool bridge, bool rev) const
 	m_dist.resize(m_ary_size);
 	fill(m_dist.begin(), m_dist.end(), UNCONNECT);
 	deque<int> q;	// 0-1 BFS のための両端キュー
-	// 1. スタート地点（上辺）をキューに追加
+	// 1. スタート地点（上・左辺）をキューに追加
 	for (int i = 0; i < m_bd_width; ++i) {
 		int ix = vertical ? xyToIndex(i, 0) : xyToIndex(0, i);
-		if (m_cell[ix] == BLACK) {
+		if (m_cell[ix] == own_color) {
 			m_dist[ix] = 0;
 			q.push_front(ix); // コスト0なので先頭に追加
 		} else if(m_cell[ix] == EMPTY) {
