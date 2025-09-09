@@ -43,7 +43,8 @@ public:
 	bool	playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
 	bool	playout_to_win(Color next);		//	勝敗が決まるまでプレイアウトし、next が勝ったかどうかを返す
 
-	void	do_DFS(Color next, int depth);		//	depth == 0 になるまで深さ優先探索
+	void	do_DFS(Color next, int depth);			//	depth == 0 になるまで深さ優先探索
+	int		do_itrdeep(Color next, int limit);		//	limit: 探索時間（ミリ秒単位）, return: 最大探索深さ
 
 	int		sel_move_random() const;
 	int		sel_move_PMC(Color next, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
@@ -55,6 +56,7 @@ private:
 	int		find_root_dr(int ix);
 	void	check_connected_uf(int ix, int ix2, Color col);
 	void	DFS_recursive(Color next, int depth);		//	depth == 0 になるまで深さ優先探索
+	void	itrdeep_recursive(Color next, int depth);		//	depth == 0 になるまで深さ優先探索
 	// --- 時間管理用のメンバ変数 ---
 	mutable std::chrono::high_resolution_clock::time_point m_startTime;
 	mutable int m_timeLimit = 0;

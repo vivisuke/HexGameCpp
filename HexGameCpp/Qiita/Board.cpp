@@ -514,3 +514,37 @@ void Board::DFS_recursive(Color next, int depth) {		//	depth == 0 ‚É‚È‚é‚Ü‚Å[‚³
 		}
 	}
 }
+int Board::do_itrdeep(Color next, int limit) {		//	
+	// --- ŠÔŒv‘ª‚Ì€”õ ---
+	m_startTime = std::chrono::high_resolution_clock::now();
+	m_timeLimit = limit;
+	m_timeOver = false;
+	m_nodesSearched = 0;
+	for(int depth = 1; ; ++depth) {
+		itrdeep_recursive(next, depth);
+		if( m_timeOver ) {
+			return depth;
+		}
+	}
+}
+void Board::itrdeep_recursive(Color next, int depth) {		//	depth == 0 ‚É‚È‚é‚Ü‚Å[‚³—Dæ’Tõ
+	if ((++m_nodesSearched & 2047) == 0) {
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
+        if (duration >= m_timeLimit) {
+            m_timeOver = true;
+            return;
+        }
+    }
+	if( depth == 0 ) {
+		return;
+	}
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+		if( m_cell[ix] == EMPTY ) {
+			m_cell[ix] = next;
+			itrdeep_recursive((BLACK+WHITE)-next, depth-1);
+			m_cell[ix] = EMPTY;
+			if( m_timeOver ) break;
+		}
+	}
+}

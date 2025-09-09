@@ -9,6 +9,12 @@ int main()
 {
 	if( 1 ) {
 	    Board bd(11);
+	    int d = bd.do_itrdeep(BLACK, 1000);
+		cout << "max depth = " << d << endl;
+		cout << "nodeSearched = " << bd.get_nodeSearched() << endl << endl;
+	}
+	if( 0 ) {
+	    Board bd(11);
 		auto start = std::chrono::high_resolution_clock::now();
 		bd.do_DFS(BLACK, 4);
 		auto end = std::chrono::high_resolution_clock::now();
