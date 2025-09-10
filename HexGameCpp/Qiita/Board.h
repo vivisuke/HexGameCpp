@@ -40,16 +40,19 @@ public:
 	Board& operator=(const Board&);
 public:
 	void	init();
+	int		get_width() const { return m_bd_width; }
 	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
 	int		ixToX(int ix) const { return ix % m_ary_width; }
 	int		ixToY(int ix) const { return (ix / m_ary_width) - 1; }
 	void	print() const;
 	void	print_dist() const;
+	Color	get_color(int x, int y) { return m_cell[xyToIndex(x, y)]; }
 	void	set_color(int x, int y, Color col) { m_cell[xyToIndex(x, y)] = col; }
 	void	set_color(int ix, Color col) { m_cell[ix] = col; }
 	void	set_last_put_ix(int ix) { m_last_put_ix = ix; }
 	long long get_nodeSearched() const { return m_nodesSearched; }
 	int		get_tt_size() const { return m_tt.size(); }
+	int		n_empty() const;
 	void	swap_black_white();
 	int		swap_bw_ix(int ix) const;
 
@@ -64,6 +67,7 @@ public:
 	bool	playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
 	bool	playout_to_win(Color next);		//	勝敗が決まるまでプレイアウトし、next が勝ったかどうかを返す
 
+	float	eval(Color next);			//	next: 手番、手番から見た評価値を計算
 	void	do_DFS(Color next, int depth);			//	depth == 0 になるまで深さ優先探索
 	int		do_itrdeep(Color next, int limit);		//	limit: 探索時間（ミリ秒単位）, return: 最大探索深さ
 

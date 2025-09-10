@@ -7,7 +7,75 @@ using namespace std;
 
 int main()
 {
-	if( 1 ) {
+	if (1) {
+		Board bd(4);
+		bd.set_color(3, 0, BLACK);
+		//bd.set_color(4, 7, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(1, 0, WHITE);
+		//bd.set_color(0, 0, BLACK);
+		Color next = BLACK;
+		next = WHITE;
+		bd.print();
+		for(int y = 0; y < bd.get_width(); ++y) {
+			cout << string(y*3, ' ');
+			for(int x = 0; x < bd.get_width(); ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					bd.set_color(x, y, next);
+					auto ev = -bd.eval((BLACK+WHITE)-next);
+					bd.set_color(x, y, EMPTY);
+					printf("%6.2f", ev);
+				} else
+					printf(" -----");
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+	if (0) {
+		Board bd(4);
+		bd.set_color(1, 1, BLACK);
+		bd.set_color(1, 2, WHITE);
+		bd.set_color(3, 1, BLACK);
+		Color next = BLACK;
+		next = WHITE;
+		bd.print();
+	    int bvd = bd.calc_vert_dist(true);
+	    int bhd = bd.calc_horz_dist(true);
+	    //bd.print_dist();
+	    cout << "bridged vert dist = " << bvd << endl;
+	    cout << "bridged horz dist = " << bhd << endl << endl;
+	    int vd = bd.calc_vert_dist();
+	    //bd.print_dist();
+	    int hd = bd.calc_horz_dist();
+	    cout << "vert dist = " << vd << endl;
+	    cout << "horz dist = " << hd << endl << endl;
+		auto ev = bd.eval(next);
+		cout << "ev = " << ev << endl;
+	}
+	if (0) {
+		Board bd(3);
+		Color next = BLACK;
+		for (;;) {
+			auto ev = bd.eval(next);
+			cout << "ev = " << ev << endl;
+			bd.print();
+			int ix = bd.sel_move_random();
+			if (ix < 0) break;
+			bd.set_color(ix, next);
+			bd.set_last_put_ix(ix);
+			if( next == BLACK && bd.is_vert_connected() ||
+				next == WHITE && bd.is_horz_connected() )
+			{
+				break;
+			}
+			next = (BLACK + WHITE) - next;
+		}
+		auto ev = bd.eval(next);
+		cout << "ev = " << ev << endl;
+		bd.print();
+	}
+	if( 0 ) {
 	    Board bd(5);
 	    Color next = BLACK;
 	    for(int i = 0; i != 15; ++i) {

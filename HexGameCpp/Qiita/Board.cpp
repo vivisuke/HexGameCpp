@@ -78,6 +78,14 @@ void Board::print_dist() const {
 	}
 	cout << endl;
 }
+int Board::n_empty() const {
+	int n = 0;
+	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+		if( m_cell[ix] == EMPTY )
+			++n;
+	}
+	return n;
+}
 void Board::swap_black_white() {
 	for(int y = 0; y < m_bd_width-1; ++y) {
 		for(int x = 0; x < m_bd_width-1-y; ++x) {
@@ -298,6 +306,30 @@ int Board::calc_dist(bool vertical, bool bridge, bool rev) const
 	}
 	//print_dist();
 	return min_dist;
+}
+float Board::eval(Color next) {
+	auto vd = calc_vert_dist(false);		//	６近傍 直接連結距離
+	auto hd = calc_horz_dist(false);		//	６近傍 直接連結距離
+	auto bvd = calc_vert_dist(true);		//	６近傍＋ブリッジ 連結距離
+	auto bhd = calc_horz_dist(true);		//	６近傍＋ブリッジ 連結距離
+	if( next == WHITE ) {
+		swap(vd, hd);
+		swap(bvd, bhd);
+	}
+	auto n_emp = n_empty();		//	空欄数
+	if( vd == 0 ) {				//	next 側：辺を連結済み
+		return 1 + n_emp;
+	}
+	if( hd == 0 ) {				//	相手側：辺を連結済み
+		return -1 - n_emp;
+	}
+	if( bvd == 0 ) {			//	next 側: 勝ち確定
+		return 2 + n_emp - vd*2;
+	}
+	if( bhd == 0 ) {			//	相手側: 勝ち確定
+		return -(1 + n_emp - hd*2);
+	}
+	return bhd - bvd + (hd - vd)/100.0 + 0.5;
 }
 void Board::get_empty_indexes(vector<int>& lst) const {
 	lst.clear();
