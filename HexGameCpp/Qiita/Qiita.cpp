@@ -8,21 +8,22 @@ using namespace std;
 int main()
 {
 	if (1) {
-		Board bd(4);
-		bd.set_color(3, 0, BLACK);
-		//bd.set_color(4, 7, WHITE);
+		Board bd(3);
+		bd.set_color(2, 1, BLACK);
+		bd.set_color(2, 0, WHITE);
 		//bd.set_color(0, 1, BLACK);
 		//bd.set_color(1, 0, WHITE);
 		//bd.set_color(0, 0, BLACK);
 		Color next = BLACK;
-		next = WHITE;
+		//next = WHITE;
 		bd.print();
 		for(int y = 0; y < bd.get_width(); ++y) {
 			cout << string(y*3, ' ');
 			for(int x = 0; x < bd.get_width(); ++x) {
 				if( bd.get_color(x, y) == EMPTY ) {
 					bd.set_color(x, y, next);
-					auto ev = -bd.eval((BLACK+WHITE)-next);
+					//auto ev = -bd.eval((BLACK+WHITE)-next);
+					auto ev = -bd.nega_max((BLACK+WHITE)-next, 3);
 					bd.set_color(x, y, EMPTY);
 					printf("%6.2f", ev);
 				} else

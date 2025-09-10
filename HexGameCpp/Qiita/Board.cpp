@@ -331,6 +331,29 @@ float Board::eval(Color next) {
 	}
 	return bhd - bvd + (hd - vd)/100.0 + 0.5;
 }
+float Board::nega_max(Color next, int depth) {
+	if( next == WHITE && calc_vert_dist(false) == 0 ||
+		next == BLACK && calc_horz_dist(false) == 0 )
+	{
+		return -(n_empty() + 1);		//	è”Ô‚Å‚È‚¢•û‚ªŸ—˜‚µ‚Ä‚é
+	}
+	if( depth <= 0 ) {
+		return eval(next);
+	}
+	vector<int> lst;		//	‹ó—“ˆÊ’uƒŠƒXƒg
+	get_empty_indexes(lst);
+	if( lst.is_empty() ) {	//	‹ó—“–³‚µ‚Ìê‡
+		return eval(next);
+	}
+	float maxev = std::numeric_limits<float>::lowest();
+	const Color nn = (BLACK+WHITE) - next;
+	for(auto ix: lst) {
+		set_color(ix, next);
+		maxev = max(maxev, -nega_max(nn, depth-1));
+		set_color(ix, EMPTY);
+	}
+	return maxev;
+}
 void Board::get_empty_indexes(vector<int>& lst) const {
 	lst.clear();
 	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {

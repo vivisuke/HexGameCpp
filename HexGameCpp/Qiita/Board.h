@@ -68,6 +68,8 @@ public:
 	bool	playout_to_win(Color next);		//	Ÿ”s‚ªŒˆ‚Ü‚é‚Ü‚ÅƒvƒŒƒCƒAƒEƒg‚µAnext ‚ªŸ‚Á‚½‚©‚Ç‚¤‚©‚ğ•Ô‚·
 
 	float	eval(Color next);			//	next: è”ÔAè”Ô‚©‚çŒ©‚½•]‰¿’l‚ğŒvZ
+	float	nega_max(Color next, int depth);		//	”Õ–Ê”’•”½“]‚µ‚È‚¢ nega_max
+	float	nega_alpha(Color next, int depth, float alpha, float beta);		//	”Õ–Ê”’•”½“]‚µ‚È‚¢ nega_alpha
 	void	do_DFS(Color next, int depth);			//	depth == 0 ‚É‚È‚é‚Ü‚Å[‚³—Dæ’Tõ
 	int		do_itrdeep(Color next, int limit);		//	limit: ’TõŠÔiƒ~ƒŠ•b’PˆÊj, return: Å‘å’Tõ[‚³
 
