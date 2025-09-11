@@ -22,7 +22,7 @@ Board::Board(int bd_width)
 	m_ary_width = m_bd_width + 1;
 	m_ary_height = m_bd_width + 2;
 	m_ary_size = m_ary_width * m_ary_height;
-	DR_INDEX = xyToIndex(0, m_bd_height);
+	DR_INDEX = xyToIX(0, m_bd_height);
 	m_cell.resize(m_ary_size);
 	m_gid.resize(m_ary_size);
 	m_dist.resize(m_ary_size);
@@ -48,9 +48,9 @@ Board::Board(const Board &x)
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), BWALL);	//	for 上下壁
 	for(int y = 0; y < m_bd_height; ++y) {
-		m_cell[xyToIndex(-1, y)] = WWALL;
+		m_cell[xyToIX(-1, y)] = WWALL;
 		for(int x = 0; x < m_bd_width; ++x)
-			m_cell[xyToIndex(x, y)] = EMPTY;
+			m_cell[xyToIX(x, y)] = EMPTY;
 	}
 	m_rave.resize(m_ary_size);
 	fill(m_rave.begin(), m_rave.end(), 0);	//	m_rave[] を 0 に初期化
@@ -64,8 +64,8 @@ void Board::init() {
 string Board::ixToStr(int ix) const {
 	if( ix < 0 ) return "-1";
 	string txt = "a1";
-	txt[0] = 'a' + indexToX(ix);
-	txt[1] = '1' + indexToY(ix);
+	txt[0] = 'a' + ixToX(ix);
+	txt[1] = '1' + ixToY(ix);
 	return txt;
 }
 void Board::print() const {
@@ -77,7 +77,7 @@ void Board::print() const {
 		cout << string(y, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
-			switch(m_cell[xyToIndex(x, y)]) {
+			switch(m_cell[xyToIX(x, y)]) {
 			case EMPTY: cout << "・"; break;
 			case BLACK: cout << "●"; break;
 			case WHITE: cout << "◯"; break;
@@ -90,7 +90,7 @@ void Board::print() const {
 	cout << endl;
 }
 bool Board::put_and_check(int x, int y, byte col) {
-	int ix = xyToIndex(x, y);
+	int ix = xyToIX(x, y);
 	m_cell[ix] = col;
 	check_connected(ix, ix-m_bd_width, col);
 	check_connected(ix, ix-m_bd_width+1, col);
@@ -125,16 +125,16 @@ void Board::check_connected(int ix, int ix2, byte col) {
 	}
 }
 bool Board::put_and_check_uf(int ix, byte col) {	//	return: 着手により上下 or 左右辺が連結されたか？
-	//int ix = xyToIndex(x, y);
+	//int ix = xyToIX(x, y);
 	m_cell[ix] = col;
 	if( col == BLACK ) {
-		auto y = indexToY(ix);
+		auto y = ixToY(ix);
 		if( y == 0 )
 			m_parent_ul[ix] = UL_INDEX;		//	上辺に接続
 		else if( y == m_bd_height - 1 )
 			m_parent_dr[ix] = DR_INDEX;		//	下辺に接続
 	} else {	//	col == WHITE
-		auto x = indexToX(ix);
+		auto x = ixToX(ix);
 		if( x == 0 )
 			m_parent_ul[ix] = UL_INDEX;		//	左辺に接続
 		else if( x == m_bd_width - 1 )
@@ -207,7 +207,7 @@ void Board::print_dist() const {
 		cout << string(y*2, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
-			auto d = m_dist[xyToIndex(x, y)];
+			auto d = m_dist[xyToIX(x, y)];
 			if( d == DIST_MAX ) cout << "  -1";
 			else printf("%4d", d);
 		}
@@ -221,7 +221,7 @@ void Board::print_parent() const {
 		cout << string(y*2, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
-			auto d = m_parent_ul[xyToIndex(x, y)];
+			auto d = m_parent_ul[xyToIX(x, y)];
 			printf("%4d", d);
 		}
 		cout << endl;
@@ -232,18 +232,18 @@ void Board::print_parent() const {
 		cout << string(y*2, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
-			auto d = m_parent_dr[xyToIndex(x, y)];
+			auto d = m_parent_dr[xyToIX(x, y)];
 			printf("%4d", d);
 		}
 		cout << endl;
 	}
 	cout << endl;
 }
-void Board::get_tt_best_moves(byte next, vector<int>& moves) {
+void Board::get_tt_best_moves(Color next, vector<int>& moves) {
 	moves.clear();
 	get_tt_best_moves_sub(next, moves);
 }
-void Board::get_tt_best_moves_sub(byte next, vector<int>& moves) {
+void Board::get_tt_best_moves_sub(Color next, vector<int>& moves) {
 	const TTEntry& entry = m_tt[m_hash_val];
 	if( entry.m_flag == FLAG_UNKNOWN || entry.m_best_move == 0 )
 		return;
@@ -255,14 +255,14 @@ void Board::get_tt_best_moves_sub(byte next, vector<int>& moves) {
 	set_color(ix, EMPTY);
 	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 }
-void Board::print_tt(byte next) {
+void Board::print_tt(Color next) {
 	const TTEntry& entry = m_tt[m_hash_val];
 	//cout << "eval = " << entry.m_score << " ";
 	printf("eval = %5.2f ", entry.m_score);
 	print_tt_sub(next);
 	cout << endl;
 }
-void Board::print_tt_sub(byte next) {
+void Board::print_tt_sub(Color next) {
 	const TTEntry& entry = m_tt[m_hash_val];
 	if( entry.m_flag == FLAG_UNKNOWN || entry.m_best_move == 0 )
 		return;
@@ -299,7 +299,7 @@ int Board::calc_vert_dist(bool ex, bool ud) {
 	m_front.clear();
 	m_list1.clear();
 	for(int x = 0; x < m_bd_width; ++x) {
-		int ix = xyToIndex(x, ud ? 0 : m_bd_height-1);
+		int ix = xyToIX(x, ud ? 0 : m_bd_height-1);
 		switch( m_cell[ix] ) {
 		case EMPTY:
 			m_dist[ix] = 1;
@@ -359,24 +359,24 @@ int Board::calc_vert_dist(bool ex, bool ud) {
 	//print_dist();
 	ushort mind = DIST_MAX;
 	for(int x = 0; x < m_bd_width; ++x) {
-		int ix = xyToIndex(x, ud ? m_bd_height-1 : 0);
+		int ix = xyToIX(x, ud ? m_bd_height-1 : 0);
 		mind = min(mind, m_dist[ix]);
 	}
 	if( ex ) {
 		for(int x = 1; x < m_bd_width; ++x) {
 			if( ud ) {
-				int ix = xyToIndex(x, m_bd_height-2);
+				int ix = xyToIX(x, m_bd_height-2);
 				if( m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
 					mind = min(mind, m_dist[ix]);
 			} else {
-				int ix = xyToIndex(x, 1);
+				int ix = xyToIX(x, 1);
 				if( m_cell[ix-m_ary_width] == EMPTY && m_cell[ix-m_ary_width+1] == EMPTY )
 					mind = min(mind, m_dist[ix]);
 			}
 		}
 	}
 	return mind;
-	//auto itr = min_element(&m_cell[xyToIndex(0, m_bd_height-1)], &m_cell[xyToIndex(m_bd_width-1, m_bd_height-1)]);
+	//auto itr = min_element(&m_cell[xyToIX(0, m_bd_height-1)], &m_cell[xyToIX(m_bd_width-1, m_bd_height-1)]);
 	//return *itr;
 }
 int Board::calc_horz_dist(bool ex, bool lr) {
@@ -384,7 +384,7 @@ int Board::calc_horz_dist(bool ex, bool lr) {
 	m_front.clear();
 	m_list1.clear();
 	for(int y = 0; y < m_bd_width; ++y) {
-		int ix = xyToIndex(lr ? 0 : m_bd_width-1, y);
+		int ix = xyToIX(lr ? 0 : m_bd_width-1, y);
 		switch( m_cell[ix] ) {
 		case EMPTY:
 			m_dist[ix] = 1;
@@ -444,17 +444,17 @@ int Board::calc_horz_dist(bool ex, bool lr) {
 	//print_dist();
 	ushort mind = DIST_MAX;
 	for(int y = 0; y < m_bd_height; ++y) {
-		int ix = xyToIndex(m_bd_width-1, y);
+		int ix = xyToIX(m_bd_width-1, y);
 		mind = min(mind, m_dist[ix]);
 	}
 	if( ex ) {
 		for(int y = 1; y < m_bd_height; ++y) {
 			if( lr ) {
-				int ix = xyToIndex(m_bd_width-2, y);
+				int ix = xyToIX(m_bd_width-2, y);
 				if( m_cell[ix - m_ary_width +1] == EMPTY && m_cell[ix+1] == EMPTY )
 					mind = min(mind, m_dist[ix]);
 			} else {
-				int ix = xyToIndex(1, y);
+				int ix = xyToIX(1, y);
 				if( m_cell[ix-1] == EMPTY && m_cell[ix+m_ary_width-1] == EMPTY )
 					mind = min(mind, m_dist[ix]);
 			}
@@ -467,7 +467,7 @@ int Board::find_winning_move_black() {
 	dist2.swap(m_dist);
 	calc_vert_dist(true, false);		//	下辺→上辺 距離
 	//print_dist();
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_dist[ix] == 1 && dist2[ix] == 1 )
 			return ix;
 	}
@@ -478,7 +478,7 @@ int Board::find_winning_move_white() {
 	dist2.swap(m_dist);
 	calc_horz_dist(true, false);		//	右辺→左辺 距離
 	//print_dist();
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_dist[ix] == 1 && dist2[ix] == 1 )
 			return ix;
 	}
@@ -490,7 +490,7 @@ void Board::find_winning_moves_black(vector<int> &lst, bool ex) {
 	calc_vert_dist(ex, false);		//	false for 下辺→上辺 距離
 	//print_dist();
 	lst.clear();
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_dist[ix] == 1 && dist2[ix] == 1 )
 			lst.push_back(ix);
 	}
@@ -501,7 +501,7 @@ void Board::find_winning_moves_white(vector<int> &lst) {
 	calc_horz_dist(true, false);		//	右辺→左辺 距離
 	//print_dist();
 	lst.clear();
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_dist[ix] == 1 && dist2[ix] == 1 )
 			lst.push_back(ix);
 	}
@@ -509,7 +509,7 @@ void Board::find_winning_moves_white(vector<int> &lst) {
 int Board::sel_move_random() {
 	g_lst.reserve(m_bd_width*m_bd_height);
 	g_lst.clear();
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			g_lst.push_back(ix);
 	}
@@ -517,11 +517,11 @@ int Board::sel_move_random() {
 	int r = rgen() % g_lst.size();
 	return g_lst[r];
 }
-double Board::playout_smart(int N, byte next) const {
+double Board::playout_smart(int N, Color next) const {
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	//lst.reserve(m_bd_width*m_bd_height);
-	//for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	//for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 	//	if( m_cell[ix] == EMPTY )
 	//		lst.push_back(ix);
 	//}
@@ -543,13 +543,13 @@ double Board::playout_smart(int N, byte next) const {
 	}
 	return (double)nbw / N;
 }
-byte Board::playout_smart(byte next) {
+byte Board::playout_smart(Color next) {
 	Board b0(*this);
 	auto n0 = next;
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	//lst.reserve(m_bd_width*m_bd_height);
-	//for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	//for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 	//	if( m_cell[ix] == EMPTY )
 	//		lst.push_back(ix);
 	//}
@@ -579,10 +579,10 @@ byte Board::playout_smart(byte next) {
 	assert(0);
 	return EMPTY;
 }
-void Board::playout_to_end(byte next) {
+void Board::playout_to_end(Color next) {
 	vector<int> lst;		//	空欄位置リスト
 	lst.reserve(m_bd_width*m_bd_height);
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
@@ -592,11 +592,11 @@ void Board::playout_to_end(byte next) {
 		next = (BLACK+WHITE) - next;
 	}
 }
-bool Board::playout(byte next) const {		//	return: true for 黒勝ち
+bool Board::playout(Color next) const {		//	return: true for 黒勝ち
 	Board bd(*this);
 	vector<int> lst;		//	空欄位置リスト
 	lst.reserve(m_bd_width*m_bd_height);
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
@@ -613,8 +613,8 @@ bool Board::did_black_win(int ix) {
 void Board::swap_black_white() {
 	for(int y = 0; y < m_bd_height-1; ++y) {
 		for(int x = 0; x < m_bd_width-1-y; ++x) {
-			int ix1 = xyToIndex(x, y);	//	対角線の左上側
-			int ix2 = xyToIndex(m_bd_width-1-y, m_bd_height-1-x);	//	対角線の左上側
+			int ix1 = xyToIX(x, y);	//	対角線の左上側
+			int ix2 = xyToIX(m_bd_width-1-y, m_bd_height-1-x);	//	対角線の左上側
 			auto t1 = m_cell[ix1];
 			auto t2 = m_cell[ix2];
 			if( t1 != EMPTY ) t1 = (BLACK+WHITE) - t1;
@@ -624,35 +624,35 @@ void Board::swap_black_white() {
 		}
 	}
 	for(int y = 0; y < m_bd_height; ++y) {
-		int ix = xyToIndex(m_bd_width-1-y, y);
+		int ix = xyToIX(m_bd_width-1-y, y);
 		if( m_cell[ix] != EMPTY ) 
 			m_cell[ix] = (BLACK+WHITE) - m_cell[ix];
 	}
 }
 int Board::swap_bw_ix(int ix) const {
-	int x = indexToX(ix);
-	int y = indexToY(ix);
-	return xyToIndex(m_bd_height-1-y, m_bd_width-1-x);
+	int x = ixToX(ix);
+	int y = ixToY(ix);
+	return xyToIX(m_bd_height-1-y, m_bd_width-1-x);
 }
-void Board::get_empty_list(std::vector<int>& lst) const {
+void Board::get_empty_indexes(std::vector<int>& lst) const {
 	lst.reserve(m_bd_width*m_bd_height);
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
 }
 int Board::n_empty() const {
 	int n = 0;
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			++n;
 	}
 	return n;
 }
-bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
+bool Board::playout_rave(Color next) const {		//	return: true for 黒勝ち
 	Board bd(*this);
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	shuffle(lst.begin(), lst.end(), rgen);
 #if 1
 	for(int i = 0; i < lst.size(); ++i) {
@@ -686,7 +686,7 @@ bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
 		win = WHITE;
 		loss = BLACK;
 	}
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( bd.m_cell[ix] == win )
 			m_rave[ix] += 1;
 		else if( bd.m_cell[ix] == loss )
@@ -698,8 +698,8 @@ bool Board::playout_rave(byte next) const {		//	return: true for 黒勝ち
 bool Board::is_vert_connected_ex() {
 	m_list1.resize(m_cell.size());
 	fill(m_list1.begin(), m_list1.end(), 0);	//	探索済みフラグ初期化
-	int ix0 = xyToIndex(0, 0);
-	int ix = xyToIndex(m_bd_width, 0);
+	int ix0 = xyToIX(0, 0);
+	int ix = xyToIX(m_bd_width, 0);
 	while( --ix >= ix0 ) {
 		if( m_cell[ix] == BLACK && m_list1[ix] == 0 ) {
 			m_list1[ix] = 1;
@@ -707,7 +707,7 @@ bool Board::is_vert_connected_ex() {
 				return true;
 		}
 	}
-	for(int ix = xyToIndex(0, 0); ix < xyToIndex(m_bd_width-1, 0); ++ix) {
+	for(int ix = xyToIX(0, 0); ix < xyToIX(m_bd_width-1, 0); ++ix) {
 		if( m_cell[ix] == EMPTY && m_cell[ix+1] == EMPTY ) {
 			int ix2 = ix + m_ary_width;
 			if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {	//	チェック先が黒 ＆ 未探索
@@ -722,8 +722,8 @@ bool Board::is_vert_connected_ex() {
 bool Board::is_vert_connected() {
 	m_list1.resize(m_cell.size());
 	fill(m_list1.begin(), m_list1.end(), 0);	//	探索済みフラグ初期化
-	int ix0 = xyToIndex(0, 0);
-	int ix = xyToIndex(m_bd_width, 0);
+	int ix0 = xyToIX(0, 0);
+	int ix = xyToIX(m_bd_width, 0);
 	while( --ix >= ix0 ) {
 		if( m_cell[ix] == BLACK && m_list1[ix] == 0 ) {
 			m_list1[ix] = 1;
@@ -734,7 +734,7 @@ bool Board::is_vert_connected() {
 	return false;
 }
 bool Board::is_vert_connected_sub(int ix) {
-	const int ixd = xyToIndex(0, m_bd_height-1);		//	下辺左端
+	const int ixd = xyToIX(0, m_bd_height-1);		//	下辺左端
 	int ix2 = ix + m_ary_width;		//	連結チェック先
 	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {	//	チェック先が黒 ＆ 未探索
 		if( ix2 >= ixd ) return true;		//	下辺到達
@@ -776,12 +776,12 @@ bool Board::is_vert_connected_sub(int ix) {
 	return false;
 }
 //bool Board::is_bridged_bottom(int ix) {
-//	return indexToY(ix) == m_bd_height - 2 &&
+//	return ixToY(ix) == m_bd_height - 2 &&
 //			m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY;
 //}
 bool Board::is_vert_connected_ex_sub(int ix) {
 	if( is_bridged_to_bottom(ix) ) return true;	//	下辺にブリッジ
-	const int ixd = xyToIndex(0, m_bd_height-1);		//	下辺左端
+	const int ixd = xyToIX(0, m_bd_height-1);		//	下辺左端
 	int ix2 = ix + m_ary_width;		//	連結チェック先
 	if( m_cell[ix2] == BLACK && m_list1[ix2] == 0 ) {	//	チェック先が黒 ＆ 未探索
 		if( ix2 >= ixd ) return true;		//	下辺到達
@@ -900,7 +900,7 @@ bool Board::is_vert_connected_ex_sub(int ix) {
 	}
 	return false;
 }
-bool Board::playout_old(byte next) const {		//	return: true for 黒勝ち
+bool Board::playout_old(Color next) const {		//	return: true for 黒勝ち
 	Board bd(*this);
 	int dv, dh;
 	for(;;) {
@@ -927,7 +927,7 @@ bool Board::playout_old(byte next) const {		//	return: true for 黒勝ち
 	assert( 0 );
 	return true;
 }
-double Board::estimate_win_rate_PMC(byte next, int N) const {	//	return: 次の手番勝率
+double Board::estimate_win_rate_PMC(Color next, int N) const {	//	return: 次の手番勝率
 	int black_won = 0;
 	for(int i = 0;i < N; ++i) {
 		if( playout(next) )
@@ -938,10 +938,10 @@ double Board::estimate_win_rate_PMC(byte next, int N) const {	//	return: 次の�
 	else
 		return (double)(N - black_won) / N;
 }
-int Board::sel_move_PMC(byte next, int limit) {
+int Board::sel_move_PMC(Color next, int limit) {
 #if 1
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	vector<int> nwin(lst.size(), 0);	//	勝ち数
 	for(int i = 0; i < lst.size(); ++i) {
 		int ix = lst[i];
@@ -956,7 +956,7 @@ int Board::sel_move_PMC(byte next, int limit) {
 	byte n2 = (BLACK+WHITE) - next;
 	int best_ix = -1;
 	double best_ev = -1;
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 		if( m_cell[ix] == EMPTY ) {
 			m_cell[ix] = next;
 			auto ev = 1.0 - estimate_win_rate_PMC(n2, N_PLAYOUT);
@@ -972,7 +972,7 @@ int Board::sel_move_PMC(byte next, int limit) {
 }
 
 const int N_MCTS = 50000;
-int Board::sel_move_MCTS(byte next) {
+int Board::sel_move_MCTS(Color next) {
 	MCTSNode* root = new MCTSNode(*this, next);
 	for(int i = 0; i < N_MCTS; ++i) {
 		MCTSNode* node = root;
@@ -1033,10 +1033,10 @@ int Board::sel_move_MCTS(byte next) {
 
 	return best_child->m_move; // これがAIの選んだ最善手
 }
-int Board::sel_move_win(byte next) {
+int Board::sel_move_win(Color next) {
 	if( next == BLACK ) {
 		if( calc_vert_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
-		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				set_color(ix, BLACK);
 				auto d = calc_vert_dist();
@@ -1046,7 +1046,7 @@ int Board::sel_move_win(byte next) {
 		}
 	} else {
 		if( calc_horz_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
-		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				set_color(ix, WHITE);
 				auto d = calc_horz_dist();
@@ -1057,10 +1057,10 @@ int Board::sel_move_win(byte next) {
 	}
 	return -1;
 }
-int Board::sel_move_block(byte next) {
+int Board::sel_move_block(Color next) {
 	if( next == WHITE ) {
 		if( calc_vert_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
-		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				set_color(ix, WHITE);
 				auto d = calc_vert_dist();
@@ -1070,7 +1070,7 @@ int Board::sel_move_block(byte next) {
 		}
 	} else {
 		if( calc_horz_dist() != 1 ) return -1;		//	１手で勝ちが確定する手が無い場合
-		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				set_color(ix, BLACK);
 				auto d = calc_horz_dist();
@@ -1081,7 +1081,7 @@ int Board::sel_move_block(byte next) {
 	}
 	return -1;
 }
-int Board::sel_move_heuristic(byte next) {
+int Board::sel_move_heuristic(Color next) {
 	vector<int> lst;
 	if( next == BLACK ) {
 		auto dv6 = calc_vert_dist(false);		//	６近傍 直接連結距離
@@ -1144,11 +1144,11 @@ int Board::sel_move_heuristic(byte next) {
 	}
 	return -1;
 }
-int Board::sel_move_AB(byte next) {
+int Board::sel_move_AB(Color next) {
 	auto ix = sel_move_heuristic(next);
 	if( ix >= 0 ) return ix;
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	float alpha = std::numeric_limits<float>::lowest();
 	float beta = std::numeric_limits<float>::max();
 	const byte nn = (BLACK+WHITE) - next;
@@ -1172,7 +1172,7 @@ void Board::build_zobrist_table() {
 	m_zobrist_white.resize(m_ary_size);
 	for(auto& r: m_zobrist_white) r = rgen64();
 }
-int Board::sel_move_itrdeep(byte next, int limit) {		//	limit: ミリ秒単位
+int Board::sel_move_itrdeep(Color next, int limit) {		//	limit: ミリ秒単位
 	build_zobrist_table();
 	// --- 時間計測の準備 ---
 	m_startTime = std::chrono::high_resolution_clock::now();
@@ -1278,7 +1278,7 @@ float Board::eval_white() {
 	return dv - dh;
 #endif
 }
-float Board::eval(byte next) {
+float Board::eval(Color next) {
 	if( next == BLACK )
 		return eval_black();
 	else {
@@ -1289,7 +1289,7 @@ float Board::eval(byte next) {
 		//return ev;
 	}
 }
-float Board::nega_max(byte next, int depth) {
+float Board::nega_max(Color next, int depth) {
 	if( next == WHITE && calc_vert_dist(false) == 0 ||
 		next == BLACK && calc_horz_dist(false) == 0 )
 	{
@@ -1299,7 +1299,7 @@ float Board::nega_max(byte next, int depth) {
 		return eval(next);
 	}
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	if( lst.is_empty() ) {	//	空欄無しの場合
 		return eval(next);
 	}
@@ -1313,7 +1313,7 @@ float Board::nega_max(byte next, int depth) {
 	return maxev;
 }
 //	置換表を利用した nega_max()
-float Board::nega_max_tt(byte next, int depth) {
+float Board::nega_max_tt(Color next, int depth) {
 	TTEntry& entry = m_tt[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
 	if( entry.m_flag == FLAG_TERMINAL )		//	確定評価値の場合
 		return entry.m_score;
@@ -1330,7 +1330,7 @@ float Board::nega_max_tt(byte next, int depth) {
 	if( entry.m_depth >= depth )	//	すでに depth で探索済み
 		return entry.m_score;
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	if( lst.is_empty() ) {	//	空欄無しの場合
 		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
 		return entry.m_score = eval(next);
@@ -1363,7 +1363,7 @@ float Board::nega_max_tt(byte next, int depth) {
 	return entry.m_score = maxev;
 }
 //	置換表を利用した nega_alpha()
-float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
+float Board::nega_alpha_tt(Color next, int depth, float alpha, float beta) {
 	if ((++m_nodesSearched & 2047) == 0) {
         auto now = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
@@ -1398,7 +1398,7 @@ float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
 		}
 	}
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	if( lst.is_empty() ) {	//	空欄無しの場合
 		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
 		return entry.m_score = eval(next);
@@ -1448,7 +1448,7 @@ float Board::nega_alpha_tt(byte next, int depth, float alpha, float beta) {
 	
 	return alpha;
 }
-float Board::nega_alpha(byte next, int depth, float alpha, float beta) {
+float Board::nega_alpha(Color next, int depth, float alpha, float beta) {
 	if( next == WHITE && calc_vert_dist(false) == 0 ||
 		next == BLACK && calc_horz_dist(false) == 0 )
 	{
@@ -1458,7 +1458,7 @@ float Board::nega_alpha(byte next, int depth, float alpha, float beta) {
 		return eval(next);
 	}
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_list(lst);
+	get_empty_indexes(lst);
 	if( lst.is_empty() ) {	//	空欄無しの場合
 		return eval(next);
 	}
@@ -1487,7 +1487,7 @@ int Board::alpha_beta_white(int alpha, int beta, int depth) {
 int Board::black_turn(int depth) {
 	if( depth != 0 ) {
 		int max_ev = INT_MIN;
-		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				m_cell[ix] = BLACK;
 				auto ev = white_turn(depth-1);
@@ -1503,7 +1503,7 @@ int Board::black_turn(int depth) {
 int Board::white_turn(int depth) {
 	if( depth != 0 ) {
 		int min_ev = SHRT_MAX;
-		for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_height-1); ++ix) {
+		for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_height-1); ++ix) {
 			if( m_cell[ix] == EMPTY ) {
 				m_cell[ix] = WHITE;
 				auto ev = black_turn(depth-1);
@@ -1517,9 +1517,9 @@ int Board::white_turn(int depth) {
 	return eval_white();
 }
 //
-bool dfs_black_win(Board& bd, byte next) {		//	双方最善で黒が勝つか？
+bool dfs_black_win(Board& bd, Color next) {		//	双方最善で黒が勝つか？
 	bool put = false;
-	for(int ix = bd.xyToIndex(0, 0); ix <= bd.xyToIndex(bd.m_bd_width-1, bd.bd_height()-1); ++ix) {
+	for(int ix = bd.xyToIX(0, 0); ix <= bd.xyToIX(bd.m_bd_width-1, bd.bd_height()-1); ++ix) {
 		if( bd.m_cell[ix] == EMPTY ) {
 			bd.m_cell[ix] = next;
 			auto b = dfs_black_win(bd, (BLACK+WHITE)-next);

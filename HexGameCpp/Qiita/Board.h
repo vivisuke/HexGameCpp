@@ -41,13 +41,16 @@ public:
 public:
 	void	init();
 	int		get_width() const { return m_bd_width; }
-	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
+	int		xyToIX(int x, int y) const { return (y+1)*m_ary_width + x; }
 	int		ixToX(int ix) const { return ix % m_ary_width; }
 	int		ixToY(int ix) const { return (ix / m_ary_width) - 1; }
+	std::string ixToStr(int ix) const;
 	void	print() const;
 	void	print_dist() const;
-	Color	get_color(int x, int y) { return m_cell[xyToIndex(x, y)]; }
-	void	set_color(int x, int y, Color col) { m_cell[xyToIndex(x, y)] = col; }
+	void	print_tt(Color);				//	置換表の最善手表示
+	void	get_tt_best_moves(Color, std::vector<int>&);
+	Color	get_color(int x, int y) { return m_cell[xyToIX(x, y)]; }
+	void	set_color(int x, int y, Color col) { m_cell[xyToIX(x, y)] = col; }
 	void	set_color(int ix, Color col) { m_cell[ix] = col; }
 	void	set_last_put_ix(int ix) { m_last_put_ix = ix; }
 	long long get_nodeSearched() const { return m_nodesSearched; }
@@ -70,12 +73,16 @@ public:
 	float	eval(Color next);			//	next: 手番、手番から見た評価値を計算
 	float	nega_max(Color next, int depth);		//	盤面白黒反転しない nega_max
 	float	nega_alpha(Color next, int depth, float alpha, float beta);		//	盤面白黒反転しない nega_alpha
+	float	nega_alpha_tt(Color next, int depth, float alpha, float beta);	//	盤面白黒反転しない nega_alpha、置換表使用版
 	void	do_DFS(Color next, int depth);			//	depth == 0 になるまで深さ優先探索
 	int		do_itrdeep(Color next, int limit);		//	limit: 探索時間（ミリ秒単位）, return: 最大探索深さ
 
 	int		sel_move_random() const;
 	int		sel_move_PMC(Color next, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
+	int		sel_move_itrdeep(Color next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
 private:
+	void	print_tt_sub(Color);				//	置換表の最善手表示
+	void	get_tt_best_moves_sub(Color, std::vector<int>&);
 	void	get_empty_indexes(std::vector<int>&) const;
 	void	get_local_indexes(std::vector<int>&, int last_ix) const;
 	bool	is_vert_connected_DFS(int ix) const;

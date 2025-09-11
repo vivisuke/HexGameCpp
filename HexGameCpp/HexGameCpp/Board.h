@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <chrono>
 
+using Color = unsigned char;
 using byte = unsigned char;
 using uchar = unsigned char;
 using ushort = unsigned short;
@@ -45,24 +46,24 @@ public:
 	void	print() const;
 	void	print_dist() const;
 	void	print_parent() const;
-	void	print_tt(byte);				//	置換表の最善手表示
-	void	get_tt_best_moves(byte, std::vector<int>&);
+	void	print_tt(Color);				//	置換表の最善手表示
+	void	get_tt_best_moves(Color, std::vector<int>&);
 	int		bd_width() const { return m_bd_width; }
 	int		bd_height() const { return m_bd_height; }
-	int		xyToIndex(int x, int y) const { return (y+1)*m_ary_width + x; }
-	int		indexToX(int ix) const { return ix % m_ary_width; }
-	int		indexToY(int ix) const { return (ix / m_ary_width) - 1; }
+	int		xyToIX(int x, int y) const { return (y+1)*m_ary_width + x; }
+	int		ixToX(int ix) const { return ix % m_ary_width; }
+	int		ixToY(int ix) const { return (ix / m_ary_width) - 1; }
 	std::string ixToStr(int ix) const;
-	byte	get_color(int x, int y) const { return m_cell[xyToIndex(x, y)]; }
-	byte	get_color(int ix) const { return m_cell[ix]; }
-	void	set_color(int x, int y, byte col) { m_cell[xyToIndex(x, y)] = col; }
-	void	set_color(int ix, byte col) { m_cell[ix] = col; }
+	Color	get_color(int x, int y) const { return m_cell[xyToIX(x, y)]; }
+	Color	get_color(int ix) const { return m_cell[ix]; }
+	void	set_color(int x, int y, Color col) { m_cell[xyToIX(x, y)] = col; }
+	void	set_color(int ix, Color col) { m_cell[ix] = col; }
 	void	set_empty(int x, int y) { set_color(x, y, EMPTY); }
-	bool	put_color(int x, int y, byte col);		//	return: 着手により上下 or 左右辺が連結された
-	bool	put_and_check(int x, int y, byte col);
-	void	check_connected(int ix, int ix2, byte col);
-	bool	put_and_check_uf(int ix, byte col);
-	void	check_connected_uf(int ix, int ix2, byte col);
+	bool	put_color(int x, int y, Color col);		//	return: 着手により上下 or 左右辺が連結された
+	bool	put_and_check(int x, int y, Color col);
+	void	check_connected(int ix, int ix2, Color col);
+	bool	put_and_check_uf(int ix, Color col);
+	void	check_connected_uf(int ix, int ix2, Color col);
 	int		find_root(int gid);
 	int		find_root_ul(int ix);
 	int		find_root_dr(int ix);
@@ -77,51 +78,51 @@ public:
 	int		find_winning_move_white();
 	void	find_winning_moves_black(std::vector<int>&, bool ex=true);
 	void	find_winning_moves_white(std::vector<int>&);
-	void	get_empty_list(std::vector<int>&) const;
+	void	get_empty_indexes(std::vector<int>&) const;
 	int		n_empty() const;
 	void	swap_black_white();
 	int		swap_bw_ix(int ix) const;
 
 	float	eval_black();				//	黒番、黒から見た評価値を計算
 	float	eval_white();				//	白番、白から見た評価値を計算
-	float	eval(byte next);			//	next: 手番、手番から見た評価値を計算
-	float	nega_max(byte next, int depth);		//	盤面白黒反転しない nega_max
-	float	nega_alpha(byte next, int depth, float alpha, float beta);		//	盤面白黒反転しない nega_alpha
+	float	eval(Color next);			//	next: 手番、手番から見た評価値を計算
+	float	nega_max(Color next, int depth);		//	盤面白黒反転しない nega_max
+	float	nega_alpha(Color next, int depth, float alpha, float beta);		//	盤面白黒反転しない nega_alpha
 	int		alpha_beta_black(int alpha, int beta, int depth);
 	int		alpha_beta_white(int alpha, int beta, int depth);
 	int		black_turn(int depth);
 	int		white_turn(int depth);
 
-	void	playout_to_end(byte next);	//	完全ランダムプレイアウト
-	bool	playout(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
-	byte	playout_smart(byte next);	//	完全ランダムプレイアウト、return: BLACK | WHITE、勝敗判定を差分計算
-	double	playout_smart(int N, byte next) const;	//	完全ランダムプレイアウト、return: 黒勝率
-	byte	get_playout_winner(byte next) const;	//	完全ランダムプレイアウト、return: BLACK or WHITE
-	bool	playout_old(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
-	bool	playout_rave(byte next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
-	double	estimate_win_rate_PMC(byte next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
+	void	playout_to_end(Color next);	//	完全ランダムプレイアウト
+	bool	playout(Color next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
+	Color	playout_smart(Color next);	//	完全ランダムプレイアウト、return: BLACK | WHITE、勝敗判定を差分計算
+	double	playout_smart(int N, Color next) const;	//	完全ランダムプレイアウト、return: 黒勝率
+	Color	get_playout_winner(Color next) const;	//	完全ランダムプレイアウト、return: BLACK or WHITE
+	bool	playout_old(Color next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
+	bool	playout_rave(Color next) const;	//	完全ランダムプレイアウト、return: 黒勝ち
+	double	estimate_win_rate_PMC(Color next, int N) const;	//	完全ランダムプレイアウトで次手番勝率を求める
 	bool	did_black_win(int ix);		//	黒 ix に打って、上下辺が連結されたか？
 	int		sel_move_random();			//	完全ランダムに着手を選択、return: 着手箇所
-	int		sel_move_PMC(byte next, int limit=1000);		//	純粋モンテカルロ法で着手を選択、limit: ミリ秒単位
-	int		sel_move_MCTS(byte next);		//	モンテカルロ木探索で着手を選択、return: 着手箇所
-	int		sel_move_win(byte next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
-	int		sel_move_block(byte next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
-	int		sel_move_heuristic(byte next);			//	
-	int		sel_move_AB(byte next);			//	αβ法＋評価関数による着手選択
-	int		sel_move_itrdeep(byte next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
+	int		sel_move_PMC(Color next, int limit=1000);		//	純粋モンテカルロ法で着手を選択、limit: ミリ秒単位
+	int		sel_move_MCTS(Color next);		//	モンテカルロ木探索で着手を選択、return: 着手箇所
+	int		sel_move_win(Color next);		//	1手で勝ちが確定する手があればそれを返す、無ければ -1 を返す
+	int		sel_move_block(Color next);		//	相手の勝利手をブロックする手があればそれを返す、無ければ -1 を返す
+	int		sel_move_heuristic(Color next);			//	
+	int		sel_move_AB(Color next);			//	αβ法＋評価関数による着手選択
+	int		sel_move_itrdeep(Color next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
 private:
-	void	print_tt_sub(byte);				//	置換表の最善手表示
-	void	get_tt_best_moves_sub(byte, std::vector<int>&);
+	void	print_tt_sub(Color);				//	置換表の最善手表示
+	void	get_tt_best_moves_sub(Color, std::vector<int>&);
 	bool	is_vert_connected_sub(int ix);
 	bool	is_vert_connected_ex_sub(int ix);
 	bool	is_bridged_to_bottom(int ix) const {
-				return indexToY(ix) == m_bd_height - 2 && m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY;
+				return ixToY(ix) == m_bd_height - 2 && m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY;
 	}
-	void	calc_dist_sub(int ix, int dix, ushort dist, byte col);
-	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, byte col);
+	void	calc_dist_sub(int ix, int dix, ushort dist, Color col);
+	void	calc_dist_sub2(int ix, int ix2, int ix3, int dix, ushort dist, Color col);
 	void	build_zobrist_table();
-	float	nega_max_tt(byte next, int depth);		//	盤面白黒反転しない nega_max、置換表使用版
-	float	nega_alpha_tt(byte next, int depth, float alpha, float beta);	//	盤面白黒反転しない nega_alpha、置換表使用版
+	float	nega_max_tt(Color next, int depth);		//	盤面白黒反転しない nega_max、置換表使用版
+	float	nega_alpha_tt(Color next, int depth, float alpha, float beta);	//	盤面白黒反転しない nega_alpha、置換表使用版
 
 public:
 	int		m_bd_width;					//	盤面幅
@@ -132,7 +133,7 @@ public:
 	int		DR_INDEX;					//	下右辺仮想ルート for Union-Find
 	short	m_next_gid;
 	uint64	m_hash_val = 0;				//	盤面ハッシュ値
-	std::vector<byte>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
+	std::vector<Color>	m_cell;			//	周囲に壁（番人）を配した１次元盤面配列
 	std::vector<short>	m_gid;			//	各石のグループID
 	std::vector<byte>	m_min_gid;		//	接続しているグループの最小グループID
 	std::vector<byte>	m_gid_connected;	//	各グループIDの石が上下左右辺に接続しているか？

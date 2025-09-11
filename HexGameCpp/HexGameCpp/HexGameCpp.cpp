@@ -38,8 +38,8 @@ void print_dvdh2(Board& bd) {
 	cout << "horz dist = " << dh << ", " << dh2 << endl << endl;
 }
 string ix_str(const Board& bd, int ix) {
-	string txt(1, 'a'+bd.indexToX(ix));
-	txt +=string(1,  '1' + bd.indexToY(ix));
+	string txt(1, 'a'+bd.ixToX(ix));
+	txt +=string(1,  '1' + bd.ixToY(ix));
 	return txt;
 }
 
@@ -491,8 +491,8 @@ int main()
 	if (0) {
 		Board bd(3);
 		auto ix = bd.sel_move_MCTS(BLACK);
-		printf("best: %c%d\n", 'a'+bd.indexToX(ix), bd.indexToY(ix)+1);
-		//cout << "best: " << bd.indexToX(ix) << ", " << bd.indexToY(ix) << endl;
+		printf("best: %c%d\n", 'a'+bd.ixToX(ix), bd.ixToY(ix)+1);
+		//cout << "best: " << bd.ixToX(ix) << ", " << bd.ixToY(ix) << endl;
 	}
 	if (0) {
 		Board bd(6);
@@ -522,8 +522,8 @@ int main()
 	}
 	if (0) {
 		Board bd(4);
-		//bd.put_and_check_uf(bd.xyToIndex(1, 1), BLACK);
-		//bd.put_and_check_uf(bd.xyToIndex(0, 0), WHITE);
+		//bd.put_and_check_uf(bd.xyToIX(1, 1), BLACK);
+		//bd.put_and_check_uf(bd.xyToIX(0, 0), WHITE);
 		bd.print();
 		double p = bd.playout_smart(1000, BLACK);
 		cout << "black win rate = " << p << endl;
@@ -537,9 +537,9 @@ int main()
 	}
 	if (0) {
 		Board bd(3);
-		bool b = bd.put_and_check_uf(bd.xyToIndex(1, 0), BLACK);
-		b = bd.put_and_check_uf(bd.xyToIndex(1, 1), BLACK);
-		b = bd.put_and_check_uf(bd.xyToIndex(1, 2), BLACK);
+		bool b = bd.put_and_check_uf(bd.xyToIX(1, 0), BLACK);
+		b = bd.put_and_check_uf(bd.xyToIX(1, 1), BLACK);
+		b = bd.put_and_check_uf(bd.xyToIX(1, 2), BLACK);
 		bd.print();
 	}
 	if( 0 ) {
@@ -595,7 +595,7 @@ int main()
 		const int BD_WIDTH = 3;
 		Board bd(BD_WIDTH);
 		bd.init();
-		bd.put_and_check_uf(bd.xyToIndex(2, 0), BLACK);
+		bd.put_and_check_uf(bd.xyToIX(2, 0), BLACK);
 		bd.print();
 		auto start = std::chrono::high_resolution_clock::now();
 		double maxv = -9999;
@@ -607,7 +607,7 @@ int main()
 			for(int x = 0; x < BD_WIDTH; ++x) {
 				if( bd.get_color(x, y) == EMPTY ) {
 					//bd.set_color(x, y, next);
-					bd.put_and_check_uf(bd.xyToIndex(x, y), next);
+					bd.put_and_check_uf(bd.xyToIX(x, y), next);
 					double r = bd.playout_smart(100000, (BLACK+WHITE)-next);
 					maxv = max(maxv, r);
 					minv = min(minv, r);
@@ -729,7 +729,7 @@ int main()
 			cout << string(y*2, ' ');
 			for(int x = 0; x < BD_WIDTH; ++x) {
 				if( bd.get_color(x, y) == EMPTY ) {
-					auto rave = bd.m_rave[bd.xyToIndex(x, y)];
+					auto rave = bd.m_rave[bd.xyToIX(x, y)];
 					printf("%4d", rave);
 				} else
 					printf("   #");

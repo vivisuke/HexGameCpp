@@ -27,9 +27,9 @@ Board::Board(int width)
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), WALL);	//	for ã‰º•Ç
 	for(int y = 0; y < m_bd_width; ++y) {
-		m_cell[xyToIndex(-1, y)] = WALL;		//	¶‰E•Ç
+		m_cell[xyToIX(-1, y)] = WALL;		//	¶‰E•Ç
 		for(int x = 0; x < m_bd_width; ++x)
-			m_cell[xyToIndex(x, y)] = EMPTY;
+			m_cell[xyToIX(x, y)] = EMPTY;
 	}
 	for(int i = 0; i != m_parent_ul.size(); ++i)
 		m_parent_ul[i] = i;
@@ -43,6 +43,13 @@ Board& Board::operator=(const Board& s) {
 
 	return *this;
 }
+string Board::ixToStr(int ix) const {
+	if( ix < 0 ) return "-1";
+	string txt = "a1";
+	txt[0] = 'a' + ixToX(ix);
+	txt[1] = '1' + ixToY(ix);
+	return txt;
+}
 void Board::print() const {
 	cout << "   ";
 	for(int x = 0; x < m_bd_width; ++x)
@@ -52,7 +59,7 @@ void Board::print() const {
 		cout << string(y, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
-			int ix = xyToIndex(x, y);
+			int ix = xyToIX(x, y);
 			switch(m_cell[ix]) {
 			case EMPTY: cout << "E"; break;
 			case BLACK: cout << (ix==m_last_put_ix?"š":"œ"); break;
@@ -70,7 +77,7 @@ void Board::print_dist() const {
 		cout << string(y*2, ' ');
 		printf("%2d:", y+1);
 		for(int x = 0; x < m_bd_width; ++x) {
-			auto d = m_dist[xyToIndex(x, y)];
+			auto d = m_dist[xyToIX(x, y)];
 			if( d == UNCONNECT) cout << "  -1";
 			else printf("%4d", d);
 		}
@@ -78,9 +85,44 @@ void Board::print_dist() const {
 	}
 	cout << endl;
 }
+void Board::get_tt_best_moves(Color next, vector<int>& moves) {
+	moves.clear();
+	get_tt_best_moves_sub(next, moves);
+}
+void Board::get_tt_best_moves_sub(Color next, vector<int>& moves) {
+	const TTEntry& entry = m_tt[m_hash_val];
+	if( entry.m_flag == FLAG_UNKNOWN || entry.m_best_move == 0 )
+		return;
+	moves.push_back(entry.m_best_move);
+	auto ix = entry.m_best_move;
+	set_color(ix, next);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	get_tt_best_moves_sub((BLACK+WHITE)-next, moves);
+	set_color(ix, EMPTY);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+}
+void Board::print_tt(Color next) {
+	const TTEntry& entry = m_tt[m_hash_val];
+	//cout << "eval = " << entry.m_score << " ";
+	printf("eval = %5.2f ", entry.m_score);
+	print_tt_sub(next);
+	cout << endl;
+}
+void Board::print_tt_sub(Color next) {
+	const TTEntry& entry = m_tt[m_hash_val];
+	if( entry.m_flag == FLAG_UNKNOWN || entry.m_best_move == 0 )
+		return;
+	cout << ixToStr(entry.m_best_move) << " ";
+	auto ix = entry.m_best_move;
+	set_color(ix, next);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	print_tt_sub((BLACK+WHITE)-next);
+	set_color(ix, EMPTY);
+	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+}
 int Board::n_empty() const {
 	int n = 0;
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			++n;
 	}
@@ -89,8 +131,8 @@ int Board::n_empty() const {
 void Board::swap_black_white() {
 	for(int y = 0; y < m_bd_width-1; ++y) {
 		for(int x = 0; x < m_bd_width-1-y; ++x) {
-			int ix1 = xyToIndex(x, y);	//	‘ÎŠpü‚Ì¶ã‘¤
-			int ix2 = xyToIndex(m_bd_width-1-y, m_bd_width-1-x);	//	‘ÎŠpü‚Ì¶ã‘¤
+			int ix1 = xyToIX(x, y);	//	‘ÎŠpü‚Ì¶ã‘¤
+			int ix2 = xyToIX(m_bd_width-1-y, m_bd_width-1-x);	//	‘ÎŠpü‚Ì¶ã‘¤
 			auto t1 = m_cell[ix1];
 			auto t2 = m_cell[ix2];
 			if( t1 != EMPTY ) t1 = (BLACK+WHITE) - t1;
@@ -100,7 +142,7 @@ void Board::swap_black_white() {
 		}
 	}
 	for(int y = 0; y < m_bd_width; ++y) {
-		int ix = xyToIndex(m_bd_width-1-y, y);
+		int ix = xyToIX(m_bd_width-1-y, y);
 		if( m_cell[ix] != EMPTY ) 
 			m_cell[ix] = (BLACK+WHITE) - m_cell[ix];
 	}
@@ -108,13 +150,13 @@ void Board::swap_black_white() {
 int Board::swap_bw_ix(int ix) const {
 	int x = ixToX(ix);
 	int y = ixToY(ix);
-	return xyToIndex(m_bd_width-1-y, m_bd_width-1-x);
+	return xyToIX(m_bd_width-1-y, m_bd_width-1-x);
 }
 bool Board::is_vert_connected() const {
 	m_connected.resize(m_ary_size);
 	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);
 	for(int x = 0; x < m_bd_width; ++x) {
-		if( is_vert_connected_DFS(xyToIndex(x, 0)) )		//	[‚³—Dæ’Tõ
+		if( is_vert_connected_DFS(xyToIX(x, 0)) )		//	[‚³—Dæ’Tõ
 			return true;	//	ã‰º˜AŒ‹Œo˜H‚ğ”­Œ©‚µ‚½ê‡
 	}
 	return false;
@@ -122,7 +164,7 @@ bool Board::is_vert_connected() const {
 bool Board::is_vert_connected_DFS(int ix) const {
 	if( m_cell[ix] != BLACK || m_connected[ix] != UNSEARCHED )	//	•‚Å‚È‚¢ or ’TõÏ‚İ
 		return false;
-	if( ix >= xyToIndex(0, m_bd_width-1) )		//	‰º•Ó‚É“’B‚µ‚½ê‡
+	if( ix >= xyToIX(0, m_bd_width-1) )		//	‰º•Ó‚É“’B‚µ‚½ê‡
 		return true;
 	m_connected[ix] = SEARCHED;
 	return	is_vert_connected_DFS(ix + m_ary_width) ||
@@ -136,7 +178,7 @@ bool Board::is_horz_connected() const {
 	m_connected.resize(m_ary_size);
 	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);
 	for(int y = 0; y < m_bd_width; ++y) {
-		if( is_horz_connected_DFS(xyToIndex(0, y)) )		//	[‚³—Dæ’Tõ
+		if( is_horz_connected_DFS(xyToIX(0, y)) )		//	[‚³—Dæ’Tõ
 			return true;	//	ã‰º˜AŒ‹Œo˜H‚ğ”­Œ©‚µ‚½ê‡
 	}
 	return false;
@@ -171,7 +213,7 @@ int Board::calc_dist(bool vertical, bool bridge, bool rev) const
 	deque<int> q;	// 0-1 BFS ‚Ì‚½‚ß‚Ì—¼’[ƒLƒ…[
 	// 1. ƒXƒ^[ƒg’n“_iãE¶•Ój‚ğƒLƒ…[‚É’Ç‰Á
 	for (int i = 0; i < m_bd_width; ++i) {
-		int ix = vertical ? xyToIndex(i, 0) : xyToIndex(0, i);
+		int ix = vertical ? xyToIX(i, 0) : xyToIX(0, i);
 		if (m_cell[ix] == own_color) {
 			m_dist[ix] = 0;
 			q.push_front(ix); // ƒRƒXƒg0‚È‚Ì‚Åæ“ª‚É’Ç‰Á
@@ -181,9 +223,9 @@ int Board::calc_dist(bool vertical, bool bridge, bool rev) const
 		}
 	}
 	if( bridge ) {
-		bool is_emp0 = m_cell[xyToIndex(0, 0)] == EMPTY;	//	‹ó—“‚©H
+		bool is_emp0 = m_cell[xyToIX(0, 0)] == EMPTY;	//	‹ó—“‚©H
 		for (int i = 1; i < m_bd_width; ++i) {
-			int ix = vertical ? xyToIndex(i, 0) : xyToIndex(0, i);
+			int ix = vertical ? xyToIX(i, 0) : xyToIX(0, i);
 			bool is_emp = m_cell[ix] == EMPTY;	//	‹ó—“‚©H
 			if( is_emp0 && is_emp ) {
 				int ix2 = ix + (vertical ? m_ary_width - 1 : -m_ary_width + 1);
@@ -356,7 +398,7 @@ float Board::nega_max(Color next, int depth) {
 }
 void Board::get_empty_indexes(vector<int>& lst) const {
 	lst.clear();
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix) {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
@@ -368,7 +410,7 @@ void Board::get_local_indexes(vector<int>& lst, int last_ix) const {
 	lst.clear();
 	if( last_ix == 0 ) {	//	’¼‘Oè‚ª–³‚¢ê‡‚ÍA•›‘ÎŠpüãƒZƒ‹‚ğŒó•â‚É
 		for(int y = 0; y < m_bd_width; ++y) {
-			int ix = xyToIndex(m_bd_width-y-1, y);
+			int ix = xyToIX(m_bd_width-y-1, y);
 			if (m_cell[ix] == EMPTY)
 				lst.push_back(ix);
 		}
@@ -460,13 +502,13 @@ bool Board::union_find(int ix, Color col) {	//	return: ’…è‚É‚æ‚èã‰º or ¶‰E•Ó‚
 	//	‰º•Ói‰E•Ój‚ÌÎ‚ªã•Ói¶•Ój‚É˜AŒ‹‚µ‚Ä‚¢‚é‚©H
 	if( col == BLACK ) {
 		for(int x = 0; x < m_bd_width; ++x) {
-			int ix = xyToIndex(x, m_bd_width-1);
+			int ix = xyToIX(x, m_bd_width-1);
 			if( m_cell[ix] == BLACK && find_root_ul(ix) == TL_INDEX )
 				return true;
 		}
 	} else {
 		for(int y = 0; y < m_bd_width; ++y) {
-			int ix = xyToIndex(m_bd_width-1, y);
+			int ix = xyToIX(m_bd_width-1, y);
 			if( m_cell[ix] == WHITE && find_root_ul(ix) == TL_INDEX )
 				return true;
 		}
@@ -618,13 +660,125 @@ void Board::DFS_recursive(Color next, int depth) {		//	depth == 0 ‚É‚È‚é‚Ü‚Å[‚³
 		m_nodesSearched += 1;
 		return;
 	}
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix) {
 		if( m_cell[ix] == EMPTY ) {
 			m_cell[ix] = next;
 			DFS_recursive((BLACK+WHITE)-next, depth-1);
 			m_cell[ix] = EMPTY;
 		}
 	}
+}
+int Board::sel_move_itrdeep(Color next, int limit) {		//	limit: ƒ~ƒŠ•b’PˆÊ
+	build_zobrist_table();
+	// --- ŠÔŒv‘ª‚Ì€”õ ---
+	m_startTime = std::chrono::high_resolution_clock::now();
+	m_timeLimit = limit;
+	m_timeOver = false;
+	m_nodesSearched = 0;
+
+	m_hash_val = 0;			//	Œ»‹Ç–Ê‚ÌƒnƒbƒVƒ…’l‚ğ‚O‚É
+	m_tt.clear();			//	’uŠ·•\ƒNƒŠƒA
+	TTEntry& root = m_tt[m_hash_val];
+	auto alpha = std::numeric_limits<float>::lowest();
+	auto beta = std::numeric_limits<float>::max();
+	vector<int> moves, moves0;
+	for(int depth = 1; depth <= 1000; ++depth) {
+		//nega_max_tt(next, depth);
+		nega_alpha_tt(next, depth, alpha, beta);
+		get_tt_best_moves(next, moves);
+		if( moves == moves0 ) break;
+		moves0.swap(moves);
+		print_tt(next);
+		if( m_timeOver ) break;
+	}
+	cout << "nodesSearched = " << m_nodesSearched << endl;
+	return root.m_best_move;
+}
+//	’uŠ·•\‚ğ—˜—p‚µ‚½ nega_alpha()
+float Board::nega_alpha_tt(Color next, int depth, float alpha, float beta) {
+	if ((++m_nodesSearched & 2047) == 0) {
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
+        if (duration >= m_timeLimit) {
+            m_timeOver = true;
+            return 0;
+        }
+    }
+	TTEntry& entry = m_tt[m_hash_val];		//	Œ»‹Ç–Ê‚ª–¢“o˜^‚Ìê‡‚ÍA—v‘f‚ª©“®“I‚É’Ç‰Á‚³‚ê‚é
+	if( entry.m_flag == FLAG_TERMINAL )		//	Šm’è•]‰¿’l‚Ìê‡
+		return entry.m_score;
+	if( next == WHITE && calc_vert_dist(false) == 0 ||
+		next == BLACK && calc_horz_dist(false) == 0 )
+	{
+		entry.m_flag = FLAG_TERMINAL;				//	•]‰¿’lŠm’è
+		return entry.m_score = -(n_empty() + 1);	//	è”Ô‚Å‚È‚¢•û‚ªŸ—˜‚µ‚Ä‚é
+	}
+	if( depth <= 0 ) {
+		entry.m_flag = FLAG_EXACT;				//	•]‰¿’l
+		return entry.m_score = eval(next);
+	}
+	if( entry.m_depth >= depth ) {	//	‚·‚Å‚É depth ‚Å’TõÏ‚İ
+		//return entry.m_score;
+		if ( entry.m_flag == FLAG_EXACT )
+			return entry.m_score;
+		if ( entry.m_flag == FLAG_LOWER ) {
+			if ( entry.m_score >= beta ) return entry.m_score; // ‚±‚Ì}‚ğŠ ‚ê‚é
+			alpha = std::max(alpha, entry.m_score);
+		} else if ( entry.m_flag == FLAG_UPPER ) {
+			if ( entry.m_score <= alpha ) return entry.m_score; // ‚±‚Ì}‚ğŠ ‚ê‚é
+			beta = std::min(beta, entry.m_score);
+		}
+	}
+	vector<int> lst;		//	‹ó—“ˆÊ’uƒŠƒXƒg
+	get_empty_indexes(lst);
+	if( lst.is_empty() ) {	//	‹ó—“–³‚µ‚Ìê‡
+		entry.m_flag = FLAG_TERMINAL;				//	•]‰¿’lŠm’è
+		return entry.m_score = eval(next);
+	}
+	if( entry.m_best_move != 0 ) {
+		//	undone: Å‘Pè‚ª•Û‘¶‚³‚ê‚Ä‚¢‚ê‚ÎA‚»‚ê‚ğÅ‰‚É•]‰¿
+		auto itr = std::find(lst.begin(), lst.end(), entry.m_best_move);
+		//assert( itr != lst.end() );		//	m_best_move ‚Í•K‚¸ŠÜ‚Ü‚ê‚Ä‚¢‚é‚Í‚¸
+		if( itr != lst.begin() && itr != lst.end() )
+			swap(*itr, lst[0]);
+	}
+	auto alpha_org = alpha;
+	//float maxev = std::numeric_limits<float>::lowest();
+	int bestix = 0;
+	const byte nn = (BLACK + WHITE) - next;
+	for(auto ix: lst) {
+		set_color(ix, next);
+		m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+		//alpha = max(alpha, -nega_alpha_tt(nn, depth-1, -beta, -alpha));
+		auto ev = -nega_alpha_tt(nn, depth-1, -beta, -alpha);
+		if( m_timeOver ) return 0;
+		if( ev > alpha ) {
+			alpha = ev;
+			bestix = ix;
+		}
+		set_color(ix, EMPTY);
+		m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+		if( alpha >= beta ) {
+			entry.m_flag = FLAG_LOWER;			//	‰ºŒÀ’l
+			entry.m_depth = depth;
+			entry.m_best_move = bestix;
+			return entry.m_score = alpha;
+		}
+	}
+	//entry.m_flag = FLAG_EXACT;				//	•]‰¿’l
+	entry.m_depth = depth;
+	entry.m_best_move = bestix;
+	entry.m_score = alpha;
+
+	if ( alpha <= alpha_org ) {
+		// ˆê“x‚àalpha‚ªXV‚³‚ê‚È‚©‚Á‚½ê‡AƒXƒRƒA‚ÍãŒÀ’l
+		entry.m_flag = FLAG_UPPER;
+	} else {
+		// alpha‚ªXV‚³‚ê‚½‚ªƒÀƒJƒbƒg‚Í‹N‚«‚È‚©‚Á‚½ê‡AƒXƒRƒA‚Í³Šm‚È’l
+		entry.m_flag = FLAG_EXACT;
+	}
+	
+	return alpha;
 }
 int Board::do_itrdeep(Color next, int limit) {		//	
 	build_zobrist_table();
@@ -657,7 +811,7 @@ void Board::itrdeep_recursive(Color next, int depth) {		//	depth == 0 ‚É‚È‚é‚Ü‚Å
 	TTEntry& entry = m_tt[m_hash_val];		//	Œ»‹Ç–Ê‚ª–¢“o˜^‚Ìê‡‚ÍA—v‘f‚ª©“®“I‚É’Ç‰Á‚³‚ê‚é
 	if( entry.m_depth >= depth )			//	Œ»‹Ç–Ê‚Í’TõÏ‚İ
 		return;
-	for(int ix = xyToIndex(0, 0); ix <= xyToIndex(m_bd_width-1, m_bd_width-1); ++ix) {
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix) {
 		if( m_cell[ix] == EMPTY ) {
 			m_cell[ix] = next;
 			m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];

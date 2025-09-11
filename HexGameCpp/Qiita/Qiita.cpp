@@ -8,14 +8,23 @@ using namespace std;
 int main()
 {
 	if (1) {
-		Board bd(3);
-		bd.set_color(2, 1, BLACK);
-		bd.set_color(2, 0, WHITE);
-		//bd.set_color(0, 1, BLACK);
+		Board bd(11);
+		byte next = BLACK;
+		//next = WHITE;
+		bd.print();
+		auto ix = bd.sel_move_itrdeep(next, 1000);
+		cout << "put " << bd.ixToStr(ix) << endl;
+		//bd.print_tt(next);
+	}
+	if (0) {
+		Board bd(6);
+		bd.set_color(3, 2, BLACK);
+		bd.set_color(2, 4, WHITE);
+		bd.set_color(1, 4, BLACK);
 		//bd.set_color(1, 0, WHITE);
 		//bd.set_color(0, 0, BLACK);
 		Color next = BLACK;
-		//next = WHITE;
+		next = WHITE;
 		bd.print();
 		for(int y = 0; y < bd.get_width(); ++y) {
 			cout << string(y*3, ' ');

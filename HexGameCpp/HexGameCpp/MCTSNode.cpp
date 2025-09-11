@@ -11,7 +11,7 @@ MCTSNode::MCTSNode(const Board& board, byte player_to_move, MCTSNode* parent, in
     : m_parent(parent), m_move(move), m_player_to_move(player_to_move), m_wins(0), m_visits(0), m_is_terminal(is_win_move) {
     g_bd = &board;
     if (!m_is_terminal) {
-        board.get_empty_list(m_untried_moves);
+        board.get_empty_indexes(m_untried_moves);
     }
 }
 
@@ -46,9 +46,9 @@ void MCTSNode::print_best() const {
 			best_node = ptr;
 		}
 	}
-	printf("%c%d", 'a'+g_bd->indexToX(best_node->m_move), g_bd->indexToY(best_node->m_move)+1);
+	printf("%c%d", 'a'+g_bd->ixToX(best_node->m_move), g_bd->ixToY(best_node->m_move)+1);
 	printf("(%d/%d=%.3f), ", best_node->m_wins, best_node->m_visits, (double)best_node->m_wins/best_node->m_visits);
-	//cout << "(" << g_bd->indexToX(best_node->m_move) << ", " << g_bd->indexToY(best_node->m_move) << ") ";
+	//cout << "(" << g_bd->ixToX(best_node->m_move) << ", " << g_bd->ixToY(best_node->m_move) << ") ";
 	//cout << "(" << best_node->m_wins << "/" << best_node->m_visits << "), ";
 	if( best_node->m_is_terminal )
 		cout << endl;
