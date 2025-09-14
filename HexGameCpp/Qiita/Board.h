@@ -59,7 +59,7 @@ public:
 	void	swap_black_white();
 	int		swap_bw_ix(int ix) const;
 
-	void	build_zobrist_table();
+	void	build_zobrist_table() const;
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
 	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }
 	bool	union_find(int ix, Color col);
@@ -67,6 +67,7 @@ public:
 	bool	is_horz_connected() const;		//	左右辺が連結しているか？
 	void	random_playout(Color next);
 	void	local_playout(Color next, int ix = 0);
+	bool	local_playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
 	bool	playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
 	bool	playout_to_win(Color next);		//	勝敗が決まるまでプレイアウトし、next が勝ったかどうかを返す
 
@@ -79,12 +80,14 @@ public:
 
 	int		sel_move_random() const;
 	int		sel_move_PMC(Color next, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
-	int		sel_move_itrdeep(Color next, int limit=1000);		//	反復深化による着手選択、limit: ミリ秒単位
+	int		sel_move_local_MC(Color next, int last_ix, int last2_ix, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
+	int		sel_move_itrdeep(Color next, int limit=1000) const;		//	反復深化による着手選択、limit: ミリ秒単位
 private:
 	void	print_tt_sub(Color);				//	置換表の最善手表示
 	void	get_tt_best_moves_sub(Color, std::vector<int>&);
 	void	get_empty_indexes(std::vector<int>&) const;
-	void	get_local_indexes(std::vector<int>&, int last_ix) const;
+	void	get_local_indexes(std::vector<int>&, int last_ix = 0, int last2_ix = 0) const;
+	void	add_bridge_indexes(std::vector<int>&, int last_ix) const;
 	bool	is_vert_connected_DFS(int ix) const;
 	bool	is_horz_connected_DFS(int ix) const;
 	int		calc_dist(bool vertical, bool bridge, bool rev) const;
@@ -109,9 +112,9 @@ private:
 	std::vector<Color>	m_cell;					//	各セル状態（空・黒・白）
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
 	std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
-	std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
-	std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
 	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
+	mutable std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
+	mutable std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
 	mutable std::vector<int>	m_dist;
 	mutable std::vector<byte>	m_connected;
 };

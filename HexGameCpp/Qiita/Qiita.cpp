@@ -7,14 +7,21 @@ using namespace std;
 
 int main()
 {
-	if (1) {
-		Board bd(11);
+	if (0) {
+		Board bd(8);
+		//bd.set_color(5, 1, BLACK);
+		//bd.set_color(3, 4, WHITE);
+		//bd.set_color(5, 3, BLACK);
+		//bd.set_color(1, 5, WHITE);
+		//bd.set_color(5, 2, BLACK);
 		byte next = BLACK;
 		//next = WHITE;
 		bd.print();
 		auto ix = bd.sel_move_itrdeep(next, 1000);
 		cout << "put " << bd.ixToStr(ix) << endl;
 		//bd.print_tt(next);
+    	bd.set_color(ix, next);
+		bd.print();
 	}
 	if (0) {
 		Board bd(6);
@@ -153,18 +160,27 @@ int main()
 	    cout << "vert dist = " << vd << endl;
 	    cout << "horz dist = " << hd << endl << endl;
 	}
-	if( 0 ) {
-	    Board bd(4);
+	if( 1 ) {
+	    Board bd(8);
+		const int LIMIT = 3000;
 	    Color next = BLACK;
-	    for(;;) {
-	    	int ix;
+		int ix = 0;
+		int last_ix = 0;
+		int last2_ix = 0;
+		for(;;) {
 	    	if( next == BLACK ) {
 		    	//ix = bd.sel_move_random();
-				ix = bd.sel_move_PMC(next, 1000);
+				//ix = bd.sel_move_PMC(next, LIMIT);
+				//ix = bd.sel_move_local_MC(next, ix, LIMIT);
+				ix = bd.sel_move_itrdeep(next, LIMIT);
 			} else {
-		    	ix = bd.sel_move_PMC(next, 1000);
-	    	}
+		    	//ix = bd.sel_move_PMC(next, LIMIT);
+		    	//ix = bd.sel_move_local_MC(next, last_ix, last2_ix, LIMIT);
+				ix = bd.sel_move_itrdeep(next, LIMIT);
+			}
 	    	if( ix < 0 ) break;
+	    	last2_ix = last_ix;
+	    	last_ix = ix;
 	    	bd.set_color(ix, next);
 	    	bd.set_last_put_ix(ix);
 	    	bd.print();

@@ -107,6 +107,16 @@
 0105 ◎ C 09/10 09/10 0.001│ToDo│距離に基づく評価関数
 0106 ◎ C 09/10 09/10 0.001│ToDo│nega_max()
 0107 ◎ C 09/10 09/11 0.001│ToDo│nega_alpha_tt
-0108 ● C 09/10            │ToDo│
-0109 ● C 09/10            │ToDo│
-0110 ● C 09/10            │ToDo│
+0108 ● C 09/10            │ToDo│sel_move_itrdeep()：初手は副対角線上位置を優先
+0109 ● C 09/10            │ToDo│前向き枝狩り：直前に打たれた場所の近傍にのみ打つ
+0110 ● C 09/12            │ToDo│sel_move_itrdeep_futility()：とりあえず、直前手の近傍にのみ打つ
+0111 ● C 09/12            │ToDo│local_playout()
+0112 ● C 09/12            │ToDo│sel_move_local_MC()
+0113 ● C 09/12            │ToDo│２手読み＋local_playout()？
+0114 ◎ C 09/14 09/14 0.001│問題│sel_move_itrdeep()：盤面が元に戻っていない
+0115 ● C 09/14            │ToDo│
+0116 ● C 09/14            │ToDo│
+0117 ● C 09/14            │ToDo│
+0118 ● C 09/14            │ToDo│
+0119 ● C 09/14            │ToDo│
+0120 ● C 09/14            │ToDo│

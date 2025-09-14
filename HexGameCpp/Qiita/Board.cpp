@@ -14,6 +14,12 @@ std::mt19937_64 rgen64(rd());		// 64ビット版
 
 #define		is_empty()	empty()
 
+struct SBridge {
+	int		m_emp1;		//	空欄位置へのオフセット
+	int		m_emp2;		//	空欄位置へのオフセット
+	int		m_next;		//	ブリッジ先へのオフセット
+};
+
 Board::Board(int width)
     : m_bd_width(width), m_ary_width(width + 1)
     , m_ary_height(width + 2), m_ary_size((width + 1)* (width + 2))
@@ -104,7 +110,7 @@ void Board::get_tt_best_moves_sub(Color next, vector<int>& moves) {
 void Board::print_tt(Color next) {
 	const TTEntry& entry = m_tt[m_hash_val];
 	//cout << "eval = " << entry.m_score << " ";
-	printf("eval = %5.2f ", entry.m_score);
+	printf("eval = %6.2f ", entry.m_score);
 	print_tt_sub(next);
 	cout << endl;
 }
@@ -302,11 +308,6 @@ int Board::calc_dist(bool vertical, bool bridge, bool rev) const
 			}
 		}
 		if( bridge ) {
-			struct SBridge {
-				int		m_emp1;		//	空欄位置へのオフセット
-				int		m_emp2;		//	空欄位置へのオフセット
-				int		m_next;		//	ブリッジ先へのオフセット
-			};
 /*
                   -2W+1
         -W-1 -W   -W+1 -W+2
@@ -403,10 +404,26 @@ void Board::get_empty_indexes(vector<int>& lst) const {
 			lst.push_back(ix);
 	}
 }
-void Board::get_local_indexes(vector<int>& lst, int last_ix) const {
-	const int offsets[] = {	// 隣接セルのインデックス差分
-		-1, +1, -m_ary_width, +m_ary_width, -m_ary_width + 1, +m_ary_width - 1
+void Board::add_bridge_indexes(vector<int>& lst, int ix0) const {
+	//	ブリッジを探索
+	const int W = m_ary_width;
+	const SBridge boffsets[] = {
+		{-W, -W+1, -2*W+1},
+		{-W+1, 1, -W+2},
+		{W, 1, W+1},
+		{W, W-1, 2*W-1},
+		{-1, W-1, W-2},
+		{-1, -W, -W-1},
 	};
+	for(const auto& ofst: boffsets) {
+		int emp1_ix = ix0 + ofst.m_emp1;
+		int emp2_ix = ix0 + ofst.m_emp2;
+		int next_ix = ix0 + ofst.m_next;
+		if( m_cell[emp1_ix] == EMPTY && m_cell[emp2_ix] == EMPTY &&  m_cell[next_ix] == EMPTY )
+			lst.push_back(next_ix);
+	}
+}
+void Board::get_local_indexes(vector<int>& lst, int last_ix, int last2_ix) const {
 	lst.clear();
 	if( last_ix == 0 ) {	//	直前手が無い場合は、副対角線上セルを候補に
 		for(int y = 0; y < m_bd_width; ++y) {
@@ -415,10 +432,23 @@ void Board::get_local_indexes(vector<int>& lst, int last_ix) const {
 				lst.push_back(ix);
 		}
 	} else {
+		add_bridge_indexes(lst, last_ix);
+		if( last2_ix != 0 )
+			add_bridge_indexes(lst, last2_ix);
+		const int offsets[] = {	// 隣接セルのインデックス差分
+			-1, +1, -m_ary_width, +m_ary_width, -m_ary_width + 1, +m_ary_width - 1
+		};
 		for (int offset : offsets) {	// 隣接セルを探索
 			int ix = last_ix + offset;
 			if (m_cell[ix] == EMPTY)
 				lst.push_back(ix);
+		}
+		if( last2_ix != 0 ) {
+			for (int offset : offsets) {	// 隣接セルを探索
+				int ix = last2_ix + offset;
+				if (m_cell[ix] == EMPTY)
+					lst.push_back(ix);
+			}
 		}
 	}
 	if( lst.is_empty() )
@@ -426,14 +456,23 @@ void Board::get_local_indexes(vector<int>& lst, int last_ix) const {
 }
 void Board::local_playout(Color next, int ix) {
 	vector<int> lst;
+	int last2_ix = 0;
 	for(;;) {
-		get_local_indexes(lst, ix);
+		get_local_indexes(lst, ix, last2_ix);
 		if( lst.is_empty() )
 			break;
+		last2_ix = ix;
 		ix = lst[rgen() % lst.size()];
 		set_color(ix, next);
 		next = (BLACK+WHITE) - next;
 	}
+}
+bool Board::local_playout_to_full(Color next) {
+	local_playout(next);
+	if( next == BLACK )
+		return is_vert_connected();
+	else
+		return !is_vert_connected();
 }
 void Board::random_playout(Color next) {
 	vector<int> lst;
@@ -613,6 +652,44 @@ int Board::sel_move_random() const {
 	if( lst.is_empty() ) return -1;
 	return lst[rgen() % lst.size()];
 }
+int Board::sel_move_local_MC(Color next, int last_ix, int last2_ix, int limit) const {
+	vector<int> lst;
+	get_local_indexes(lst, last_ix, last2_ix);
+	if( lst.is_empty() ) return -1;
+	Board b2(this->m_bd_width);
+	// --- 時間計測の準備 ---
+	m_startTime = std::chrono::high_resolution_clock::now();
+	m_timeLimit = limit;
+	m_timeOver = false;
+	m_nodesSearched = 0;
+	//
+	int np = 0;
+	vector<int> nwon(lst.size(), 0);
+	for(;;) {
+		for(int i = 0; i != lst.size(); ++i) {
+			b2 = *this;
+			b2.set_color(lst[i], next);
+			bool b = b2.playout_to_full((BLACK+WHITE)-next);
+			if( !b )
+				nwon[i] += 1;
+		}
+		++np;
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
+        if (duration >= m_timeLimit)
+        	break;
+	}
+	int best_ix = -1;
+	int max_nw = -1;
+	for(int i = 0; i != lst.size(); ++i) {
+		if( nwon[i] > max_nw ) {
+			max_nw = nwon[i];
+			best_ix = lst[i];
+		}
+	}
+	cout << "n_won / n_playout = " << max_nw << "/" << np << " = " << (double)max_nw/np <<  endl << endl;
+	return best_ix;
+}
 int Board::sel_move_PMC(Color next, int limit) const {	//	limit: 思考時間 単位：ミリ秒
 	vector<int> lst;
 	get_empty_indexes(lst);
@@ -668,28 +745,30 @@ void Board::DFS_recursive(Color next, int depth) {		//	depth == 0 になるまで深さ
 		}
 	}
 }
-int Board::sel_move_itrdeep(Color next, int limit) {		//	limit: ミリ秒単位
-	build_zobrist_table();
+int Board::sel_move_itrdeep(Color next, int limit) const {		//	limit: ミリ秒単位
+	Board b2(m_bd_width);
+	b2 = *this;
+	b2.build_zobrist_table();
 	// --- 時間計測の準備 ---
-	m_startTime = std::chrono::high_resolution_clock::now();
-	m_timeLimit = limit;
-	m_timeOver = false;
-	m_nodesSearched = 0;
+	b2.m_startTime = std::chrono::high_resolution_clock::now();
+	b2.m_timeLimit = limit;
+	b2.m_timeOver = false;
+	b2.m_nodesSearched = 0;
 
-	m_hash_val = 0;			//	現局面のハッシュ値を０に
-	m_tt.clear();			//	置換表クリア
-	TTEntry& root = m_tt[m_hash_val];
+	b2.m_hash_val = 0;			//	現局面のハッシュ値を０に
+	b2.m_tt.clear();			//	置換表クリア
+	TTEntry& root = b2.m_tt[m_hash_val];
 	auto alpha = std::numeric_limits<float>::lowest();
 	auto beta = std::numeric_limits<float>::max();
 	vector<int> moves, moves0;
 	for(int depth = 1; depth <= 1000; ++depth) {
 		//nega_max_tt(next, depth);
-		nega_alpha_tt(next, depth, alpha, beta);
-		get_tt_best_moves(next, moves);
+		b2.nega_alpha_tt(next, depth, alpha, beta);
+		b2.get_tt_best_moves(next, moves);
 		if( moves == moves0 ) break;
 		moves0.swap(moves);
-		print_tt(next);
-		if( m_timeOver ) break;
+		b2.print_tt(next);
+		if( b2.m_timeOver ) break;
 	}
 	cout << "nodesSearched = " << m_nodesSearched << endl;
 	return root.m_best_move;
@@ -823,7 +902,7 @@ void Board::itrdeep_recursive(Color next, int depth) {		//	depth == 0 になるまで
 	}
 	entry.m_depth = depth;
 }
-void Board::build_zobrist_table() {
+void Board::build_zobrist_table() const {
 	if( !m_zobrist_black.is_empty() ) return;	//	初期化済み
 	m_zobrist_black.resize(m_ary_size);
 	for(auto& r: m_zobrist_black) r = rgen64();
