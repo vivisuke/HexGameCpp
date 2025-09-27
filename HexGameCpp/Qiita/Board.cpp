@@ -14,6 +14,8 @@ std::mt19937_64 rgen64(rd());		// 64ビット版
 
 #define		is_empty()	empty()
 
+Color opp_color(Color col) { return (BLACK+WHITE) - col; }
+
 struct SBridge {
 	int		m_emp1;		//	空欄位置へのオフセット
 	int		m_emp2;		//	空欄位置へのオフセット
@@ -57,6 +59,9 @@ string Board::ixToStr(int ix) const {
 	return txt;
 }
 void Board::print() const {
+	auto c = next_color();
+	if( c == BLACK ) cout << "next: BLACK" << endl;
+	else cout << "next: WHITE" << endl;
 	cout << "   ";
 	for(int x = 0; x < m_bd_width; ++x)
 		printf("%c ", 'a'+x);
@@ -125,6 +130,15 @@ void Board::print_tt_sub(Color next) {
 	print_tt_sub((BLACK+WHITE)-next);
 	set_color(ix, EMPTY);
 	m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+}
+Color Board::next_color() const {
+	int nb = 0, nw = 0;
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix) {
+		if( m_cell[ix] == BLACK ) ++nb;
+		else if( m_cell[ix] == WHITE ) ++nw;
+	}
+	if( nb <= nw ) return BLACK;
+	return WHITE;
 }
 int Board::n_empty() const {
 	int n = 0;
@@ -201,6 +215,28 @@ bool Board::is_horz_connected_DFS(int ix) const {
 			is_horz_connected_DFS(ix - 1) ||
 			is_horz_connected_DFS(ix - m_ary_width + 1) ||
 			is_horz_connected_DFS(ix - m_ary_width);
+}
+bool Board::is_vert_connected_v() const {
+	m_connected.resize(m_ary_size);
+	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);
+	for(int x = 0; x < m_bd_width; ++x) {
+		if( is_vert_connected_v_DFS(xyToIX(x, 0)) )		//	深さ優先探索
+			return true;	//	上下連結経路を発見した場合
+	}
+	return false;
+}
+bool Board::is_vert_connected_v_DFS(int ix) const {
+	if( m_cell[ix] != BLACK || m_connected[ix] != UNSEARCHED )	//	黒でない or 探索済み
+		return false;
+	if( ix >= xyToIX(0, m_bd_width-1) )		//	下辺に到達した場合
+		return true;
+	m_connected[ix] = SEARCHED;
+	return	is_vert_connected_v_DFS(ix + m_ary_width) ||
+			is_vert_connected_v_DFS(ix + m_ary_width - 1) ||
+			is_vert_connected_v_DFS(ix + 1) ||
+			is_vert_connected_v_DFS(ix - 1) ||
+			is_vert_connected_v_DFS(ix - m_ary_width + 1) ||
+			is_vert_connected_v_DFS(ix - m_ary_width);
 }
 //int Board::calc_vert_dist(bool bridge) const {
 //	return calc_dist(true, bridge);
@@ -350,6 +386,7 @@ int Board::calc_dist(bool vertical, bool bridge, bool rev) const
 	//print_dist();
 	return min_dist;
 }
+//	次の手番（next）から見た評価値（有利であればプラス）を返す
 float Board::eval(Color next) {
 	auto vd = calc_vert_dist(false);		//	６近傍 直接連結距離
 	auto hd = calc_horz_dist(false);		//	６近傍 直接連結距離
@@ -366,11 +403,17 @@ float Board::eval(Color next) {
 	if( hd == 0 ) {				//	相手側：辺を連結済み
 		return -1 - n_emp;
 	}
+	if( vd == 1 ) {				//	next 側：次の１手で辺を連結可能
+		return n_emp;
+	}
 	if( bvd == 0 ) {			//	next 側: 勝ち確定
 		return 2 + n_emp - vd*2;
 	}
 	if( bhd == 0 ) {			//	相手側: 勝ち確定
 		return -(1 + n_emp - hd*2);
+	}
+	if( bvd == 1 ) {			//	next 側: 次の１手で勝ち確定にできる
+		return n_emp - (vd-1)*2;
 	}
 	return bhd - bvd + (hd - vd)/100.0 + 0.5;
 }
@@ -403,6 +446,15 @@ void Board::get_empty_indexes(vector<int>& lst) const {
 		if( m_cell[ix] == EMPTY )
 			lst.push_back(ix);
 	}
+}
+void Board::get_subdiagonal_indexes(vector<int>& lst) const {
+	lst.clear();
+	for(int y = 0; y < m_bd_width; ++y) {
+		int ix = xyToIX(m_bd_width-y-1, y);
+		if (m_cell[ix] == EMPTY)
+			lst.push_back(ix);
+	}
+	shuffle(lst.begin(), lst.end(), rgen);
 }
 void Board::add_bridge_indexes(vector<int>& lst, int ix0) const {
 	//	ブリッジを探索
@@ -761,9 +813,10 @@ int Board::sel_move_itrdeep(Color next, int limit) const {		//	limit: ミリ秒単位
 	auto alpha = std::numeric_limits<float>::lowest();
 	auto beta = std::numeric_limits<float>::max();
 	vector<int> moves, moves0;
+	bool first_move = b2.n_empty() == m_bd_width*m_bd_width;
 	for(int depth = 1; depth <= 1000; ++depth) {
 		//nega_max_tt(next, depth);
-		b2.nega_alpha_tt(next, depth, alpha, beta);
+		b2.nega_alpha_tt(next, depth, alpha, beta, first_move);
 		b2.get_tt_best_moves(next, moves);
 		if( moves == moves0 ) break;
 		moves0.swap(moves);
@@ -774,7 +827,7 @@ int Board::sel_move_itrdeep(Color next, int limit) const {		//	limit: ミリ秒単位
 	return root.m_best_move;
 }
 //	置換表を利用した nega_alpha()
-float Board::nega_alpha_tt(Color next, int depth, float alpha, float beta) {
+float Board::nega_alpha_tt(Color next, int depth, float alpha, float beta, bool first_move) {
 	if ((++m_nodesSearched & 2047) == 0) {
         auto now = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime).count();
@@ -809,7 +862,10 @@ float Board::nega_alpha_tt(Color next, int depth, float alpha, float beta) {
 		}
 	}
 	vector<int> lst;		//	空欄位置リスト
-	get_empty_indexes(lst);
+	if( first_move )
+		get_subdiagonal_indexes(lst);
+	else
+		get_empty_indexes(lst);
 	if( lst.is_empty() ) {	//	空欄無しの場合
 		entry.m_flag = FLAG_TERMINAL;				//	評価値確定
 		return entry.m_score = eval(next);
@@ -908,4 +964,42 @@ void Board::build_zobrist_table() const {
 	for(auto& r: m_zobrist_black) r = rgen64();
 	m_zobrist_white.resize(m_ary_size);
 	for(auto& r: m_zobrist_white) r = rgen64();
+}
+bool Board::is_winning_move(int ix, Color col, int n_empty) {
+	bool b = true;
+	m_cell[ix] = col;
+	--n_empty;
+	if( n_empty == 0 ) {
+		b = col == BLACK ? is_vert_connected() : !is_vert_connected();
+	} else {
+		for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
+			if( m_cell[ix2] == EMPTY ) {
+				if( is_winning_move(ix2, opp_color(col), n_empty) ) {
+					b = false;		//	
+					break;
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
+}
+bool Board::is_winning_move_always_check(int ix, Color col) {
+	bool b = true;
+	m_cell[ix] = col;
+	if( col == BLACK && is_vert_connected() ||
+		col == WHITE && is_horz_connected() )
+	{
+	} else {
+		for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
+			if( m_cell[ix2] == EMPTY ) {
+				if( is_winning_move_always_check(ix2, opp_color(col)) ) {
+					b = false;		//	
+					break;
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
 }

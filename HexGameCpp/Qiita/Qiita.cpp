@@ -7,6 +7,39 @@ using namespace std;
 
 int main()
 {
+	if (1) {
+		Board bd(4);
+		bd.set_color(3, 1, BLACK);
+		//bd.set_color(2, 2, WHITE);
+		//bd.set_color(2, 0, BLACK);
+		//bd.set_color(1, 2, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(0, 2, WHITE);
+		//bd.set_color(0, 0, BLACK);
+		Color next = bd.next_color();
+		bd.print();
+		int nemp = bd.n_empty();
+		auto start = std::chrono::high_resolution_clock::now();
+		for(int y = 0; y < bd.get_width(); ++y) {
+			cout << string(y, ' ');
+			for(int x = 0; x < bd.get_width(); ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					int ix = bd.xyToIX(x, y);
+					bool b = bd.is_winning_move(ix, next, nemp);
+					//bool b = bd.is_winning_move_always_check(ix, next);
+					if( next == WHITE ) b = !b;
+					cout << (b?"B ":"W ");
+				} else
+					printf("- ");
+			}
+			cout << endl;
+		}
+		cout << endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		cout << "duration: " << seconds*1000 << " msec" << std::endl << endl;
+	}
 	if (0) {
 		Board bd(8);
 		//bd.set_color(5, 1, BLACK);
@@ -50,12 +83,12 @@ int main()
 		cout << endl;
 	}
 	if (0) {
-		Board bd(4);
+		Board bd(3);
 		bd.set_color(1, 1, BLACK);
-		bd.set_color(1, 2, WHITE);
-		bd.set_color(3, 1, BLACK);
+		bd.set_color(1, 0, WHITE);
+		//bd.set_color(3, 1, BLACK);
 		Color next = BLACK;
-		next = WHITE;
+		//next = WHITE;
 		bd.print();
 	    int bvd = bd.calc_vert_dist(true);
 	    int bhd = bd.calc_horz_dist(true);
@@ -160,9 +193,9 @@ int main()
 	    cout << "vert dist = " << vd << endl;
 	    cout << "horz dist = " << hd << endl << endl;
 	}
-	if( 1 ) {
-	    Board bd(8);
-		const int LIMIT = 3000;
+	if( 0 ) {
+	    Board bd(6);
+		const int LIMIT = 5000;
 	    Color next = BLACK;
 		int ix = 0;
 		int last_ix = 0;
@@ -174,9 +207,9 @@ int main()
 				//ix = bd.sel_move_local_MC(next, ix, LIMIT);
 				ix = bd.sel_move_itrdeep(next, LIMIT);
 			} else {
-		    	//ix = bd.sel_move_PMC(next, LIMIT);
+		    	ix = bd.sel_move_PMC(next, LIMIT);
 		    	//ix = bd.sel_move_local_MC(next, last_ix, last2_ix, LIMIT);
-				ix = bd.sel_move_itrdeep(next, LIMIT);
+				//ix = bd.sel_move_itrdeep(next, LIMIT);
 			}
 	    	if( ix < 0 ) break;
 	    	last2_ix = last_ix;

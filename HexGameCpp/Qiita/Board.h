@@ -48,6 +48,7 @@ public:
 	void	print() const;
 	void	print_dist() const;
 	void	print_tt(Color);				//	置換表の最善手表示
+	Color	next_color() const;
 	void	get_tt_best_moves(Color, std::vector<int>&);
 	Color	get_color(int x, int y) { return m_cell[xyToIX(x, y)]; }
 	void	set_color(int x, int y, Color col) { m_cell[xyToIX(x, y)] = col; }
@@ -59,12 +60,16 @@ public:
 	void	swap_black_white();
 	int		swap_bw_ix(int ix) const;
 
+	bool	is_winning_move(int ix, Color col, int n_empty);
+	bool	is_winning_move_always_check(int ix, Color col);	//	1手ごとに勝敗チェック
 	void	build_zobrist_table() const;
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
 	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }
 	bool	union_find(int ix, Color col);
 	bool	is_vert_connected() const;		//	上下辺が連結しているか？
 	bool	is_horz_connected() const;		//	左右辺が連結しているか？
+	bool	is_vert_connected_v() const;		//	上下辺が仮想連結しているか？
+	bool	is_horz_connected_v() const;		//	左右辺が仮想連結しているか？
 	void	random_playout(Color next);
 	void	local_playout(Color next, int ix = 0);
 	bool	local_playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
@@ -74,7 +79,7 @@ public:
 	float	eval(Color next);			//	next: 手番、手番から見た評価値を計算
 	float	nega_max(Color next, int depth);		//	盤面白黒反転しない nega_max
 	float	nega_alpha(Color next, int depth, float alpha, float beta);		//	盤面白黒反転しない nega_alpha
-	float	nega_alpha_tt(Color next, int depth, float alpha, float beta);	//	盤面白黒反転しない nega_alpha、置換表使用版
+	float	nega_alpha_tt(Color next, int depth, float alpha, float beta, bool=false);	//	盤面白黒反転しない nega_alpha、置換表使用版
 	void	do_DFS(Color next, int depth);			//	depth == 0 になるまで深さ優先探索
 	int		do_itrdeep(Color next, int limit);		//	limit: 探索時間（ミリ秒単位）, return: 最大探索深さ
 
@@ -86,10 +91,13 @@ private:
 	void	print_tt_sub(Color);				//	置換表の最善手表示
 	void	get_tt_best_moves_sub(Color, std::vector<int>&);
 	void	get_empty_indexes(std::vector<int>&) const;
+	void	get_subdiagonal_indexes(std::vector<int>&) const;
 	void	get_local_indexes(std::vector<int>&, int last_ix = 0, int last2_ix = 0) const;
 	void	add_bridge_indexes(std::vector<int>&, int last_ix) const;
 	bool	is_vert_connected_DFS(int ix) const;
 	bool	is_horz_connected_DFS(int ix) const;
+	bool	is_vert_connected_v_DFS(int ix) const;
+	bool	is_horz_connected_v_DFS(int ix) const;
 	int		calc_dist(bool vertical, bool bridge, bool rev) const;
 	int		find_root_ul(int ix);
 	int		find_root_dr(int ix);
