@@ -54,6 +54,7 @@ public:
 	void	set_color(int x, int y, Color col) { m_cell[xyToIX(x, y)] = col; }
 	void	set_color(int ix, Color col) { m_cell[ix] = col; }
 	void	set_last_put_ix(int ix) { m_last_put_ix = ix; }
+	void	clear_nodeSearched() const { m_nodesSearched = 0; }
 	long long get_nodeSearched() const { return m_nodesSearched; }
 	int		get_tt_size() const { return m_tt.size(); }
 	int		n_empty() const;
@@ -62,6 +63,7 @@ public:
 
 	bool	is_winning_move(int ix, Color col, int n_empty);
 	bool	is_winning_move_always_check(int ix, Color col);	//	1手ごとに勝敗チェック
+	bool	is_winning_move_check_dist(int ix, Color col);		//	1手ごとに距離チェック
 	void	build_zobrist_table() const;
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
 	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }

@@ -966,10 +966,12 @@ void Board::build_zobrist_table() const {
 	for(auto& r: m_zobrist_white) r = rgen64();
 }
 bool Board::is_winning_move(int ix, Color col, int n_empty) {
+	//m_nodesSearched = 0;
 	bool b = true;
 	m_cell[ix] = col;
 	--n_empty;
 	if( n_empty == 0 ) {
+		++m_nodesSearched;
 		b = col == BLACK ? is_vert_connected() : !is_vert_connected();
 	} else {
 		for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
@@ -985,17 +987,54 @@ bool Board::is_winning_move(int ix, Color col, int n_empty) {
 	return b;
 }
 bool Board::is_winning_move_always_check(int ix, Color col) {
+	//m_nodesSearched = 0;
 	bool b = true;
 	m_cell[ix] = col;
 	if( col == BLACK && is_vert_connected() ||
 		col == WHITE && is_horz_connected() )
 	{
+		++m_nodesSearched;
 	} else {
 		for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
 			if( m_cell[ix2] == EMPTY ) {
 				if( is_winning_move_always_check(ix2, opp_color(col)) ) {
 					b = false;		//	
 					break;
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
+}
+bool Board::is_winning_move_check_dist(int ix, Color col) {
+	//m_nodesSearched = 0;
+	bool b = true;
+	m_cell[ix] = col;
+	int dist;
+	if( col == BLACK ) {
+		dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+	} else {
+		dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+	}
+	if( dist == 0 ) {	//	終局の場合
+		++m_nodesSearched;
+	} else {			//	終局でない場合
+		if( col == BLACK ) {
+			dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+		}
+		if( dist <= 1 ) {		//	1手で勝利できる
+			++m_nodesSearched;
+			b = false;
+		} else {
+			for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
+				if( m_cell[ix2] == EMPTY ) {
+					if( is_winning_move_check_dist(ix2, opp_color(col)) ) {
+						b = false;		//	
+						break;
+					}
 				}
 			}
 		}
