@@ -8,8 +8,8 @@ using namespace std;
 int main()
 {
 	if (1) {
-		Board bd(3);
-		//bd.set_color(3, 1, BLACK);
+		Board bd(4);
+		//bd.set_color(4, 0, BLACK);
 		//bd.set_color(2, 2, WHITE);
 		//bd.set_color(2, 0, BLACK);
 		//bd.set_color(1, 2, WHITE);
@@ -27,8 +27,9 @@ int main()
 				if( bd.get_color(x, y) == EMPTY ) {
 					int ix = bd.xyToIX(x, y);
 					//bool b = bd.is_winning_move(ix, next, nemp);
+					bool b = bd.is_winning_move_FO(ix, next, nemp);
 					//bool b = bd.is_winning_move_always_check(ix, next);
-					bool b = bd.is_winning_move_check_dist(ix, next);
+					//bool b = bd.is_winning_move_check_dist(ix, next);
 					if( next == WHITE ) b = !b;
 					cout << (b?"B ":"W ");
 				} else

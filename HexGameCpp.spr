@@ -118,5 +118,15 @@
 0116 ◎ C 09/22 09/28 0.001│ToDo│isWinningMove(ix, col, n_empty)
 0117 ◎ C 09/22 09/28 0.001│ToDo│next_color()：次の手番取得
 0118 ◎ C 09/29 09/29 0.001│ToDo│isWinningMove(ix, col, n_empty)：末端局面数カウント・表示
-0119 ● C 09/29            │ToDo│
-0120 ● C 09/29            │ToDo│
+0119 ● C 09/29            │ToDo│calc_vert_dist()：3x3 初期局面での値が不正？
+0120 ◎ C 09/29 09/29 0.001│ToDo│is_winning_move_FO()
+0121 ● C 09/29            │ToDo│
+0122 ● C 09/29            │ToDo│
+0123 ● C 09/29            │ToDo│
+0124 ● C 09/29            │ToDo│
+0125 ● C 09/29            │ToDo│
+0126 ● C 09/29            │ToDo│
+0127 ● C 09/29            │ToDo│
+0128 ● C 09/29            │ToDo│
+0129 ● C 09/29            │ToDo│
+0130 ● C 09/29            │ToDo│

@@ -62,9 +62,11 @@ public:
 	int		swap_bw_ix(int ix) const;
 
 	bool	is_winning_move(int ix, Color col, int n_empty);
+	bool	is_winning_move_FO(int ix, Color col, int n_empty);		//	固定順序付け
 	bool	is_winning_move_always_check(int ix, Color col);	//	1手ごとに勝敗チェック
 	bool	is_winning_move_check_dist(int ix, Color col);		//	1手ごとに距離チェック
 	void	build_zobrist_table() const;
+	void	build_fixed_order();
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
 	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }
 	bool	union_find(int ix, Color col);
@@ -90,6 +92,7 @@ public:
 	int		sel_move_local_MC(Color next, int last_ix, int last2_ix, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
 	int		sel_move_itrdeep(Color next, int limit=1000) const;		//	反復深化による着手選択、limit: ミリ秒単位
 private:
+	void	build_fixed_order_sub(int ix);
 	void	print_tt_sub(Color);				//	置換表の最善手表示
 	void	get_tt_best_moves_sub(Color, std::vector<int>&);
 	void	get_empty_indexes(std::vector<int>&) const;
@@ -122,6 +125,7 @@ private:
 	std::vector<Color>	m_cell;					//	各セル状態（空・黒・白）
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
 	std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
+	std::vector<short>	m_fixed_order;			//	固定順序付けセルインデックス配列
 	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
 	mutable std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
 	mutable std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル

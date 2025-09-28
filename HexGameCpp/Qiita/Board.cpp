@@ -30,6 +30,7 @@ Board::Board(int width)
 	m_parent_ul.resize(m_ary_size);
 	//m_parent_dr.resize(m_ary_size);
     init();  // î’ñ èâä˙âª
+	build_fixed_order();
 
 }
 void Board::init() {
@@ -965,8 +966,26 @@ void Board::build_zobrist_table() const {
 	m_zobrist_white.resize(m_ary_size);
 	for(auto& r: m_zobrist_white) r = rgen64();
 }
+void Board::build_fixed_order() {
+	m_fixed_order.clear();
+	for(int x = 0; x < m_bd_width; ++x) {
+		int y = m_bd_width-1;
+		//cout << "(" << x << ", " << y << ")" << endl;
+		build_fixed_order_sub(xyToIX(x, y));
+		if( x != 0 ) {
+			int y = m_bd_width - x - 1;
+			//cout << "(0, " << y << ")" << endl;
+			build_fixed_order_sub(xyToIX(0, y));
+		}
+	}
+}
+void Board::build_fixed_order_sub(int ix) {
+	while( m_cell[ix] == EMPTY ) {
+		m_fixed_order.push_back(ix);
+		ix = ix - m_ary_width + 1;
+	}
+}
 bool Board::is_winning_move(int ix, Color col, int n_empty) {
-	//m_nodesSearched = 0;
 	bool b = true;
 	m_cell[ix] = col;
 	--n_empty;
@@ -986,8 +1005,27 @@ bool Board::is_winning_move(int ix, Color col, int n_empty) {
 	m_cell[ix] = EMPTY;
 	return b;
 }
+bool Board::is_winning_move_FO(int ix, Color col, int n_empty) {
+	bool b = true;
+	m_cell[ix] = col;
+	--n_empty;
+	if( n_empty == 0 ) {
+		++m_nodesSearched;
+		b = col == BLACK ? is_vert_connected() : !is_vert_connected();
+	} else {
+		for(int ix2: m_fixed_order) {
+			if( m_cell[ix2] == EMPTY ) {
+				if( is_winning_move_FO(ix2, opp_color(col), n_empty) ) {
+					b = false;		//	
+					break;
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
+}
 bool Board::is_winning_move_always_check(int ix, Color col) {
-	//m_nodesSearched = 0;
 	bool b = true;
 	m_cell[ix] = col;
 	if( col == BLACK && is_vert_connected() ||
@@ -1008,7 +1046,6 @@ bool Board::is_winning_move_always_check(int ix, Color col) {
 	return b;
 }
 bool Board::is_winning_move_check_dist(int ix, Color col) {
-	//m_nodesSearched = 0;
 	bool b = true;
 	m_cell[ix] = col;
 	int dist;
