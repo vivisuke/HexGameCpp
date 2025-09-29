@@ -65,6 +65,7 @@ public:
 	bool	is_winning_move_FO(int ix, Color col, int n_empty);		//	固定順序付け
 	bool	is_winning_move_always_check(int ix, Color col);	//	1手ごとに勝敗チェック
 	bool	is_winning_move_check_dist(int ix, Color col);		//	1手ごとに距離チェック
+	bool	is_winning_move_check_dist_FO(int ix, Color col);		//	1手ごとに距離チェック
 	void	build_zobrist_table() const;
 	void	build_fixed_order();
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
@@ -92,7 +93,7 @@ public:
 	int		sel_move_local_MC(Color next, int last_ix, int last2_ix, int limit=1000) const;	//	limit: 思考時間 単位：ミリ秒
 	int		sel_move_itrdeep(Color next, int limit=1000) const;		//	反復深化による着手選択、limit: ミリ秒単位
 private:
-	void	build_fixed_order_sub(int ix);
+	void	build_fixed_order_sub(int ix, int len);
 	void	print_tt_sub(Color);				//	置換表の最善手表示
 	void	get_tt_best_moves_sub(Color, std::vector<int>&);
 	void	get_empty_indexes(std::vector<int>&) const;

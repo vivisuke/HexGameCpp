@@ -120,8 +120,8 @@
 0118 ◎ C 09/29 09/29 0.001│ToDo│isWinningMove(ix, col, n_empty)：末端局面数カウント・表示
 0119 ● C 09/29            │ToDo│calc_vert_dist()：3x3 初期局面での値が不正？
 0120 ◎ C 09/29 09/29 0.001│ToDo│is_winning_move_FO()
-0121 ● C 09/29            │ToDo│
-0122 ● C 09/29            │ToDo│
+0121 ◎ C 09/29 09/30 0.001│ToDo│is_winning_move_check_dist_FO()
+0122 ◎ C 09/29 09/30 0.001│ToDo│build_fixed_order()：中央優先に
 0123 ● C 09/29            │ToDo│
 0124 ● C 09/29            │ToDo│
 0125 ● C 09/29            │ToDo│

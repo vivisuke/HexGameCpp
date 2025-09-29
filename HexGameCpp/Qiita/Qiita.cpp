@@ -9,8 +9,20 @@ int main()
 {
 	if (1) {
 		Board bd(4);
+#if 0
+		for (int i = 0; i != 4; ++i) {
+			bd.set_color(bd.sel_move_itrdeep(BLACK), BLACK);
+			bd.print();
+			bd.set_color(bd.sel_move_itrdeep(WHITE), WHITE);
+			bd.print();
+		}
+#endif
 		//bd.set_color(4, 0, BLACK);
 		//bd.set_color(2, 2, WHITE);
+		//bd.set_color(0, 3, BLACK);
+		//bd.set_color(1, 1, WHITE);
+		//bd.set_color(4, 1, BLACK);
+		//bd.set_color(2, 3, WHITE);
 		//bd.set_color(2, 0, BLACK);
 		//bd.set_color(1, 2, WHITE);
 		//bd.set_color(0, 1, BLACK);
@@ -27,9 +39,10 @@ int main()
 				if( bd.get_color(x, y) == EMPTY ) {
 					int ix = bd.xyToIX(x, y);
 					//bool b = bd.is_winning_move(ix, next, nemp);
-					bool b = bd.is_winning_move_FO(ix, next, nemp);
+					//bool b = bd.is_winning_move_FO(ix, next, nemp);
 					//bool b = bd.is_winning_move_always_check(ix, next);
 					//bool b = bd.is_winning_move_check_dist(ix, next);
+					bool b = bd.is_winning_move_check_dist_FO(ix, next);
 					if( next == WHITE ) b = !b;
 					cout << (b?"B ":"W ");
 				} else
@@ -42,7 +55,7 @@ int main()
 		auto duration = end - start;
 		double seconds = std::chrono::duration<double>(duration).count();
 		cout << "duration: " << seconds*1000 << " msec" << endl;
-		cout << "node searched = " << bd.get_nodeSearched() << endl << endl;
+		cout << "terminal node searched = " << bd.get_nodeSearched() << endl << endl;
 	}
 	if (0) {
 		Board bd(8);

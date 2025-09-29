@@ -971,19 +971,47 @@ void Board::build_fixed_order() {
 	for(int x = 0; x < m_bd_width; ++x) {
 		int y = m_bd_width-1;
 		//cout << "(" << x << ", " << y << ")" << endl;
-		build_fixed_order_sub(xyToIX(x, y));
+		build_fixed_order_sub(xyToIX(x, y), m_bd_width-x);
 		if( x != 0 ) {
 			int y = m_bd_width - x - 1;
 			//cout << "(0, " << y << ")" << endl;
-			build_fixed_order_sub(xyToIX(0, y));
+			build_fixed_order_sub(xyToIX(0, y), m_bd_width-x);
 		}
 	}
 }
-void Board::build_fixed_order_sub(int ix) {
+void Board::build_fixed_order_sub(int ix, int len) {
+	if( len%2 == 0 ) {	//	len が偶数の場合
+		int cix = ix - (m_ary_width-1) * (len/2-1);
+		for(int i = 0; i < len/2; ++i) {
+			m_fixed_order.push_back(cix);
+			m_fixed_order.push_back(cix - (m_ary_width-1)*(i*2 + 1));
+			//cout << cix << " " << cix - (m_ary_width-1)*(i*2 + 1) << " ";
+			cix += m_ary_width-1;
+		}
+		//cout << endl;
+	} else {	//	len が奇数の場合
+		int cix = ix - (m_ary_width-1) * (len/2);
+		m_fixed_order.push_back(cix);
+		//cout << cix << " ";
+		for(int i = 0; i < len/2; ++i) {
+			cix += m_ary_width-1;
+			m_fixed_order.push_back(cix);
+			m_fixed_order.push_back(cix - (m_ary_width-1)*(i*2 + 2));
+			//cout << cix << " " << cix - (m_ary_width-1)*(i*2 + 2) << " ";
+		}
+		//cout << endl;
+	}
+#if 0
+	while (m_cell[ix] == EMPTY) {
+		cout << ix << " ";
+		ix = ix - m_ary_width + 1;
+	}
+	cout << endl;
 	while( m_cell[ix] == EMPTY ) {
 		m_fixed_order.push_back(ix);
 		ix = ix - m_ary_width + 1;
 	}
+#endif
 }
 bool Board::is_winning_move(int ix, Color col, int n_empty) {
 	bool b = true;
@@ -1069,6 +1097,40 @@ bool Board::is_winning_move_check_dist(int ix, Color col) {
 			for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
 				if( m_cell[ix2] == EMPTY ) {
 					if( is_winning_move_check_dist(ix2, opp_color(col)) ) {
+						b = false;		//	
+						break;
+					}
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
+}
+bool Board::is_winning_move_check_dist_FO(int ix, Color col) {
+	bool b = true;
+	m_cell[ix] = col;
+	int dist;
+	if( col == BLACK ) {
+		dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+	} else {
+		dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+	}
+	if( dist == 0 ) {	//	終局の場合
+		++m_nodesSearched;
+	} else {			//	終局でない場合
+		if( col == BLACK ) {
+			dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+		}
+		if( dist <= 1 ) {		//	1手で勝利できる
+			++m_nodesSearched;
+			b = false;
+		} else {
+			for(int ix2 : m_fixed_order) {
+				if( m_cell[ix2] == EMPTY ) {
+					if( is_winning_move_check_dist_FO(ix2, opp_color(col)) ) {
 						b = false;		//	
 						break;
 					}
