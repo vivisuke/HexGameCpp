@@ -32,6 +32,10 @@ struct TTEntry {		//	置換表に格納するデータ構造
 	uchar	m_depth = 0;
 	ushort	m_best_move = 0;		// この局面での最善手
 };
+struct TT2Entry {		//	置換表に格納するデータ構造 for 勝敗のみ完全解析
+	uchar	m_flag = FLAG_UNKNOWN;
+	bool	m_winning;					//	次の手番の方の勝ち
+};
 
 class Board
 {
@@ -50,6 +54,7 @@ public:
 	void	print_tt(Color);				//	置換表の最善手表示
 	Color	next_color() const;
 	void	get_tt_best_moves(Color, std::vector<int>&);
+	size_t	get_tt2_size() const { return m_tt2.size(); }
 	Color	get_color(int x, int y) { return m_cell[xyToIX(x, y)]; }
 	void	set_color(int x, int y, Color col) { m_cell[xyToIX(x, y)] = col; }
 	void	set_color(int ix, Color col) { m_cell[ix] = col; }
@@ -65,7 +70,8 @@ public:
 	bool	is_winning_move_FO(int ix, Color col, int n_empty);		//	固定順序付け
 	bool	is_winning_move_always_check(int ix, Color col);	//	1手ごとに勝敗チェック
 	bool	is_winning_move_check_dist(int ix, Color col);		//	1手ごとに距離チェック
-	bool	is_winning_move_check_dist_FO(int ix, Color col);		//	1手ごとに距離チェック
+	bool	is_winning_move_check_dist_FO(int ix, Color col);	//	1手ごとに距離チェック
+	bool	is_winning_move_TT(int ix, Color col);				//	置換表使用
 	void	build_zobrist_table() const;
 	void	build_fixed_order();
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
@@ -128,6 +134,7 @@ private:
 	std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
 	std::vector<short>	m_fixed_order;			//	固定順序付けセルインデックス配列
 	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
+	std::unordered_map<uint64, TT2Entry>	m_tt2;	//	置換表（Transposition Table）for 勝敗のみ完全解析
 	mutable std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
 	mutable std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
 	mutable std::vector<int>	m_dist;

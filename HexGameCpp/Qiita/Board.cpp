@@ -31,7 +31,7 @@ Board::Board(int width)
 	//m_parent_dr.resize(m_ary_size);
     init();  // 盤面初期化
 	build_fixed_order();
-
+	build_zobrist_table();
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), WALL);	//	for 上下壁
@@ -1110,6 +1110,7 @@ bool Board::is_winning_move_check_dist(int ix, Color col) {
 bool Board::is_winning_move_check_dist_FO(int ix, Color col) {
 	bool b = true;
 	m_cell[ix] = col;
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 	int dist;
 	if( col == BLACK ) {
 		dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
@@ -1139,5 +1140,50 @@ bool Board::is_winning_move_check_dist_FO(int ix, Color col) {
 		}
 	}
 	m_cell[ix] = EMPTY;
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	return b;
+}
+//	ix に col を打つ手は勝ちか？
+bool Board::is_winning_move_TT(int ix, Color col) {
+	bool b = true;
+	m_cell[ix] = col;
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	TT2Entry& entry = m_tt2[m_hash_val];
+	if( entry.m_flag == FLAG_TERMINAL ) {
+		b = entry.m_winning;
+	} else {
+		int dist;
+		if( col == BLACK ) {
+			dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+		}
+		if( dist == 0 ) {	//	終局の場合
+			++m_nodesSearched;
+		} else {			//	終局でない場合
+			if( col == BLACK ) {
+				dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+			} else {
+				dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+			}
+			if( dist <= 1 ) {		//	1手で勝利できる
+				++m_nodesSearched;
+				b = false;
+			} else {
+				for(int ix2 : m_fixed_order) {
+					if( m_cell[ix2] == EMPTY ) {
+						if( is_winning_move_TT(ix2, opp_color(col)) ) {
+							b = false;		//	
+							break;
+						}
+					}
+				}
+			}
+		}
+		entry.m_flag = FLAG_TERMINAL;
+		entry.m_winning = b;
+	}
+	m_cell[ix] = EMPTY;
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 	return b;
 }
