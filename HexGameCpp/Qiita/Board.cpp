@@ -358,6 +358,91 @@ bool Board::is_vert_connected_v_BFS() const {		//	仮想連結考慮版
     }
 	return false;
 }
+bool Board::is_horz_connected_v_BFS() const {		//	仮想連結考慮版
+	// 探索用のキュー
+    std::queue<int> q;
+    // 探索済みフラグを管理する配列
+    std::vector<char> visited(m_cell.size(), false);
+    // 1. 始点の設定：左辺にある全ての白石をキューに追加
+    for (int y = m_bd_width; --y >= 0;) {
+        int ix = xyToIX(0, y);
+        if (m_cell[ix] == WHITE) {
+            q.push(ix);
+            visited[ix] = true;
+        }
+    }
+    //	左辺の２個の空欄＋白石をキューに追加
+    for (int y = m_bd_width; --y >= 1;) {
+        int ix = xyToIX(0, y);
+        int ix2 = ix-m_ary_width+1;
+        if (m_cell[ix] == EMPTY && m_cell[ix-m_ary_width] == EMPTY && m_cell[ix2] == WHITE) {
+            q.push(ix2);
+            visited[ix2] = true;
+        }
+    }
+	const int offsets[] = {
+        -m_ary_width,      // 上
+        -m_ary_width + 1,  // 右上
+        -1,                 // 左
+        +1,                 // 右
+        +m_ary_width - 1,  // 左下
+        +m_ary_width       // 下
+    };
+/*
+                  -2W+1
+        -W-1 -W   -W+1 -W+2
+        -1   0    +1
+   +W-2 +W-1 +W   +W+1
+        2W-1
+*/
+	const int W = m_ary_width;
+	const int offsets_v[][3] = {
+		{-W, -W+1, -2*W+1},
+		{-W+1, 1, -W+2},
+		{W, 1, W+1},
+		{W, W-1, 2*W-1},
+		{-1, W-1, W-2},
+		{-1, -W, -W-1},
+	};
+	// 2. BFSの実行
+    while (!q.empty()) {
+        int current_ix = q.front();
+        q.pop();
+        // (x, y) 座標に変換（下辺チェックのため）
+        int x = ixToX(current_ix);
+        // 3. 終了条件：下辺に到達したか？
+        if (x == m_bd_width - 1) {
+            return true; // 接続成功！
+        }
+        //	２つの空欄があって下辺に仮想連結しているか？
+        else if( x == m_bd_width - 2 && m_cell[current_ix+1] == EMPTY &&
+        			m_cell[current_ix-m_ary_width+1] == EMPTY)
+        {
+            return true; // 接続成功！
+        }
+        // 隣接する6方向を調べる
+        for (int offset : offsets) {
+            int next_ix = current_ix + offset;
+            // 隣接マスが盤面内で、白石であり、かつ未訪問か？
+            if (m_cell[next_ix] == WHITE && !visited[next_ix]) {
+                visited[next_ix] = true;
+                q.push(next_ix);
+            }
+        }
+        // 仮想連結する6方向を調べる
+        for (const auto ofst : offsets_v) {
+            if( m_cell[current_ix + ofst[0]] == EMPTY && m_cell[current_ix + ofst[1]] == EMPTY ) {
+	            int next_ix = current_ix + ofst[2];
+	            // 隣接マスが盤面内で、白石であり、かつ未訪問か？
+	            if (m_cell[next_ix] == WHITE && !visited[next_ix]) {
+	                visited[next_ix] = true;
+	                q.push(next_ix);
+	            }
+            }
+        }
+    }
+	return false;
+}
 bool Board::is_vert_connected() const {
 	m_connected.resize(m_ary_size);
 	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);

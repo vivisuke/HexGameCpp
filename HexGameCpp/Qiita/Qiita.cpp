@@ -12,7 +12,7 @@ static std::mt19937 rgen(rd());
 int main()
 {
 	if (1) {
-		Board bd(3);
+		Board bd(4);
 		vector<int> lst;		//	空欄位置リスト
 		bd.get_empty_indexes(lst);
 		shuffle(lst.begin(), lst.end(), rgen);
@@ -20,7 +20,7 @@ int main()
 		for (int ix : lst) {
 			bd.set_color(ix, next);
 			if( next == BLACK && bd.is_vert_connected_v_BFS() ||
-				next == WHITE && bd.is_horz_connected_BFS() )
+				next == WHITE && bd.is_horz_connected_v_BFS() )
 			{
 				bd.set_last_put_ix(ix);
 				break;

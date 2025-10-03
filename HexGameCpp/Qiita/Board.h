@@ -85,6 +85,7 @@ public:
 	bool	is_vert_connected_BFS() const;
 	bool	is_horz_connected_BFS() const;
 	bool	is_vert_connected_v_BFS() const;
+	bool	is_horz_connected_v_BFS() const;
 	void	random_playout(Color next);
 	void	local_playout(Color next, int ix = 0);
 	bool	local_playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
