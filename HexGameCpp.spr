@@ -123,10 +123,10 @@
 0121 ◎ C 09/29 09/30 0.001│ToDo│is_winning_move_check_dist_FO()
 0122 ◎ C 09/29 09/30 0.001│ToDo│build_fixed_order()：中央優先に
 0123 ◎ C 09/29 10/01 0.001│ToDo│一手ごとにハッシュ値更新
-0124 ● C 10/01            │ToDo│
-0125 ● C 10/01            │ToDo│
-0126 ● C 10/01            │ToDo│
-0127 ● C 10/01            │ToDo│
-0128 ● C 10/01            │ToDo│
-0129 ● C 10/01            │ToDo│
-0130 ● C 10/01            │ToDo│
+0124 ◎ C 10/01 10/03 0.001│ToDo│rot180_table[]
+0125 ◎ C 10/03 10/03 0.001│ToDo│is_vert_connected_BFS()
+0126 ● C 10/03            │ToDo│
+0127 ● C 10/03            │ToDo│
+0128 ● C 10/03            │ToDo│
+0129 ● C 10/03            │ToDo│
+0130 ● C 10/03            │ToDo│

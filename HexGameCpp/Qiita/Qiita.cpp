@@ -1,13 +1,40 @@
 ﻿#include <iostream>
 #include <chrono>
+#include <random>
 #include <assert.h>
 #include "Board.h"
 
 using namespace std;
 
+static std::random_device rd;
+static std::mt19937 rgen(rd()); 
+
 int main()
 {
 	if (1) {
+		Board bd(3);
+		vector<int> lst;		//	空欄位置リスト
+		bd.get_empty_indexes(lst);
+		shuffle(lst.begin(), lst.end(), rgen);
+		Color next = BLACK;
+		for (int ix : lst) {
+			bd.set_color(ix, next);
+			if( next == BLACK && bd.is_vert_connected_v_BFS() ||
+				next == WHITE && bd.is_horz_connected_BFS() )
+			{
+				bd.set_last_put_ix(ix);
+				break;
+			}
+			next = (BLACK+WHITE) - next;
+		}
+		bd.print();
+		if( bd.is_vert_connected_v_BFS() ) {
+			cout << "BLACK won." << endl;
+		} else {
+			cout << "WHITE won." << endl;
+		}
+	}
+	if (0) {
 		Board bd(4);
 #if 0
 		for (int i = 0; i != 2; ++i) {
@@ -17,10 +44,10 @@ int main()
 			bd.print();
 		}
 #endif
-		bd.set_color(3, 1, BLACK);
-		bd.set_color(1, 2, WHITE);
-		bd.set_color(3, 2, BLACK);
-		bd.set_color(3, 0, WHITE);
+		//bd.set_color(3, 1, BLACK);
+		//bd.set_color(1, 2, WHITE);
+		//bd.set_color(3, 2, BLACK);
+		//bd.set_color(3, 0, WHITE);
 		//bd.set_color(4, 1, BLACK);
 		//bd.set_color(2, 3, WHITE);
 		//bd.set_color(2, 0, BLACK);

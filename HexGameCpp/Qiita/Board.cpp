@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <random>
+#include <queue>
 #include <assert.h>
 #include "Board.h"
 
@@ -32,6 +33,15 @@ Board::Board(int width)
     init();  // 盤面初期化
 	build_fixed_order();
 	build_zobrist_table();
+	//	回転用テーブル初期化
+	m_rot180_table.resize(m_ary_size);
+	for(int y = 0; y < m_bd_width; ++y) {
+		for(int x = 0; x < m_bd_width; ++x) {
+			int ix = xyToIX(x, y);
+			int ix2 = xyToIX(m_bd_width-1-x, m_bd_width-1-y);
+			m_rot180_table[ix] = ix2;
+		}
+	}
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), WALL);	//	for 上下壁
@@ -172,6 +182,181 @@ int Board::swap_bw_ix(int ix) const {
 	int x = ixToX(ix);
 	int y = ixToY(ix);
 	return xyToIX(m_bd_width-1-y, m_bd_width-1-x);
+}
+bool Board::is_vert_connected_BFS() const {
+	// 探索用のキュー
+    std::queue<int> q;
+    // 探索済みフラグを管理する配列
+    std::vector<char> visited(m_cell.size(), false);
+    // 1. 始点の設定：上辺にある全ての黒石をキューに追加
+    for (int x = m_bd_width; --x >= 0;) {
+        int ix = xyToIX(x, 0);
+        if (m_cell[ix] == BLACK) {
+            q.push(ix);
+            visited[ix] = true;
+        }
+    }
+	const int offsets[] = {
+        -m_ary_width,      // 上
+        -m_ary_width + 1,  // 右上
+        -1,                 // 左
+        +1,                 // 右
+        +m_ary_width - 1,  // 左下
+        +m_ary_width       // 下
+    };
+	// 2. BFSの実行
+    while (!q.empty()) {
+        int current_ix = q.front();
+        q.pop();
+        // (x, y) 座標に変換（下辺チェックのため）
+        int y = ixToY(current_ix);
+        // 3. 終了条件：下辺に到達したか？
+        if (y == m_bd_width - 1) {
+            return true; // 接続成功！
+        }
+        // 隣接する6方向を調べる
+        for (int offset : offsets) {
+            int next_ix = current_ix + offset;
+            
+            // 隣接マスが盤面内で、黒石であり、かつ未訪問か？
+            // (番兵のおかげで盤面内外のチェックは不要)
+            if (m_cell[next_ix] == BLACK && !visited[next_ix]) {
+                visited[next_ix] = true;
+                q.push(next_ix);
+            }
+        }
+    }
+	return false;
+}
+bool Board::is_horz_connected_BFS() const {
+	// 探索用のキュー
+    std::queue<int> q;
+    // 探索済みフラグを管理する配列
+    std::vector<char> visited(m_cell.size(), false);
+    // 1. 始点の設定：左辺にある全ての白石をキューに追加
+    for (int y = m_bd_width; --y >= 0;) {
+        int ix = xyToIX(0, y);
+        if (m_cell[ix] == WHITE) {
+            q.push(ix);
+            visited[ix] = true;
+        }
+    }
+	const int offsets[] = {
+        -m_ary_width,      // 上
+        -m_ary_width + 1,  // 右上
+        -1,                 // 左
+        +1,                 // 右
+        +m_ary_width - 1,  // 左下
+        +m_ary_width       // 下
+    };
+	// 2. BFSの実行
+    while (!q.empty()) {
+        int current_ix = q.front();
+        q.pop();
+        // (x, y) 座標に変換（下辺チェックのため）
+        int x = ixToX(current_ix);
+        // 3. 終了条件：右辺に到達したか？
+        if (x == m_bd_width - 1) {
+            return true; // 接続成功！
+        }
+        // 隣接する6方向を調べる
+        for (int offset : offsets) {
+            int next_ix = current_ix + offset;
+            
+            // 隣接マスが盤面内で、白石であり、かつ未訪問か？
+            // (番兵のおかげで盤面内外のチェックは不要)
+            if (m_cell[next_ix] == WHITE && !visited[next_ix]) {
+                visited[next_ix] = true;
+                q.push(next_ix);
+            }
+        }
+    }
+	return false;
+}
+bool Board::is_vert_connected_v_BFS() const {		//	仮想連結考慮版
+	// 探索用のキュー
+    std::queue<int> q;
+    // 探索済みフラグを管理する配列
+    std::vector<char> visited(m_cell.size(), false);
+    // 1. 始点の設定：上辺にある全ての黒石をキューに追加
+    for (int x = m_bd_width; --x >= 0;) {
+        int ix = xyToIX(x, 0);
+        if (m_cell[ix] == BLACK) {
+            q.push(ix);
+            visited[ix] = true;
+        }
+    }
+    //	上辺の２個の空欄＋黒石をキューに追加
+    for (int x = m_bd_width; --x >= 1;) {
+        int ix = xyToIX(x, 0);
+        int ix2 = ix+m_ary_width-1;
+        if (m_cell[ix] == EMPTY && m_cell[ix-1] == EMPTY && m_cell[ix2] == BLACK) {
+            q.push(ix2);
+            visited[ix2] = true;
+        }
+    }
+	const int offsets[] = {
+        -m_ary_width,      // 上
+        -m_ary_width + 1,  // 右上
+        -1,                 // 左
+        +1,                 // 右
+        +m_ary_width - 1,  // 左下
+        +m_ary_width       // 下
+    };
+/*
+                  -2W+1
+        -W-1 -W   -W+1 -W+2
+        -1   0    +1
+   +W-2 +W-1 +W   +W+1
+        2W-1
+*/
+	const int W = m_ary_width;
+	const int offsets_v[][3] = {
+		{-W, -W+1, -2*W+1},
+		{-W+1, 1, -W+2},
+		{W, 1, W+1},
+		{W, W-1, 2*W-1},
+		{-1, W-1, W-2},
+		{-1, -W, -W-1},
+	};
+	// 2. BFSの実行
+    while (!q.empty()) {
+        int current_ix = q.front();
+        q.pop();
+        // (x, y) 座標に変換（下辺チェックのため）
+        int y = ixToY(current_ix);
+        // 3. 終了条件：下辺に到達したか？
+        if (y == m_bd_width - 1) {
+            return true; // 接続成功！
+        }
+        //	２つの空欄があって下辺に仮想連結しているか？
+        else if( y == m_bd_width - 2 && m_cell[current_ix+m_ary_width-1] == EMPTY &&
+        			m_cell[current_ix+m_ary_width] == EMPTY)
+        {
+            return true; // 接続成功！
+        }
+        // 隣接する6方向を調べる
+        for (int offset : offsets) {
+            int next_ix = current_ix + offset;
+            // 隣接マスが盤面内で、黒石であり、かつ未訪問か？
+            if (m_cell[next_ix] == BLACK && !visited[next_ix]) {
+                visited[next_ix] = true;
+                q.push(next_ix);
+            }
+        }
+        // 仮想連結する6方向を調べる
+        for (const auto ofst : offsets_v) {
+            if( m_cell[current_ix + ofst[0]] == EMPTY && m_cell[current_ix + ofst[1]] == EMPTY ) {
+	            int next_ix = current_ix + ofst[2];
+	            // 隣接マスが盤面内で、黒石であり、かつ未訪問か？
+	            if (m_cell[next_ix] == BLACK && !visited[next_ix]) {
+	                visited[next_ix] = true;
+	                q.push(next_ix);
+	            }
+            }
+        }
+    }
+	return false;
 }
 bool Board::is_vert_connected() const {
 	m_connected.resize(m_ary_size);
@@ -1148,7 +1333,9 @@ bool Board::is_winning_move_TT(int ix, Color col) {
 	bool b = true;
 	m_cell[ix] = col;
 	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
-	TT2Entry& entry = m_tt2[m_hash_val];
+	int rix = m_rot180_table[ix];
+	m_hash_val2 ^= col == BLACK ? m_zobrist_black[rix] : m_zobrist_white[rix];
+	TT2Entry& entry = m_tt2[min(m_hash_val, m_hash_val2)];
 	if( entry.m_flag == FLAG_TERMINAL ) {
 		b = entry.m_winning;
 	} else {
@@ -1185,5 +1372,6 @@ bool Board::is_winning_move_TT(int ix, Color col) {
 	}
 	m_cell[ix] = EMPTY;
 	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	m_hash_val2 ^= col == BLACK ? m_zobrist_black[rix] : m_zobrist_white[rix];
 	return b;
 }

@@ -61,6 +61,7 @@ public:
 	void	set_last_put_ix(int ix) { m_last_put_ix = ix; }
 	void	clear_nodeSearched() const { m_nodesSearched = 0; }
 	long long get_nodeSearched() const { return m_nodesSearched; }
+	void	get_empty_indexes(std::vector<int>&) const;
 	int		get_tt_size() const { return m_tt.size(); }
 	int		n_empty() const;
 	void	swap_black_white();
@@ -81,6 +82,9 @@ public:
 	bool	is_horz_connected() const;		//	左右辺が連結しているか？
 	bool	is_vert_connected_v() const;		//	上下辺が仮想連結しているか？
 	bool	is_horz_connected_v() const;		//	左右辺が仮想連結しているか？
+	bool	is_vert_connected_BFS() const;
+	bool	is_horz_connected_BFS() const;
+	bool	is_vert_connected_v_BFS() const;
 	void	random_playout(Color next);
 	void	local_playout(Color next, int ix = 0);
 	bool	local_playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
@@ -102,7 +106,6 @@ private:
 	void	build_fixed_order_sub(int ix, int len);
 	void	print_tt_sub(Color);				//	置換表の最善手表示
 	void	get_tt_best_moves_sub(Color, std::vector<int>&);
-	void	get_empty_indexes(std::vector<int>&) const;
 	void	get_subdiagonal_indexes(std::vector<int>&) const;
 	void	get_local_indexes(std::vector<int>&, int last_ix = 0, int last2_ix = 0) const;
 	void	add_bridge_indexes(std::vector<int>&, int last_ix) const;
@@ -129,10 +132,12 @@ private:
 	const int	m_ary_size;
 	int		m_last_put_ix = 0;
 	uint64	m_hash_val = 0;				//	盤面ハッシュ値
+	uint64	m_hash_val2 = 0;			//	180度回転盤面ハッシュ値
 	std::vector<Color>	m_cell;					//	各セル状態（空・黒・白）
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
 	std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
 	std::vector<short>	m_fixed_order;			//	固定順序付けセルインデックス配列
+	std::vector<short>	m_rot180_table;			//	180度回転用インデックス配列
 	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
 	std::unordered_map<uint64, TT2Entry>	m_tt2;	//	置換表（Transposition Table）for 勝敗のみ完全解析
 	mutable std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
