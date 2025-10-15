@@ -1283,27 +1283,31 @@ void Board::build_fixed_order_sub(int ix, int len) {
 	}
 #endif
 }
-bool Board::is_winning_move(int ix, Color col, int n_empty) {
+//	石 col を ix に打ち、その後は双方最善手の場合の col から見た勝敗を返す
+//	n_empty : 現在（col を ix に打つ前）の空欄数
+bool Board::is_winning_move(int ix, Color col, short n_empty) {
 	bool b = true;
-	m_cell[ix] = col;
+	m_cell[ix] = col;	//	ix に石 col を打つ
 	--n_empty;
 	if( n_empty == 0 ) {
-		++m_nodesSearched;
+		++m_nodesSearched;	//	末端ノード数カウント
 		b = col == BLACK ? is_vert_connected() : !is_vert_connected();
+		//b = col == BLACK ? is_vert_connected_BFS() : !is_vert_connected_BFS();
 	} else {
+		//	col の相手の石をすべての空欄に打ってみる
 		for(int ix2 = xyToIX(0, 0); ix2 <= xyToIX(m_bd_width-1, m_bd_width-1); ++ix2) {
-			if( m_cell[ix2] == EMPTY ) {
-				if( is_winning_move(ix2, opp_color(col), n_empty) ) {
-					b = false;		//	
+			if( m_cell[ix2] == EMPTY ) {	//	ix2 が空欄
+				if( is_winning_move(ix2, opp_color(col), n_empty) ) {	//	αカット
+					b = false;		//	col の相手が勝ち
 					break;
 				}
 			}
 		}
 	}
-	m_cell[ix] = EMPTY;
+	m_cell[ix] = EMPTY;	//	ix の石を取り除く
 	return b;
 }
-bool Board::is_winning_move_FO(int ix, Color col, int n_empty) {
+bool Board::is_winning_move_FO(int ix, Color col, short n_empty) {
 	bool b = true;
 	m_cell[ix] = col;
 	--n_empty;
@@ -1348,17 +1352,17 @@ bool Board::is_winning_move_check_dist(int ix, Color col) {
 	m_cell[ix] = col;
 	int dist;
 	if( col == BLACK ) {
-		dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+		dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
 	} else {
-		dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+		dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
 	}
 	if( dist == 0 ) {	//	終局の場合
 		++m_nodesSearched;
 	} else {			//	終局でない場合
 		if( col == BLACK ) {
-			dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
 		} else {
-			dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
 		}
 		if( dist <= 1 ) {		//	1手で勝利できる
 			++m_nodesSearched;
@@ -1377,23 +1381,254 @@ bool Board::is_winning_move_check_dist(int ix, Color col) {
 	m_cell[ix] = EMPTY;
 	return b;
 }
+#if 1
+short Board::nega_max_FO(int ix, Color col, short n_empty) {
+	m_cell[ix] = col;
+	int ev = -nega_max_FO_sub(opp_color(col), n_empty-1);
+	m_cell[ix] = EMPTY;
+	return ev;
+}
+short Board::nega_max_FO_sub(Color col, short n_empty) {
+	int dist;
+	if( col == WHITE ) {
+		dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+	} else {
+		dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+	}
+	if( dist == 0 ) {	//	相手の勝利で終局の場合
+		++m_nodesSearched;
+		int d6 = col==WHITE ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+		return -(1 + n_empty - d6*2);
+	} else {			//	終局でない場合
+		if( col == WHITE ) {
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+		}
+		if( dist <= 1 ) {		//	1手で勝利できる
+			++m_nodesSearched;
+			int d6 = col==BLACK ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+			return (2 + n_empty - d6*2);
+		} else {
+			int ev = -999;
+			for(int ix2 : m_fixed_order) {
+				if( m_cell[ix2] == EMPTY ) {
+					m_cell[ix2] = col;
+					ev = max(ev, -nega_max_FO_sub(opp_color(col), n_empty-1));
+					m_cell[ix2] = EMPTY;
+				}
+			}
+			return ev;
+		}
+	}
+}
+#else
+int Board::nega_max_FO(int ix, Color col, short n_empty) {
+	int ev = 999;
+	m_cell[ix] = col;
+	int dist;
+	if( col == BLACK ) {
+		dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+	} else {
+		dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+	}
+	if( dist == 0 ) {	//	終局の場合
+		++m_nodesSearched;
+		int d6 = col==BLACK ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+		ev = 1 + n_empty - 1 - d6*2;
+	} else {			//	終局でない場合
+		if( col == BLACK ) {
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+		}
+		if( dist <= 1 ) {		//	col の相手が1手で勝利できる
+			++m_nodesSearched;
+			int d6 = col==WHITE ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+			ev = -(1 + n_empty - d6*2);
+		} else {
+			for(int ix2 : m_fixed_order) {
+				if( m_cell[ix2] == EMPTY ) {
+					ev = min(ev, -nega_max_FO(ix2, opp_color(col), n_empty-1));
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return ev;
+}
+#endif
+short Board::nega_alpha_FO(int ix, Color col, short n_empty) {
+	m_cell[ix] = col;
+	int ev = -nega_alpha_FO_sub(opp_color(col), n_empty-1, -999, 999);
+	m_cell[ix] = EMPTY;
+	return ev;
+}
+short Board::nega_alpha_FO_sub(Color col, short n_empty, short alpha, short beta) {
+	int dist;
+	if( col == WHITE ) {
+		dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+	} else {
+		dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+	}
+	if( dist == 0 ) {	//	相手の勝利で終局の場合
+		++m_nodesSearched;
+		int d6 = col==WHITE ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+		return -(1 + n_empty - d6*2);
+	} else {			//	終局でない場合
+		if( col == WHITE ) {
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+		}
+		if( dist <= 1 ) {		//	1手で勝利できる
+			++m_nodesSearched;
+			int d6 = col==BLACK ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+			return (2 + n_empty - d6*2);
+		} else {
+			for(int ix2 : m_fixed_order) {
+				if( m_cell[ix2] == EMPTY ) {
+					m_cell[ix2] = col;
+					alpha = max(alpha, (short) - nega_alpha_FO_sub(opp_color(col), n_empty - 1, -beta, -alpha));
+					m_cell[ix2] = EMPTY;
+					if( alpha >= beta ) return alpha;
+				}
+			}
+			return alpha;
+		}
+	}
+}
+short Board::nega_alpha_TT(int ix, Color col, short n_empty) {
+	m_cell[ix] = col;
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	int ev = -nega_alpha_TT_sub(opp_color(col), n_empty-1, -999, 999);
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	m_cell[ix] = EMPTY;
+	return ev;
+}
+short Board::nega_alpha_TT_sub(Color col, short n_empty, short alpha, short beta) {
+	TT3Entry& entry = m_tt3[m_hash_val];
+	if( entry.m_flag == FLAG_EXACT )
+		return entry.m_eval;
+	int dist;
+	if( col == WHITE ) {
+		dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+	} else {
+		dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+	}
+	if( dist == 0 ) {	//	相手の勝利で終局の場合
+		++m_nodesSearched;
+		int d6 = col==WHITE ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+		alpha = -(1 + n_empty - d6*2);
+		//print();
+		//cout << "alpha = " << alpha << endl;
+		//cout << endl;
+		//entry.m_flag = FLAG_EXACT;
+		//entry.m_eval = alpha;
+		//return alpha;
+	} else {			//	終局でない場合
+		if( col == WHITE ) {
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
+		} else {
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
+		}
+		//if( dist <= 1 )		//	1手で勝利できる
+		if (0)
+			{
+			++m_nodesSearched;
+			int d6 = col==BLACK ? calc_vert_dist(false) : calc_horz_dist(false);	//	６近傍距離
+			alpha = (1 + n_empty - d6*2 - dist);
+			print();
+			cout << "alpha = " << alpha << endl;
+			cout << endl;
+			//entry.m_flag = FLAG_EXACT;
+			//entry.m_eval = alpha;
+			//return alpha;
+		} else {
+			for(int ix2 : m_fixed_order) {
+				if( m_cell[ix2] == EMPTY ) {
+					m_cell[ix2] = col;
+					m_hash_val ^= col == BLACK ? m_zobrist_black[ix2] : m_zobrist_white[ix2];
+					alpha = max(alpha, (short)-nega_alpha_TT_sub(opp_color(col), n_empty-1, -beta, -alpha));
+					m_hash_val ^= col == BLACK ? m_zobrist_black[ix2] : m_zobrist_white[ix2];
+					m_cell[ix2] = EMPTY;
+					if( alpha >= beta ) {
+						//entry.m_flag = FLAG_EXACT;
+						//entry.m_eval = alpha;
+						//return alpha;
+						break;
+					}
+				}
+			}
+		}
+	}
+	//print();
+	//cout << "eval = " << alpha << endl;
+	//cout << "tt3.size() = " << m_tt3.size() << endl << endl;
+	entry.m_flag = FLAG_EXACT;
+	entry.m_eval = alpha;
+	return alpha;
+}
+short Board::nh_nega_alpha_TT(int ix, Color col, short n_empty) {
+	m_cell[ix] = col;
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	int ev = -nh_nega_alpha_TT_sub(opp_color(col), n_empty-1, -999, 999);
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	m_cell[ix] = EMPTY;
+	return ev;
+}
+short Board::nh_nega_alpha_TT_sub(Color col, short n_empty, short alpha, short beta) {
+	TT3Entry& entry = m_tt3[m_hash_val];
+	if( entry.m_flag == FLAG_EXACT )
+		return entry.m_eval;
+	if( col == WHITE && is_vert_connected() ||
+		col == BLACK && is_horz_connected() )
+	{
+		++m_nodesSearched;
+		alpha = -(n_empty + 1);
+		//print();
+		//cout << "alpha = " << alpha << endl;
+		//cout << "tt3.size() = " << m_tt3.size() << endl;
+		//cout << endl;
+	} else {
+		for (int ix2 : m_fixed_order) {
+			if (m_cell[ix2] == EMPTY) {
+				m_last_put_ix = ix2;
+				m_cell[ix2] = col;
+				m_hash_val ^= col == BLACK ? m_zobrist_black[ix2] : m_zobrist_white[ix2];
+				alpha = max(alpha, (short)-nh_nega_alpha_TT_sub(opp_color(col), n_empty - 1, -beta, -alpha));
+				m_hash_val ^= col == BLACK ? m_zobrist_black[ix2] : m_zobrist_white[ix2];
+				m_cell[ix2] = EMPTY;
+				if (alpha >= beta) {
+					entry.m_flag = FLAG_LOWER;
+					entry.m_eval = alpha;
+					return alpha;
+					//break;
+				}
+			}
+		}
+	}
+	entry.m_flag = FLAG_EXACT;
+	entry.m_eval = alpha;
+	return alpha;
+}
 bool Board::is_winning_move_check_dist_FO(int ix, Color col) {
 	bool b = true;
 	m_cell[ix] = col;
 	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 	int dist;
 	if( col == BLACK ) {
-		dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+		dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
 	} else {
-		dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+		dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
 	}
 	if( dist == 0 ) {	//	終局の場合
 		++m_nodesSearched;
 	} else {			//	終局でない場合
 		if( col == BLACK ) {
-			dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
 		} else {
-			dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
 		}
 		if( dist <= 1 ) {		//	1手で勝利できる
 			++m_nodesSearched;
@@ -1420,23 +1655,24 @@ bool Board::is_winning_move_TT(int ix, Color col) {
 	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 	int rix = m_rot180_table[ix];
 	m_hash_val2 ^= col == BLACK ? m_zobrist_black[rix] : m_zobrist_white[rix];
-	TT2Entry& entry = m_tt2[min(m_hash_val, m_hash_val2)];
+	//TT2Entry& entry = m_tt2[min(m_hash_val, m_hash_val2)];
+	TT2Entry& entry = m_tt2[m_hash_val];
 	if( entry.m_flag == FLAG_TERMINAL ) {
 		b = entry.m_winning;
 	} else {
 		int dist;
 		if( col == BLACK ) {
-			dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+			dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
 		} else {
-			dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+			dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
 		}
 		if( dist == 0 ) {	//	終局の場合
 			++m_nodesSearched;
 		} else {			//	終局でない場合
 			if( col == BLACK ) {
-				dist = calc_horz_dist(false);		//	６近傍＋ブリッジ 距離
+				dist = calc_horz_dist(true);		//	６近傍＋ブリッジ 距離
 			} else {
-				dist = calc_vert_dist(false);		//	６近傍＋ブリッジ 距離
+				dist = calc_vert_dist(true);		//	６近傍＋ブリッジ 距離
 			}
 			if( dist <= 1 ) {		//	1手で勝利できる
 				++m_nodesSearched;

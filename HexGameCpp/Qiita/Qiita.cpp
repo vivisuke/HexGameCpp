@@ -12,6 +12,49 @@ static std::mt19937 rgen(rd());
 int main()
 {
 	if (1) {
+		Board bd(2);
+		bd.set_color(0, 0, BLACK);
+		//bd.set_color(2, 0, WHITE);
+		//bd.set_color(2, 0, BLACK);
+		//bd.set_color(0, 2, WHITE);
+		//bd.set_color(2, 1, BLACK);
+		//bd.set_color(0, 0, WHITE);
+		//bd.set_color(0, 1, BLACK);
+		//bd.set_color(1, 3, WHITE);
+		//bd.set_color(0, 3, BLACK);
+		Color next = bd.next_color();
+		bd.print();
+		int n_empty = bd.n_empty();
+		int ix = bd.xyToIX(0, 0);
+		//int ev = bd.nega_max_FO(ix, BLACK, n_empty);
+		//cout << "ev = " << ev << endl << endl;
+		bd.clear_nodeSearched();
+		auto start = std::chrono::high_resolution_clock::now();
+		for(int y = 0; y < bd.get_width(); ++y) {
+			cout << string(y*2, ' ');
+			for(int x = 0; x < bd.get_width(); ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					int ix = bd.xyToIX(x, y);
+					//auto ev = bd.nega_max_FO(ix, next, n_empty);
+					//auto ev = bd.nega_alpha_FO(ix, next, n_empty);
+					//auto ev = bd.nega_alpha_TT(ix, next, n_empty);
+					auto ev = bd.nh_nega_alpha_TT(ix, next, n_empty);
+					//if( next == WHITE ) ev = -ev;
+					printf("%4d", ev);
+				} else
+					printf("  --");
+			}
+			cout << endl;
+		}
+		cout << endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		cout << "duration: " << seconds*1000 << " msec" << endl;
+		cout << "terminal node searched = " << bd.get_nodeSearched() << endl;
+		cout << "transposition table size = " << bd.get_tt3_size() << endl << endl;
+	}
+	if (0) {
 		Board bd(4);
 		vector<int> lst;		//	空欄位置リスト
 		bd.get_empty_indexes(lst);
@@ -35,7 +78,15 @@ int main()
 		}
 	}
 	if (0) {
-		Board bd(4);
+		Board bd(3);
+		bd.set_color(2, 1, BLACK);
+		Color next = bd.next_color();
+		bd.print();
+		int ix = bd.xyToIX(0, 0);
+		bool b = bd.is_winning_move_check_dist(ix, next);
+	}
+	if (0) {
+		Board bd(5);
 #if 0
 		for (int i = 0; i != 2; ++i) {
 			bd.set_color(bd.sel_move_itrdeep(BLACK), BLACK);
@@ -44,12 +95,12 @@ int main()
 			bd.print();
 		}
 #endif
-		//bd.set_color(3, 1, BLACK);
-		//bd.set_color(1, 2, WHITE);
-		//bd.set_color(3, 2, BLACK);
-		//bd.set_color(3, 0, WHITE);
-		//bd.set_color(4, 1, BLACK);
-		//bd.set_color(2, 3, WHITE);
+		bd.set_color(4, 1, BLACK);
+		bd.set_color(3, 3, WHITE);
+		//bd.set_color(2, 2, BLACK);
+		//bd.set_color(3, 3, WHITE);
+		//bd.set_color(1, 1, BLACK);
+		//bd.set_color(2, 1, WHITE);
 		//bd.set_color(2, 0, BLACK);
 		//bd.set_color(1, 2, WHITE);
 		//bd.set_color(0, 1, BLACK);

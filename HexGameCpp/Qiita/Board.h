@@ -36,6 +36,10 @@ struct TT2Entry {		//	置換表に格納するデータ構造 for 勝敗のみ完全解析
 	uchar	m_flag = FLAG_UNKNOWN;
 	bool	m_winning;					//	次の手番の方の勝ち
 };
+struct TT3Entry {		//	置換表に格納するデータ構造 for 勝敗のみ完全解析
+	uchar	m_flag = FLAG_UNKNOWN;
+	short	m_eval = 0;					//	次の手番から見た評価値、プラス：勝ち、マイナス：負け
+};
 
 class Board
 {
@@ -55,6 +59,7 @@ public:
 	Color	next_color() const;
 	void	get_tt_best_moves(Color, std::vector<int>&);
 	size_t	get_tt2_size() const { return m_tt2.size(); }
+	size_t	get_tt3_size() const { return m_tt3.size(); }
 	Color	get_color(int x, int y) { return m_cell[xyToIX(x, y)]; }
 	void	set_color(int x, int y, Color col) { m_cell[xyToIX(x, y)] = col; }
 	void	set_color(int ix, Color col) { m_cell[ix] = col; }
@@ -67,8 +72,8 @@ public:
 	void	swap_black_white();
 	int		swap_bw_ix(int ix) const;
 
-	bool	is_winning_move(int ix, Color col, int n_empty);
-	bool	is_winning_move_FO(int ix, Color col, int n_empty);		//	固定順序付け
+	bool	is_winning_move(int ix, Color col, short n_empty);		//	空欄無しまで着手→勝敗判定
+	bool	is_winning_move_FO(int ix, Color col, short n_empty);		//	固定順序付け
 	bool	is_winning_move_always_check(int ix, Color col);	//	1手ごとに勝敗チェック
 	bool	is_winning_move_check_dist(int ix, Color col);		//	1手ごとに距離チェック
 	bool	is_winning_move_check_dist_FO(int ix, Color col);	//	1手ごとに距離チェック
@@ -90,7 +95,13 @@ public:
 	void	local_playout(Color next, int ix = 0);
 	bool	local_playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
 	bool	playout_to_full(Color next);		//	空欄が無くなるまでプレイアウトし、next が勝ったかどうかを返す
-	bool	playout_to_win(Color next);		//	勝敗が決まるまでプレイアウトし、next が勝ったかどうかを返す
+	bool	playout_to_win(Color next);			//	勝敗が決まるまでプレイアウトし、next が勝ったかどうかを返す
+
+	short	nh_nega_alpha_TT(int ix, Color next, short n_empty);
+	short	nega_max_FO(int ix, Color next, short n_empty);	//	1手ごとに（６近傍＋仮想連結）距離チェック＋固定順序付け
+	short	nega_alpha_FO(int ix, Color next, short n_empty);
+	short	nega_alpha_TT(int ix, Color next, short n_empty);
+
 
 	float	eval(Color next);			//	next: 手番、手番から見た評価値を計算
 	float	nega_max(Color next, int depth);		//	盤面白黒反転しない nega_max
@@ -120,6 +131,10 @@ private:
 	void	check_connected_uf(int ix, int ix2, Color col);
 	void	DFS_recursive(Color next, int depth);		//	depth == 0 になるまで深さ優先探索
 	void	itrdeep_recursive(Color next, int depth);		//	depth == 0 になるまで深さ優先探索
+	short	nh_nega_alpha_TT_sub(Color next, short n_empty, short alpha, short beta);	//	1手ごとに６近傍連結チェック
+	short	nega_max_FO_sub(Color next, short n_empty);	//	1手ごとに（６近傍＋仮想連結）距離チェック＋固定順序付け
+	short	nega_alpha_FO_sub(Color next, short n_empty, short alpha, short beta);	//	1手ごとに（６近傍＋仮想連結）距離チェック＋固定順序付け
+	short	nega_alpha_TT_sub(Color next, short n_empty, short alpha, short beta);	//	1手ごとに（６近傍＋仮想連結）距離チェック＋固定順序付け
 	// --- 時間管理用のメンバ変数 ---
 	mutable std::chrono::high_resolution_clock::time_point m_startTime;
 	mutable int m_timeLimit = 0;
@@ -141,6 +156,7 @@ private:
 	std::vector<short>	m_rot180_table;			//	180度回転用インデックス配列
 	std::unordered_map<uint64, TTEntry>	m_tt;	//	置換表（Transposition Table）
 	std::unordered_map<uint64, TT2Entry>	m_tt2;	//	置換表（Transposition Table）for 勝敗のみ完全解析
+	std::unordered_map<uint64, TT3Entry>	m_tt3;	//	置換表（Transposition Table）for 最短勝ち完全解析
 	mutable std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
 	mutable std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
 	mutable std::vector<int>	m_dist;
