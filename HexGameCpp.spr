@@ -127,6 +127,6 @@
 0125 ◎ C 10/03 10/03 0.001│ToDo│is_vert_connected_BFS()
 0126 ◎ C 10/03 10/03 0.001│ToDo│is_vert_connected_v_BFS()
 0127 ◎ C 10/16 10/16 0.001│ToDo│text_connection プロジェクト追加
-0128 ● C 10/16            │ToDo│
+0128 ◎ C 10/16 10/16 0.001│ToDo│union_find()：undo 対応
 0129 ● C 10/16            │ToDo│
 0130 ● C 10/16            │ToDo│
