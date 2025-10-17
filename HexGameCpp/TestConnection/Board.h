@@ -49,12 +49,18 @@ public:
 
 	bool	is_vert_connected() const;		//	上下辺が連結しているか？
 	bool	is_horz_connected() const;		//	左右辺が連結しているか？
+	bool	is_vert_connected_v() const;		//	上下辺が仮想連結しているか？
+	bool	is_horz_connected_v() const;		//	左右辺が仮想連結しているか？
 	bool	union_find(int ix, Color col);
 	void	undo_union_find();
+	bool	union_find_v(int ix, Color col);	//	ブリッジ対応
 private:
 	bool	is_vert_connected_DFS(int ix) const;
 	bool	is_horz_connected_DFS(int ix) const;
+	bool	is_vert_connected_v_DFS(int ix, int mx1=-1, int mx2=-1) const;
+	bool	is_horz_connected_v_DFS(int ix, int mx1=-1, int mx2=-1) const;
 	void	check_connected_uf(int ix, int ix2, Color col);
+	void	check_connected_uf_v(int ix, int ix2, Color col);
 	int		find_root_ul(int ix);
 private:
 	const int	m_bd_width;
@@ -65,6 +71,7 @@ private:
 
 	std::vector<Color>	m_cell;					//	各セル状態（空・黒・白）
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
+	//std::vector<short>	m_parent_ul_v;			//	上左辺方向の親セルインデックス配列（ブリッジ対応）
 	//std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
 	std::vector<short>	m_uf_stack;				//	Unidon-Find 用スタック for undo
 	mutable std::vector<byte>	m_connected;

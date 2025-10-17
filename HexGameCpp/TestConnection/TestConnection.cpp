@@ -11,7 +11,7 @@ static std::mt19937 rgen(rd());
 
 int main()
 {
-	if (1) {
+	if (0) {
 		Board bd(3);
 		bd.print();
 		bd.print_parent_ul();
@@ -31,16 +31,20 @@ int main()
 		bd.print_parent_ul();
 	}
 	if (0) {
-		Board bd(3);
-		bd.set_color(1, 0, BLACK);
-		bd.set_color(1, 1, BLACK);
-		bd.set_color(1, 2, BLACK);
+		Board bd(4);
+		bd.set_color(0, 2, BLACK);
+		//bd.set_color(1, 2, BLACK);
+		//bd.set_color(2, 3, BLACK);
+		bd.set_color(1, 1, WHITE);
+		bd.set_color(3, 0, WHITE);
 		bd.print();
-		auto b = bd.is_vert_connected();
-		cout << "bd.is_vert_connected() = " << b << endl;
+		auto v = bd.is_vert_connected_v();
+		cout << "bd.is_vert_connected() = " << v << endl;
+		auto h = bd.is_horz_connected_v();
+		cout << "bd.is_horz_connected() = " << h << endl;
 	}
-	if (0) {		//	勝敗が決するまでランダムに打つ
-		Board bd(8);
+	if (1) {		//	勝敗が決するまでランダムに打つ
+		Board bd(4);
 		bd.print();
 		std::vector<int> lst;
 		bd.get_empty_indexes(lst);
@@ -56,7 +60,7 @@ int main()
 				bd.set_color(ix, next);
 				bd.set_last_put_ix(ix);
 				//bd.print();
-#if 1
+#if 0
 				if( bd.union_find(ix, next) ) {
 					if( next == BLACK ) {
 						++bwon;
@@ -66,10 +70,10 @@ int main()
 					break;
 				}
 #else
-				if( next == BLACK && bd.is_vert_connected() ) {
+				if( next == BLACK && bd.is_vert_connected_v() ) {
 					++bwon;
 					break;
-				} else if( next == WHITE && bd.is_horz_connected() ) {
+				} else if( next == WHITE && bd.is_horz_connected_v() ) {
 					++wwon;
 					break;
 				}

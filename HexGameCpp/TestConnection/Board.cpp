@@ -136,6 +136,122 @@ bool Board::is_horz_connected_DFS(int ix) const {
 			is_horz_connected_DFS(ix - m_ary_width + 1) ||
 			is_horz_connected_DFS(ix - m_ary_width);
 }
+bool Board::is_vert_connected_v() const {
+	m_connected.resize(m_ary_size);
+	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);
+	for(int x = 0; x < m_bd_width-1; ++x) {
+		int ix = xyToIX(x, 1);
+		if( is_vert_connected_v_DFS(ix, ix-m_ary_width, ix-m_ary_width+1) )		//	[‚³—Dæ’Tõ
+			return true;	//	ã‰º˜AŒ‹Œo˜H‚ğ”­Œ©‚µ‚½ê‡
+	}
+	for(int x = 0; x < m_bd_width; ++x) {
+		if( is_vert_connected_v_DFS(xyToIX(x, 0)) )		//	[‚³—Dæ’Tõ
+			return true;	//	ã‰º˜AŒ‹Œo˜H‚ğ”­Œ©‚µ‚½ê‡
+	}
+	return false;
+}
+/*
+                  -2W+1
+        -W-1 -W   -W+1 -W+2
+        -1   0    +1
+   +W-2 +W-1 +W   +W+1
+        +2W-1
+*/
+bool Board::is_vert_connected_v_DFS(int ix, int mx1, int mx2) const {
+	if (mx1 >= 0 && (m_cell[mx1] != EMPTY || m_cell[mx2] != EMPTY))	//	Œ©‡‚¢ˆÊ’u‚ª‹ó—“‚Å–³‚¢
+		return false;
+	if( m_cell[ix] != BLACK || m_connected[ix] != UNSEARCHED )	//	•‚Å‚È‚¢ or ’TõÏ‚İ
+		return false;
+	if( ixToY(ix) == m_bd_width-2 && m_cell[ix+m_ary_width-1] == EMPTY && m_cell[ix+m_ary_width] == EMPTY )
+		return true;						//	‰º•Ó‚ÉŒ©‡‚¢˜AŒ‹
+	if( ix >= xyToIX(0, m_bd_width-1) )		//	‰º•Ó‚É“’B‚µ‚½ê‡
+		return true;
+	m_connected[ix] = SEARCHED;
+	const auto W = m_ary_width;
+#if 0
+	return	is_horz_connected_v_DFS(ix + 2*W - 1, ix + W - 1, ix + W) ||
+			is_horz_connected_v_DFS(ix + W - 2, ix + W - 1, ix - 1) ||
+			is_horz_connected_v_DFS(ix + W + 1, ix + 1, ix + W) ||
+			is_horz_connected_v_DFS(ix - W + 2, ix - W + 1, ix + 1) ||
+			is_horz_connected_v_DFS(ix - W - 1, ix - W, ix - 1) ||
+			is_horz_connected_v_DFS(ix - 2*W + 1, ix - W, ix - W + 1) ||
+			is_vert_connected_v_DFS(ix + m_ary_width) ||
+			is_vert_connected_v_DFS(ix + m_ary_width - 1) ||
+			is_vert_connected_v_DFS(ix + 1) ||
+			is_vert_connected_v_DFS(ix - 1) ||
+			is_vert_connected_v_DFS(ix - m_ary_width + 1) ||
+			is_vert_connected_v_DFS(ix - m_ary_width);
+#else
+	if( is_vert_connected_v_DFS(ix + 2*W - 1, ix + W - 1, ix + W) ) return true;
+	if( is_vert_connected_v_DFS(ix + W - 2, ix + W - 1, ix - 1) ) return true;
+	if( is_vert_connected_v_DFS(ix + W + 1, ix + 1, ix + W) ) return true;
+	if( is_vert_connected_v_DFS(ix - W + 2, ix - W + 1, ix + 1) ) return true;
+	if( is_vert_connected_v_DFS(ix - W - 1, ix - W, ix - 1) ) return true;
+	if( is_vert_connected_v_DFS(ix - 2*W + 1, ix - W, ix - W + 1) ) return true;
+	if( is_vert_connected_v_DFS(ix + m_ary_width) ) return true;
+	if( is_vert_connected_v_DFS(ix + m_ary_width - 1) ) return true;
+	if( is_vert_connected_v_DFS(ix + 1) ) return true;
+	if( is_vert_connected_v_DFS(ix - 1) ) return true;
+	if( is_vert_connected_v_DFS(ix - m_ary_width + 1) ) return true;
+	if( is_vert_connected_v_DFS(ix - m_ary_width) ) return true;
+	return false;
+#endif
+}
+bool Board::is_horz_connected_v() const {
+	m_connected.resize(m_ary_size);
+	fill(m_connected.begin(), m_connected.end(), UNSEARCHED);
+	for(int y = 0; y < m_bd_width-1; ++y) {
+		int ix = xyToIX(1, y);
+		if( is_horz_connected_v_DFS(ix, ix-1, ix+m_ary_width-1) )		//	[‚³—Dæ’Tõ
+			return true;	//	ã‰º˜AŒ‹Œo˜H‚ğ”­Œ©‚µ‚½ê‡
+	}
+	for(int y = 0; y < m_bd_width; ++y) {
+		if( is_horz_connected_v_DFS(xyToIX(0, y)) )		//	[‚³—Dæ’Tõ
+			return true;	//	ã‰º˜AŒ‹Œo˜H‚ğ”­Œ©‚µ‚½ê‡
+	}
+	return false;
+}
+bool Board::is_horz_connected_v_DFS(int ix, int mx1, int mx2) const {
+	if (mx1 >= 0 && (m_cell[mx1] != EMPTY || m_cell[mx2] != EMPTY))	//	Œ©‡‚¢ˆÊ’u‚ª‹ó—“‚Å–³‚¢
+		return false;
+	if( m_cell[ix] != WHITE || m_connected[ix] != UNSEARCHED )	//	”’‚Å‚È‚¢ or ’TõÏ‚İ
+		return false;
+	int x = ixToX(ix);
+	if( x == m_bd_width-2 && m_cell[ix+1] == EMPTY && m_cell[ix-m_ary_width+1] == EMPTY )
+		return true;						//	‰E•Ó‚ÉŒ©‡‚¢˜AŒ‹
+	if( x == m_bd_width-1 )		//	‰E•Ó‚É“’B‚µ‚½ê‡
+		return true;
+	m_connected[ix] = SEARCHED;
+	const auto W = m_ary_width;
+#if 0
+	return	is_horz_connected_v_DFS(ix + 2*W - 1, ix + W - 1, ix + W) ||
+			is_horz_connected_v_DFS(ix + W - 2, ix + W - 1, ix - 1) ||
+			is_horz_connected_v_DFS(ix + W + 1, ix + 1, ix + W) ||
+			is_horz_connected_v_DFS(ix - W + 2, ix - W + 1, ix + 1) ||
+			is_horz_connected_v_DFS(ix - W - 1, ix - W, ix - 1) ||
+			is_horz_connected_v_DFS(ix - 2*W + 1, ix - W, ix - W + 1) ||
+			is_horz_connected_v_DFS(ix + m_ary_width) ||
+			is_horz_connected_v_DFS(ix + m_ary_width - 1) ||
+			is_horz_connected_v_DFS(ix + 1) ||
+			is_horz_connected_v_DFS(ix - 1) ||
+			is_horz_connected_v_DFS(ix - m_ary_width + 1) ||
+			is_horz_connected_v_DFS(ix - m_ary_width);
+#else
+	if( is_horz_connected_v_DFS(ix + 2*W - 1, ix + W - 1, ix + W) ) return true;
+	if( is_horz_connected_v_DFS(ix + W - 2, ix + W - 1, ix - 1) ) return true;
+	if( is_horz_connected_v_DFS(ix + W + 1, ix + 1, ix + W) ) return true;
+	if( is_horz_connected_v_DFS(ix - W + 2, ix - W + 1, ix + 1) ) return true;
+	if( is_horz_connected_v_DFS(ix - W - 1, ix - W, ix - 1) ) return true;
+	if( is_horz_connected_v_DFS(ix - 2*W + 1, ix - W, ix - W + 1) ) return true;
+	if( is_horz_connected_v_DFS(ix + m_ary_width) ) return true;
+	if( is_horz_connected_v_DFS(ix + m_ary_width - 1) ) return true;
+	if( is_horz_connected_v_DFS(ix + 1) ) return true;
+	if( is_horz_connected_v_DFS(ix - 1) ) return true;
+	if( is_horz_connected_v_DFS(ix - m_ary_width + 1) ) return true;
+	if( is_horz_connected_v_DFS(ix - m_ary_width) ) return true;
+	return false;
+#endif
+}
 void Board::undo_union_find() {
 	m_uf_stack.pop_back();
 	int ix;
@@ -179,18 +295,6 @@ bool Board::union_find(int ix, Color col) {	//	return: ’…è‚É‚æ‚èã‰º or ¶‰E•Ó‚
 	m_uf_stack.push_back(0);
 	return m_parent_ul[BT_INDEX] == TL_INDEX || m_parent_ul[RT_INDEX] == TL_INDEX;
 }
-int Board::find_root_ul(int ix) {
-	if( m_parent_ul[ix] == ix ) return ix;
-	//	Ä‹A“I‚Éª‚ğ’T‚µA“r’†‚Ìƒm[ƒh‚ğª‚É’¼Ú‚Â‚È‚¬‘Ö‚¦‚éiŒo˜Hˆ³kj
-	//return m_parent_ul[ix] = find_root_ul(m_parent_ul[ix]);
-	auto root = find_root_ul(m_parent_ul[ix]);
-	if( root != m_parent_ul[ix] ) {
-		m_uf_stack.push_back(m_parent_ul[ix]);
-		m_uf_stack.push_back(ix);
-		m_parent_ul[ix] = root;
-	}
-	return root;
-}
 void Board::check_connected_uf(int ix, int ix2, Color col) {
 	if( m_cell[ix2] != col ) return;	//	”ñÚ‘±
 	if( m_parent_ul[ix] == ix ) {				//	ix ‚ªÚ‘±ˆ—Ï‚İ‚Å‚Í‚È‚¢
@@ -214,4 +318,51 @@ void Board::check_connected_uf(int ix, int ix2, Color col) {
 			}
 		}
 	}
+}
+#if 0
+bool Board::union_find_v(int ix, Color col) {	//	return: ’…è‚É‚æ‚èã‰º or ¶‰E•Ó‚ª˜AŒ‹‚³‚ê‚½‚©H
+	if( col == BLACK ) {
+		int x = ixToY(ix);
+		if( x == 0 ) {
+			m_uf_stack.push_back(m_parent_ul[ix]);
+			m_uf_stack.push_back(ix);
+			m_parent_ul[ix] = TL_INDEX;		//	ã•Ó‚ÉÚ‘±
+		} else if( x == m_bd_width - 1 ) {
+			m_uf_stack.push_back(m_parent_ul[ix]);
+			m_uf_stack.push_back(ix);
+			m_parent_ul[ix] = BT_INDEX;		//	‰º•Ó‚ÉÚ‘±
+		}
+	} else {	//	col == WHITE
+		int y = ixToX(ix);
+		if( y == 0 ) {
+			m_uf_stack.push_back(m_parent_ul[ix]);
+			m_uf_stack.push_back(ix);
+			m_parent_ul[ix] = TL_INDEX;		//	¶•Ó‚ÉÚ‘±
+		} else if( y == m_bd_width - 1 ) {
+			m_uf_stack.push_back(m_parent_ul[ix]);
+			m_uf_stack.push_back(ix);
+			m_parent_ul[ix] = RT_INDEX;		//	‰E•Ó‚ÉÚ‘±
+		}
+	}
+	check_connected_uf_v(ix, ix-m_ary_width, col);
+	check_connected_uf_v(ix, ix- m_ary_width +1, col);
+	check_connected_uf_v(ix, ix-1, col);
+	check_connected_uf_v(ix, ix+1, col);
+	check_connected_uf_v(ix, ix+ m_ary_width -1, col);
+	check_connected_uf_v(ix, ix+ m_ary_width, col);
+	m_uf_stack.push_back(0);
+	return m_parent_ul[BT_INDEX] == TL_INDEX || m_parent_ul[RT_INDEX] == TL_INDEX;
+}
+#endif
+int Board::find_root_ul(int ix) {
+	if( m_parent_ul[ix] == ix ) return ix;
+	//	Ä‹A“I‚Éª‚ğ’T‚µA“r’†‚Ìƒm[ƒh‚ğª‚É’¼Ú‚Â‚È‚¬‘Ö‚¦‚éiŒo˜Hˆ³kj
+	//return m_parent_ul[ix] = find_root_ul(m_parent_ul[ix]);
+	auto root = find_root_ul(m_parent_ul[ix]);
+	if( root != m_parent_ul[ix] ) {
+		m_uf_stack.push_back(m_parent_ul[ix]);
+		m_uf_stack.push_back(ix);
+		m_parent_ul[ix] = root;
+	}
+	return root;
 }
