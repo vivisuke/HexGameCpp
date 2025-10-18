@@ -11,6 +11,35 @@ static std::mt19937 rgen(rd());
 
 int main()
 {
+	if (1) {			//	is_winning_move() テスト
+		Board bd(5);
+		Color next = bd.next_color();
+		bd.print();
+		auto start = std::chrono::high_resolution_clock::now();
+		for(int y = 0; y < bd.get_width(); ++y) {
+			cout << string(y, ' ');
+			for(int x = 0; x < bd.get_width(); ++x) {
+				if( bd.get_color(x, y) == EMPTY ) {
+					int ix = bd.xyToIX(x, y);
+					bool b = bd.is_winning_move(ix, next);
+					//bool b = bd.is_winning_move_FO(ix, next, nemp);
+					//bool b = bd.is_winning_move_always_check(ix, next);
+					//bool b = bd.is_winning_move_check_dist(ix, next);
+					//bool b = bd.is_winning_move_check_dist_FO(ix, next);
+					//bool b = bd.is_winning_move_TT(ix, next);
+					if( next == WHITE ) b = !b;
+					cout << (b?"B ":"W ");
+				} else
+					printf("- ");
+			}
+			cout << endl;
+		}
+		cout << endl;
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = end - start;
+		double seconds = std::chrono::duration<double>(duration).count();
+		cout << "duration: " << seconds*1000 << " msec" << endl;
+	}
 	if (0) {
 		Board bd(3);
 		bd.print();
@@ -43,7 +72,7 @@ int main()
 		auto h = bd.is_horz_connected_v();
 		cout << "bd.is_horz_connected() = " << h << endl;
 	}
-	if (1) {		//	勝敗が決するまでランダムに打つ
+	if (0) {		//	勝敗が決するまでランダムに打つ
 		Board bd(4);
 		bd.print();
 		std::vector<int> lst;

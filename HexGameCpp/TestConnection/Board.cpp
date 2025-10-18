@@ -15,6 +15,7 @@ Board::Board(int width)
     m_cell.resize(m_ary_size);  // 番兵つき１次元配列メモリ確保
 	m_parent_ul.resize(m_ary_size);
     init();  // 盤面初期化
+	build_fixed_order();
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), WALL);	//	for 上下壁
@@ -31,6 +32,42 @@ void Board::init() {
 	m_uf_stack.clear();
 	m_uf_stack.push_back(0);		//	undo 情報区切り
 	m_last_put_ix = 0;
+}
+void Board::build_fixed_order() {
+	m_fixed_order.clear();
+	for(int x = 0; x < m_bd_width; ++x) {
+		int y = m_bd_width-1;
+		//cout << "(" << x << ", " << y << ")" << endl;
+		build_fixed_order_sub(xyToIX(x, y), m_bd_width-x);
+		if( x != 0 ) {
+			int y = m_bd_width - x - 1;
+			//cout << "(0, " << y << ")" << endl;
+			build_fixed_order_sub(xyToIX(0, y), m_bd_width-x);
+		}
+	}
+}
+void Board::build_fixed_order_sub(int ix, int len) {
+	if( len%2 == 0 ) {	//	len が偶数の場合
+		int cix = ix - (m_ary_width-1) * (len/2-1);
+		for(int i = 0; i < len/2; ++i) {
+			m_fixed_order.push_back(cix);
+			m_fixed_order.push_back(cix - (m_ary_width-1)*(i*2 + 1));
+			//cout << cix << " " << cix - (m_ary_width-1)*(i*2 + 1) << " ";
+			cix += m_ary_width-1;
+		}
+		//cout << endl;
+	} else {	//	len が奇数の場合
+		int cix = ix - (m_ary_width-1) * (len/2);
+		m_fixed_order.push_back(cix);
+		//cout << cix << " ";
+		for(int i = 0; i < len/2; ++i) {
+			cix += m_ary_width-1;
+			m_fixed_order.push_back(cix);
+			m_fixed_order.push_back(cix - (m_ary_width-1)*(i*2 + 2));
+			//cout << cix << " " << cix - (m_ary_width-1)*(i*2 + 2) << " ";
+		}
+		//cout << endl;
+	}
 }
 Board& Board::operator=(const Board& s) {
 	m_cell = s.m_cell;
@@ -365,4 +402,24 @@ int Board::find_root_ul(int ix) {
 		m_parent_ul[ix] = root;
 	}
 	return root;
+}
+//	ix に col を打って、勝てるか？
+//	固定順序付け、一手ごとに見合い連結チェック
+bool Board::is_winning_move(int ix, Color col) {
+	m_cell[ix] = col;
+	bool b = col == BLACK ? is_vert_connected_v() : is_horz_connected_v();
+	if( !b ) {		//	１手で勝ちでない場合
+		//b = !is_winning_position(oppo_color(col));
+		for(int ix2: m_fixed_order) {
+			if( m_cell[ix2] == EMPTY ) {
+				b = !is_winning_move(ix2, oppo_color(col));
+				if( !b ) break;
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
+}
+bool Board::is_winning_position(Color col) {
+	return false;
 }

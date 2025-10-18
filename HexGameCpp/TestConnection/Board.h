@@ -19,6 +19,7 @@ enum {
 	UNCONNECT = -1,
 	TL_INDEX = 0, BT_INDEX, RT_INDEX,
 };
+inline Color oppo_color(Color col) { return BLACK + WHITE - col; }
 
 class Board
 {
@@ -27,6 +28,7 @@ public:
 	Board& operator=(const Board&);
 public:
 	void	init();
+	void	build_fixed_order();
 	int		get_width() const { return m_bd_width; }
 	int		xyToIX(int x, int y) const { return (y+1)*m_ary_width + x; }
 	int		ixToX(int ix) const { return ix % m_ary_width; }
@@ -54,7 +56,10 @@ public:
 	bool	union_find(int ix, Color col);
 	void	undo_union_find();
 	bool	union_find_v(int ix, Color col);	//	ブリッジ対応
+
+	bool	is_winning_move(int ix, Color col);		//	固定順序付け、一手ごとに見合い連結チェック
 private:
+	void	build_fixed_order_sub(int ix, int len);
 	bool	is_vert_connected_DFS(int ix) const;
 	bool	is_horz_connected_DFS(int ix) const;
 	bool	is_vert_connected_v_DFS(int ix, int mx1=-1, int mx2=-1) const;
@@ -62,6 +67,7 @@ private:
 	void	check_connected_uf(int ix, int ix2, Color col);
 	void	check_connected_uf_v(int ix, int ix2, Color col);
 	int		find_root_ul(int ix);
+	bool	is_winning_position(Color col);		//	次の手番が勝ちか？
 private:
 	const int	m_bd_width;
 	const int	m_ary_width;
@@ -73,6 +79,7 @@ private:
 	std::vector<short>	m_parent_ul;			//	上左辺方向の親セルインデックス配列
 	//std::vector<short>	m_parent_ul_v;			//	上左辺方向の親セルインデックス配列（ブリッジ対応）
 	//std::vector<short>	m_parent_dr;			//	下右辺方向の親セルインデックス配列
+	std::vector<short>	m_fixed_order;			//	固定順序付けセルインデックス配列
 	std::vector<short>	m_uf_stack;				//	Unidon-Find 用スタック for undo
 	mutable std::vector<byte>	m_connected;
 };
