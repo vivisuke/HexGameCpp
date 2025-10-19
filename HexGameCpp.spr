@@ -131,7 +131,7 @@
 0129 ● C 10/16            │ToDo│ブリッジを考慮した Unidon-Find
 0130 ◎ C 10/18 10/18 0.001│ToDo│is_horz_connected_v()
 0131 ◎ C 10/18 10/18 0.001│ToDo│is_winning_move(ix, col)
-0132 ● C 10/18            │ToDo│
+0132 ◎ C 10/18 10/19 0.001│ToDo│is_winning_move_TT(ix, col)
 0133 ● C 10/18            │ToDo│
 0134 ● C 10/18            │ToDo│
 0135 ● C 10/18            │ToDo│

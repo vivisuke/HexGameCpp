@@ -78,7 +78,7 @@ public:
 	bool	is_winning_move_check_dist(int ix, Color col);		//	1手ごとに距離チェック
 	bool	is_winning_move_check_dist_FO(int ix, Color col);	//	1手ごとに距離チェック
 	bool	is_winning_move_TT(int ix, Color col);				//	置換表使用
-	void	build_zobrist_table() const;
+	void	build_zobrist_table() const;						//	ハッシュ用テーブル構築
 	void	build_fixed_order();
 	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
 	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }

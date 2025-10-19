@@ -12,7 +12,7 @@ static std::mt19937 rgen(rd());
 int main()
 {
 	if (1) {			//	is_winning_move() テスト
-		Board bd(5);
+		Board bd(4);
 		Color next = bd.next_color();
 		bd.print();
 		auto start = std::chrono::high_resolution_clock::now();

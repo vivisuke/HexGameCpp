@@ -8,6 +8,13 @@
 
 using namespace std;
 
+static std::random_device rd;
+static std::mt19937 rgen(rd()); 
+//static std::mt19937 rgen(0); 
+std::mt19937_64 rgen64(rd());		// 64ビット版
+
+#define		is_empty()	empty()
+
 Board::Board(int width)
     : m_bd_width(width), m_ary_width(width + 1)
     , m_ary_height(width + 2), m_ary_size((width + 1)* (width + 2))
@@ -16,6 +23,7 @@ Board::Board(int width)
 	m_parent_ul.resize(m_ary_size);
     init();  // 盤面初期化
 	build_fixed_order();
+	build_zobrist_table();
 }
 void Board::init() {
 	fill(m_cell.begin(), m_cell.end(), WALL);	//	for 上下壁
@@ -45,6 +53,13 @@ void Board::build_fixed_order() {
 			build_fixed_order_sub(xyToIX(0, y), m_bd_width-x);
 		}
 	}
+}
+void Board::build_zobrist_table() const {
+	if( !m_zobrist_black.is_empty() ) return;	//	初期化済み
+	m_zobrist_black.resize(m_ary_size);
+	for(auto& r: m_zobrist_black) r = rgen64();
+	m_zobrist_white.resize(m_ary_size);
+	for(auto& r: m_zobrist_white) r = rgen64();
 }
 void Board::build_fixed_order_sub(int ix, int len) {
 	if( len%2 == 0 ) {	//	len が偶数の場合
@@ -187,13 +202,32 @@ bool Board::is_vert_connected_v() const {
 	}
 	return false;
 }
+#define	UU	(-2*W+1)
+#define	ULL	(-W-1)
+#define	UL	(-W)
+#define	UR	(-W+1)
+#define	URR	(-W+2)
+#define	LT	(-1)
+#define	RT	(+1)
+#define	DLL	(+W-2)
+#define	DL	(+W-1)
+#define	DR	(+W)
+#define	DRR	(+W+1)
+#define	DD	(+2*W-1)
 /*
+          UU
+	ULL UL  UR  URR
+	  LT  ０  RT
+	DLL DL  DR  DRR
+	      DD
+
                   -2W+1
         -W-1 -W   -W+1 -W+2
         -1   0    +1
    +W-2 +W-1 +W   +W+1
         +2W-1
 */
+
 bool Board::is_vert_connected_v_DFS(int ix, int mx1, int mx2) const {
 	if (mx1 >= 0 && (m_cell[mx1] != EMPTY || m_cell[mx2] != EMPTY))	//	見合い位置が空欄で無い
 		return false;
@@ -219,12 +253,12 @@ bool Board::is_vert_connected_v_DFS(int ix, int mx1, int mx2) const {
 			is_vert_connected_v_DFS(ix - m_ary_width + 1) ||
 			is_vert_connected_v_DFS(ix - m_ary_width);
 #else
-	if( is_vert_connected_v_DFS(ix + 2*W - 1, ix + W - 1, ix + W) ) return true;
-	if( is_vert_connected_v_DFS(ix + W - 2, ix + W - 1, ix - 1) ) return true;
-	if( is_vert_connected_v_DFS(ix + W + 1, ix + 1, ix + W) ) return true;
-	if( is_vert_connected_v_DFS(ix - W + 2, ix - W + 1, ix + 1) ) return true;
-	if( is_vert_connected_v_DFS(ix - W - 1, ix - W, ix - 1) ) return true;
-	if( is_vert_connected_v_DFS(ix - 2*W + 1, ix - W, ix - W + 1) ) return true;
+	if( is_vert_connected_v_DFS(ix + DD, ix + DL, ix + DR) ) return true;
+	if( is_vert_connected_v_DFS(ix + DLL, ix + DL, ix + LT) ) return true;
+	if( is_vert_connected_v_DFS(ix + DRR, ix + DR, ix + RT) ) return true;
+	if( is_vert_connected_v_DFS(ix + ULL, ix + UL, ix + LT) ) return true;
+	if( is_vert_connected_v_DFS(ix + URR, ix + UR, ix + RT) ) return true;
+	if( is_vert_connected_v_DFS(ix + UU, ix + UL, ix + UR) ) return true;
 	if( is_vert_connected_v_DFS(ix + m_ary_width) ) return true;
 	if( is_vert_connected_v_DFS(ix + m_ary_width - 1) ) return true;
 	if( is_vert_connected_v_DFS(ix + 1) ) return true;
@@ -420,6 +454,35 @@ bool Board::is_winning_move(int ix, Color col) {
 	m_cell[ix] = EMPTY;
 	return b;
 }
-bool Board::is_winning_position(Color col) {
+bool Board::is_winning_position(Color next) {
 	return false;
+}
+bool Board::is_winning_move_TT(int ix, Color col) {
+	m_cell[ix] = col;
+	m_hash_val ^= (col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix]);
+	bool b = !is_winning_position_TT(oppo_color(col));
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	m_cell[ix] = EMPTY;
+	return b;
+}
+bool Board::is_winning_position_TT(Color next) {
+	TT2Entry& entry = m_tt2[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
+	if( entry.m_flag == FLAG_EXACT )
+		return entry.m_winning;
+	if( (next == WHITE ? is_vert_connected_v() : is_horz_connected_v()) )
+		return false;		//	直前手番の方が勝ち
+	bool b = false;
+	for(int ix: m_fixed_order) {
+		if( m_cell[ix] == EMPTY ) {
+			m_cell[ix] = next;
+			m_hash_val ^= (next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix]);
+			b = !is_winning_position_TT( oppo_color(next));
+			m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+			m_cell[ix] = EMPTY;
+			if (b) break;
+		}
+	}
+	entry.m_flag = FLAG_EXACT;
+	entry.m_winning = b;
+	return b;
 }
