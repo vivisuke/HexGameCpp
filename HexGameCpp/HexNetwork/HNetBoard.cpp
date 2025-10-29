@@ -102,9 +102,11 @@ void HNetBoard::print() const {
 		const auto &node = m_node[i];
 		cout << " " << ixToCoord(i);
 		cout << ": " << color_str[node.m_color];
-		for(int i = 0; i != node.m_network_black.size(); ++i) {
-			if( node.m_network_black[i] != 0 )
-				cout << " " << ixToCoord(i);
+		if( node.m_color == EMPTY ) {
+			for(int i = 0; i != node.m_network_black.size(); ++i) {
+				if( node.m_network_black[i] != 0 )
+					cout << " " << ixToCoord(i);
+			}
 		}
 		cout << endl;
 	}
@@ -115,9 +117,11 @@ void HNetBoard::print() const {
 		const auto &node = m_node[i];
 		cout << " " << ixToCoord(i);
 		cout << ": " << color_str[node.m_color];
-		for(int i = 0; i != node.m_network_white.size(); ++i) {
-			if( node.m_network_white[i] != 0 )
-				cout << " " << ixToCoord(i);
+		if( node.m_color == EMPTY ) {
+			for(int i = 0; i != node.m_network_white.size(); ++i) {
+				if( node.m_network_white[i] != 0 )
+					cout << " " << ixToCoord(i);
+			}
 		}
 		cout << endl;
 	}
@@ -144,7 +148,7 @@ void HNetBoard::update_network(int ix, Color col) {
 			if( m_node[ix].m_network_black[ix2] != 0 ) {	//	距離１
 				lst.push_back(ix2);
 				m_node[ix2].m_network_black[ix] = 0;		//	切断
-				m_node[ix].m_network_black[ix2] = 0;		//	切断
+				//m_node[ix].m_network_black[ix2] = 0;		//	切断
 			}
 		}
 		for(int i = 0; i < lst.size() - 1; ++i) {
@@ -156,7 +160,7 @@ void HNetBoard::update_network(int ix, Color col) {
 		for (int ix2 = 0; ix2 != m_node[ix].m_network_white.size(); ++ix2) {
 			if( m_node[ix].m_network_white[ix2] != 0 ) {	//	距離１
 				m_node[ix2].m_network_white[ix] = 0;		//	切断
-				m_node[ix].m_network_white[ix2] = 0;		//	切断
+				//m_node[ix].m_network_white[ix2] = 0;		//	切断
 			}
 		}
 	} else {
