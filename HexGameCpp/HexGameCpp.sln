@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hex4Solver", "Hex4Solver\He
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnection", "TestConnection\TestConnection.vcxproj", "{8428AD1C-7BFA-4E8D-9CDF-766FE089689A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HexNetwork", "HexNetwork\HexNetwork.vcxproj", "{27DB47CE-13D6-41B9-B970-A9115A266F0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{8428AD1C-7BFA-4E8D-9CDF-766FE089689A}.Release|x64.Build.0 = Release|x64
 		{8428AD1C-7BFA-4E8D-9CDF-766FE089689A}.Release|x86.ActiveCfg = Release|Win32
 		{8428AD1C-7BFA-4E8D-9CDF-766FE089689A}.Release|x86.Build.0 = Release|Win32
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Debug|x64.ActiveCfg = Debug|x64
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Debug|x64.Build.0 = Debug|x64
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Debug|x86.ActiveCfg = Debug|Win32
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Debug|x86.Build.0 = Debug|Win32
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Release|x64.ActiveCfg = Release|x64
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Release|x64.Build.0 = Release|x64
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Release|x86.ActiveCfg = Release|Win32
+		{27DB47CE-13D6-41B9-B970-A9115A266F0C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

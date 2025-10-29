@@ -12,8 +12,8 @@ static std::mt19937 rgen(rd());
 int main()
 {
 	if (1) {
-		Board bd(2);
-		bd.set_color(0, 0, BLACK);
+		Board bd(4);
+		//bd.set_color(0, 0, BLACK);
 		//bd.set_color(2, 0, WHITE);
 		//bd.set_color(2, 0, BLACK);
 		//bd.set_color(0, 2, WHITE);

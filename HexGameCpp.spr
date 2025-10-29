@@ -132,11 +132,11 @@
 0130 ◎ C 10/18 10/18 0.001│ToDo│is_horz_connected_v()
 0131 ◎ C 10/18 10/18 0.001│ToDo│is_winning_move(ix, col)
 0132 ◎ C 10/18 10/19 0.001│ToDo│is_winning_move_TT(ix, col)
-0133 ● C 10/18            │ToDo│
-0134 ● C 10/18            │ToDo│
-0135 ● C 10/18            │ToDo│
-0136 ● C 10/18            │ToDo│
-0137 ● C 10/18            │ToDo│
-0138 ● C 10/18            │ToDo│
-0139 ● C 10/18            │ToDo│
-0140 ● C 10/18            │ToDo│
+0133 ● C 10/23            │ToDo│is_mate_in_one()：１手で勝ち確定にできるか？
+0134 ● C 10/25            │ToDo│ノード・エッジデータ構造
+0135 ● C 10/25            │ToDo│
+0136 ● C 10/25            │ToDo│
+0137 ● C 10/25            │ToDo│
+0138 ● C 10/25            │ToDo│
+0139 ● C 10/25            │ToDo│
+0140 ● C 10/25            │ToDo│

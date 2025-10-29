@@ -3,6 +3,7 @@
 #include <chrono>
 #include <assert.h>
 #include "Board.h"
+#include "NEBoard.h"
 
 using namespace std;
 
@@ -11,8 +12,15 @@ static std::mt19937 rgen(rd());
 
 int main()
 {
-	if (1) {			//	is_winning_move() テスト
+	if( 1 ) {
+		NEBoard bd(3);
+		bd.print_node_edge();
+	}
+	if (0) {			//	is_winning_move() テスト
 		Board bd(4);
+		//bd.set_color(1, 1, BLACK);
+		//bd.set_color(1, 2, WHITE);
+		//bd.set_color(3, 1, BLACK);
 		Color next = bd.next_color();
 		bd.print();
 		auto start = std::chrono::high_resolution_clock::now();
@@ -21,12 +29,10 @@ int main()
 			for(int x = 0; x < bd.get_width(); ++x) {
 				if( bd.get_color(x, y) == EMPTY ) {
 					int ix = bd.xyToIX(x, y);
-					bool b = bd.is_winning_move(ix, next);
-					//bool b = bd.is_winning_move_FO(ix, next, nemp);
-					//bool b = bd.is_winning_move_always_check(ix, next);
-					//bool b = bd.is_winning_move_check_dist(ix, next);
-					//bool b = bd.is_winning_move_check_dist_FO(ix, next);
+					//bool b = bd.is_winning_move(ix, next);
+					//bool b = bd.is_winning_move_dist1(ix, next);
 					//bool b = bd.is_winning_move_TT(ix, next);
+					bool b = bd.is_winning_move_dist1_TT(ix, next);
 					if( next == WHITE ) b = !b;
 					cout << (b?"B ":"W ");
 				} else
@@ -39,6 +45,9 @@ int main()
 		auto duration = end - start;
 		double seconds = std::chrono::duration<double>(duration).count();
 		cout << "duration: " << seconds*1000 << " msec" << endl;
+		auto sz = bd.get_tt2_size();
+		if( sz != 0 )
+			cout << "transposition table 2 size = " << sz << endl;
 	}
 	if (0) {
 		Board bd(3);

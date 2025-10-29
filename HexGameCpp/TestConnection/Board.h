@@ -42,6 +42,7 @@ public:
 	void	build_fixed_order();
 	void	build_zobrist_table() const;						//	ハッシュ用テーブル構築
 	int		get_width() const { return m_bd_width; }
+	size_t	get_tt2_size() const { return m_tt2.size(); }
 	int		xyToIX(int x, int y) const { return (y+1)*m_ary_width + x; }
 	int		ixToX(int ix) const { return ix % m_ary_width; }
 	int		ixToY(int ix) const { return (ix / m_ary_width) - 1; }
@@ -68,9 +69,13 @@ public:
 	bool	union_find(int ix, Color col);
 	void	undo_union_find();
 	bool	union_find_v(int ix, Color col);	//	ブリッジ対応
+	int		calc_vert_dist(bool bridge = false, bool rev = false) const { return calc_dist(true, bridge, rev); }
+	int		calc_horz_dist(bool bridge = false, bool rev = false) const { return calc_dist(false, bridge, rev); }
 
 	bool	is_winning_move(int ix, Color col);		//	固定順序付け、一手ごとに見合い連結チェック
+	bool	is_winning_move_dist1(int ix, Color col, bool=true);		//	固定順序付け、距離１なら勝ち判定
 	bool	is_winning_move_TT(int ix, Color col);		//	固定順序付け、一手ごとに見合い連結チェック、置換表
+	bool	is_winning_move_dist1_TT(int ix, Color col);		//	固定順序付け、一手ごとに見合い連結チェック、置換表
 private:
 	void	build_fixed_order_sub(int ix, int len);
 	bool	is_vert_connected_DFS(int ix) const;
@@ -80,8 +85,10 @@ private:
 	void	check_connected_uf(int ix, int ix2, Color col);
 	void	check_connected_uf_v(int ix, int ix2, Color col);
 	int		find_root_ul(int ix);
+	int		calc_dist(bool vertical, bool bridge, bool rev) const;
 	bool	is_winning_position(Color col);		//	次の手番が勝ちか？
 	bool	is_winning_position_TT(Color col);		//	次の手番が勝ちか？
+	bool	is_winning_position_dist1_TT(Color col, bool=true);		//	次の手番が勝ちか？
 private:
 	const int	m_bd_width;
 	const int	m_ary_width;
@@ -99,8 +106,9 @@ private:
 	std::vector<short>	m_uf_stack;				//	Unidon-Find 用スタック for undo
 	std::unordered_map<uint64, TT2Entry>	m_tt2;	//	置換表（Transposition Table）for 勝敗のみ完全解析
 
-	mutable std::vector<byte>	m_connected;
 	mutable std::vector<uint64>	m_zobrist_black;		//	黒用XOR反転値テーブル
 	mutable std::vector<uint64>	m_zobrist_white;		//	白用XOR反転値テーブル
+	mutable std::vector<int>	m_dist;
+	mutable std::vector<byte>	m_connected;
 };
 

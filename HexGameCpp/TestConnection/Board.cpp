@@ -15,6 +15,12 @@ std::mt19937_64 rgen64(rd());		// 64ビット版
 
 #define		is_empty()	empty()
 
+struct SBridge {
+	int		m_emp1;		//	空欄位置へのオフセット
+	int		m_emp2;		//	空欄位置へのオフセット
+	int		m_next;		//	ブリッジ先へのオフセット
+};
+
 Board::Board(int width)
     : m_bd_width(width), m_ary_width(width + 1)
     , m_ary_height(width + 2), m_ary_size((width + 1)* (width + 2))
@@ -437,6 +443,147 @@ int Board::find_root_ul(int ix) {
 	}
 	return root;
 }
+int Board::calc_dist(bool vertical, bool bridge, bool rev) const
+{
+	const Color own_color   = vertical ? BLACK : WHITE;
+	const Color opp_color = vertical ? WHITE : BLACK;
+	//vector<int> dist(m_ary_size, UNCONNECT);	// 各セルまでの最短距離を格納する配列。UNCONNECTで初期化。
+	m_dist.resize(m_ary_size);
+	fill(m_dist.begin(), m_dist.end(), UNCONNECT);
+	deque<int> q;	// 0-1 BFS のための両端キュー
+	// 1. スタート地点（上・左辺）をキューに追加
+	for (int i = 0; i < m_bd_width; ++i) {
+		int ix = vertical ? xyToIX(i, 0) : xyToIX(0, i);
+		if (m_cell[ix] == own_color) {
+			m_dist[ix] = 0;
+			q.push_front(ix); // コスト0なので先頭に追加
+		} else if(m_cell[ix] == EMPTY) {
+			m_dist[ix] = 1;
+			q.push_back(ix);  // コスト1なので末尾に追加
+		}
+	}
+	if( bridge ) {
+		bool is_emp0 = m_cell[xyToIX(0, 0)] == EMPTY;	//	空欄か？
+		for (int i = 1; i < m_bd_width; ++i) {
+			int ix = vertical ? xyToIX(i, 0) : xyToIX(0, i);
+			bool is_emp = m_cell[ix] == EMPTY;	//	空欄か？
+			if( is_emp0 && is_emp ) {
+				int ix2 = ix + (vertical ? m_ary_width - 1 : -m_ary_width + 1);
+				if (m_cell[ix2] == own_color) {
+					m_dist[ix2] = 0;
+					q.push_front(ix2); // コスト0なので先頭に追加
+				} else if (m_cell[ix2] == EMPTY) {
+					m_dist[ix2] = 1;
+					q.push_back(ix2);  // コスト1なので末尾に追加
+				}
+			}
+			is_emp0 = is_emp;
+		}
+	}
+    if (q.empty()) {    // もし上辺に有効なマスが一つもなければ連結不可能
+        return UNCONNECT;
+    }
+	const int offsets[] = {	// 隣接セルのインデックス差分
+		-1, +1, -m_ary_width, +m_ary_width, -m_ary_width + 1, +m_ary_width - 1
+	};
+	int min_dist = UNCONNECT;
+	while (!q.empty()) {	// 2. 0-1 BFS ループ
+		int cur_ix = q.front();
+		q.pop_front();
+		int current_dist = m_dist[cur_ix];
+	
+		// 既に下辺へのより短いパスが見つかっている場合、枝刈り
+		if (min_dist != UNCONNECT && current_dist >= min_dist) {
+			continue;
+		}
+		// ゴール（下辺 or 右辺）に到達したかチェック
+#if 0
+		if (vertical && ixToY(cur_ix) == m_bd_width - 1 || !vertical && ixToX(cur_ix) == m_bd_width - 1) {
+			//if (min_dist == UNCONNECT || current_dist < min_dist) {
+			//	min_dist = current_dist;
+			//}
+            return current_dist;
+		}
+#endif
+		if( vertical ) {
+			int y = ixToY(cur_ix);
+			if( y == m_bd_width - 1 ||
+				bridge && y == m_bd_width - 2 &&
+				m_cell[cur_ix+m_ary_width-1] == EMPTY && m_cell[cur_ix+m_ary_width] == EMPTY )
+			{
+	            return current_dist;
+			}
+		} else {
+			int x = ixToX(cur_ix);
+			if( x == m_bd_width - 1 ||
+				bridge && x == m_bd_width - 2 &&
+				m_cell[cur_ix-m_ary_width+1] == EMPTY && m_cell[cur_ix+1] == EMPTY )
+			{
+	            return current_dist;
+			}
+		}
+		for (int offset : offsets) {	// 隣接セルを探索
+			int next_ix = cur_ix + offset;
+			// 壁・盤外・白石は無視
+			if (m_cell[next_ix] == WALL || m_cell[next_ix] == opp_color) {
+				continue;
+			}
+			// 移動コストを計算 (空マスなら1, 黒マスなら0)
+			int cost = (m_cell[next_ix] == EMPTY) ? 1 : 0;
+			int new_dist = current_dist + cost;
+			// より短い経路が見つかった場合のみ更新
+			if (m_dist[next_ix] == UNCONNECT || new_dist < m_dist[next_ix]) {
+				m_dist[next_ix] = new_dist;
+				if (cost == 0) {
+					q.push_front(next_ix); // コスト0は先頭へ
+				} else {
+					q.push_back(next_ix);  // コスト1は末尾へ
+				}
+			}
+		}
+		if( bridge ) {
+/*
+                  -2W+1
+        -W-1 -W   -W+1 -W+2
+        -1   0    +1
+   +W-2 +W-1 +W   +W+1
+        2W-1
+*/
+			const int W = m_ary_width;
+			const SBridge offsets[] = {
+				{-W, -W+1, -2*W+1},
+				{-W+1, 1, -W+2},
+				{W, 1, W+1},
+				{W, W-1, 2*W-1},
+				{-1, W-1, W-2},
+				{-1, -W, -W-1},
+			};
+			for(const auto& ofst: offsets) {
+				int emp1_ix = cur_ix + ofst.m_emp1;
+				int emp2_ix = cur_ix + ofst.m_emp2;
+				int next_ix = cur_ix + ofst.m_next;
+				if( m_cell[emp1_ix] != EMPTY || m_cell[emp2_ix] != EMPTY || 
+					m_cell[next_ix] == WALL || m_cell[next_ix] == opp_color )
+				{
+					continue;
+				}
+				int cost = (m_cell[next_ix] == EMPTY) ? 1 : 0;
+				int new_dist = current_dist + cost;
+				// より短い経路が見つかった場合のみ更新
+				if (m_dist[next_ix] == UNCONNECT || new_dist < m_dist[next_ix]) {
+					m_dist[next_ix] = new_dist;
+					if (cost == 0) {
+						q.push_front(next_ix); // コスト0は先頭へ
+					} else {
+						q.push_back(next_ix);  // コスト1は末尾へ
+					}
+				}
+			}
+		}
+	}
+	//print_dist();
+	return min_dist;
+}
 //	ix に col を打って、勝てるか？
 //	固定順序付け、一手ごとに見合い連結チェック
 bool Board::is_winning_move(int ix, Color col) {
@@ -456,6 +603,28 @@ bool Board::is_winning_move(int ix, Color col) {
 }
 bool Board::is_winning_position(Color next) {
 	return false;
+}
+//	固定順序付け、一手ごとに見合い連結チェック
+bool Board::is_winning_move_dist1(int ix, Color col, bool depth1) {
+	m_cell[ix] = col;
+	bool b = false;
+	if( depth1 )
+		b = col == BLACK ? is_vert_connected_v() : is_horz_connected_v();
+	if( !b ) {		//	相手が勝ちでない場合
+		int dist = calc_dist(col==WHITE, true, false);
+		if( dist <= 1 )
+			b = false;
+		else {
+			for(int ix2: m_fixed_order) {
+				if( m_cell[ix2] == EMPTY ) {
+					b = !is_winning_move_dist1(ix2, oppo_color(col), false);
+					if( !b ) break;
+				}
+			}
+		}
+	}
+	m_cell[ix] = EMPTY;
+	return b;
 }
 bool Board::is_winning_move_TT(int ix, Color col) {
 	m_cell[ix] = col;
@@ -480,6 +649,40 @@ bool Board::is_winning_position_TT(Color next) {
 			m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
 			m_cell[ix] = EMPTY;
 			if (b) break;
+		}
+	}
+	entry.m_flag = FLAG_EXACT;
+	entry.m_winning = b;
+	return b;
+}
+bool Board::is_winning_move_dist1_TT(int ix, Color col) {
+	m_cell[ix] = col;
+	m_hash_val ^= (col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix]);
+	bool b = !is_winning_position_dist1_TT(oppo_color(col));
+	m_hash_val ^= col == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+	m_cell[ix] = EMPTY;
+	return b;
+}
+bool Board::is_winning_position_dist1_TT(Color next, bool depth1) {
+	TT2Entry& entry = m_tt2[m_hash_val];		//	現局面が未登録の場合は、要素が自動的に追加される
+	if( entry.m_flag == FLAG_EXACT )
+		return entry.m_winning;
+	if( depth1 && (next == WHITE ? is_vert_connected_v() : is_horz_connected_v()) )
+		return false;		//	直前手番の方が勝ち
+	bool b = false;
+	int dist = calc_dist(next==BLACK, true, false);
+	if( dist <= 1 )
+		b = true;
+	else {
+		for(int ix: m_fixed_order) {
+			if( m_cell[ix] == EMPTY ) {
+				m_cell[ix] = next;
+				m_hash_val ^= (next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix]);
+				b = !is_winning_position_dist1_TT(oppo_color(next), false);
+				m_hash_val ^= next == BLACK ? m_zobrist_black[ix] : m_zobrist_white[ix];
+				m_cell[ix] = EMPTY;
+				if (b) break;
+			}
 		}
 	}
 	entry.m_flag = FLAG_EXACT;
