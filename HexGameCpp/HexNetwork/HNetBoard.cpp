@@ -142,8 +142,8 @@ void HNetBoard::print_dist() const {
 	cout << endl;
 }
 void HNetBoard::update_network(int ix, Color col) {
+	vector<short> lst;
 	if( col == BLACK ) {
-		vector<short> lst;
 		for (int ix2 = 0; ix2 != m_node[ix].m_network_black.size(); ++ix2) {
 			if( m_node[ix].m_network_black[ix2] != 0 ) {	//	距離１
 				lst.push_back(ix2);
@@ -164,24 +164,94 @@ void HNetBoard::update_network(int ix, Color col) {
 			}
 		}
 	} else {
+		for (int ix2 = 0; ix2 != m_node[ix].m_network_white.size(); ++ix2) {
+			if( m_node[ix].m_network_white[ix2] != 0 ) {	//	距離１
+				lst.push_back(ix2);
+				m_node[ix2].m_network_white[ix] = 0;		//	切断
+				//m_node[ix].m_network_white[ix2] = 0;		//	切断
+			}
+		}
+		for(int i = 0; i < lst.size() - 1; ++i) {
+			for(int k = i + 1; k < lst.size(); ++k) {
+				m_node[lst[i]].m_network_white[lst[k]] = 1;		//	距離１
+				m_node[lst[k]].m_network_white[lst[i]] = 1;		//	距離１
+			}
+		}
+		for (int ix2 = 0; ix2 != m_node[ix].m_network_white.size(); ++ix2) {
+			if( m_node[ix].m_network_black[ix2] != 0 ) {	//	距離１
+				m_node[ix2].m_network_black[ix] = 0;		//	切断
+				//m_node[ix].m_network_white[ix2] = 0;		//	切断
+			}
+		}
 	}
 }
-int HNetBoard::calc_vert_distance() const {
+//int HNetBoard::calc_vert_distance() const {
+//}
+int HNetBoard::calc_distance(Color col) const {
 	fill(m_dist.begin(), m_dist.end(), -1);		//	未探索ノードを -1 で初期化
-	m_dist[TOP_NODE_IX] = 0;
+#if 1
+	int ix0 = col == BLACK ? TOP_NODE_IX : LEFT_NODE_IX;
+	int ix9 = col == BLACK ? BOTTOM_NODE_IX : RIGHT_NODE_IX;
+	m_dist[ix0] = 0;
 	deque<short> que;
-	que.push_back(TOP_NODE_IX);
+	que.push_back(ix0);
 	while( !que.is_empty() ) {
 		auto ix = que.front();
 		que.pop_front();
 		auto d1 = m_dist[ix] + 1;
-		//for(auto ix2: m_node[ix].m_network_black) {
-		for (int ix2 = 0; ix2 != m_node[ix].m_network_black.size(); ++ix2) {
-			if( m_node[ix].m_network_black[ix2] != 0 && m_dist[ix2] < 0 ) {	//	距離１＆未探索の場合
+		const auto& net = col == BLACK ? m_node[ix].m_network_black : m_node[ix].m_network_white;
+		for (int ix2 = 0; ix2 != net.size(); ++ix2) {
+			if( net[ix2] != 0 && m_dist[ix2] < 0 ) {	//	距離１＆未探索の場合
 				m_dist[ix2] = d1;
 				que.push_back(ix2);
 			}
 		}
 	}
-	return m_dist[BOTTOM_NODE_IX] - 1;
+	return m_dist[ix9] - 1;
+#else
+	int ix0, ix9;
+	if( col == BLACK ) {
+		ix0 = TOP_NODE_IX;
+		ix9 = BOTTOM_NODE_IX;
+		m_dist[ix0] = 0;
+		deque<short> que;
+		que.push_back(ix0);
+		while( !que.is_empty() ) {
+			auto ix = que.front();
+			que.pop_front();
+			auto d1 = m_dist[ix] + 1;
+			for (int ix2 = 0; ix2 != m_node[ix].m_network_black.size(); ++ix2) {
+				if( m_node[ix].m_network_black[ix2] != 0 && m_dist[ix2] < 0 ) {	//	距離１＆未探索の場合
+					m_dist[ix2] = d1;
+					que.push_back(ix2);
+				}
+			}
+		}
+	} else {
+		ix0 = LEFT_NODE_IX;
+		ix9 = RIGHT_NODE_IX;
+		m_dist[ix0] = 0;
+		deque<short> que;
+		que.push_back(ix0);
+		while( !que.is_empty() ) {
+			auto ix = que.front();
+			que.pop_front();
+			auto d1 = m_dist[ix] + 1;
+			for (int ix2 = 0; ix2 != m_node[ix].m_network_white.size(); ++ix2) {
+				if( m_node[ix].m_network_white[ix2] != 0 && m_dist[ix2] < 0 ) {	//	距離１＆未探索の場合
+					m_dist[ix2] = d1;
+					que.push_back(ix2);
+				}
+			}
+		}
+	}
+	return m_dist[ix9] - 1;
+#endif
+}
+bool HNetBoard::did_win(Color col) const {
+	if( col == BLACK ) {
+		return m_node[TOP_NODE_IX].m_network_black[BOTTOM_NODE_IX] != 0;
+	} else {
+		return m_node[LEFT_NODE_IX].m_network_black[RIGHT_NODE_IX] != 0;
+	}
 }

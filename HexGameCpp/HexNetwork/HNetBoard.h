@@ -39,7 +39,10 @@ public:
 				set_color(ix, col);
 				update_network(ix, col);
 			}
-	int		calc_vert_distance() const;
+	int		calc_distance(Color col) const;
+	int		calc_vert_distance() const { return calc_distance(BLACK); }
+	int		calc_horz_distance() const { return calc_distance(WHITE); }
+	bool	did_win(Color col) const;
 
 private:
 	const int	m_width;
