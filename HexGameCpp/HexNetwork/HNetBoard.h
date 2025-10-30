@@ -27,6 +27,7 @@ public:
 	void	init();
 	void	print() const;
 	void	print_dist() const;
+	void	get_empty_indexes(std::vector<short>&) const;
 	void	set_color(int x, int y, Color col) { m_node[xyToIX(x, y)].m_color = col; }
 	void	set_color(int ix, Color col) { m_node[ix].m_color = col; }
 	void	update_network(int x, int y, Color col) { update_network(xyToIX(x, y), col); }

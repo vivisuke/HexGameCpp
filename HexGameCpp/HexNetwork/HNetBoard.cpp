@@ -141,6 +141,13 @@ void HNetBoard::print_dist() const {
 	}
 	cout << endl;
 }
+void HNetBoard::get_empty_indexes(vector<short>& lst) const {
+	lst.clear();
+	for(int ix = xyToIX(0, 0); ix <= xyToIX(m_width-1, m_width-1); ++ix) {
+		if( m_node[ix].m_color == EMPTY )
+			lst.push_back(ix);
+	}
+}
 void HNetBoard::update_network(int ix, Color col) {
 	vector<short> lst;
 	if( col == BLACK ) {

@@ -136,7 +136,7 @@
 0134 ◎ C 10/29 10/29 0.001│ToDo│ノード・エッジデータ構造
 0135 ◎ C 10/29 10/29 0.001│ToDo│update_network()：ix に石を打った場合 ix からのエッジ情報を削除しない
 0136 ◎ C 10/30 10/30 0.001│ToDo│did_win(Color col)
-0137 ● C 10/30            │ToDo│
+0137 ◎ C 10/30 10/30 0.001│ToDo│get_empty_indexes()
 0138 ● C 10/30            │ToDo│
 0139 ● C 10/30            │ToDo│
 0140 ● C 10/30            │ToDo│
